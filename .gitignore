@@ -1,0 +1,9 @@
+target/
+node_modules/
+dist/
+referencias/
+.env
+.env.*
+!.env.example
+.stellar/
+*.log

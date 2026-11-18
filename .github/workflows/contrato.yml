@@ -1,0 +1,29 @@
+name: Contrato
+on:
+  push:
+    paths: ["contracts/**", "Cargo.toml", ".github/workflows/contrato.yml"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  probar-y-compilar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust con destino wasm
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup target add wasm32v1-none
+      - uses: Swatinem/rust-cache@v2
+      - name: Pruebas del contrato
+        run: cargo test
+      - name: Stellar CLI
+        run: |
+          curl -sSL https://github.com/stellar/stellar-cli/releases/download/v30.0.1/stellar-cli-30.0.1-x86_64-unknown-linux-gnu.tar.gz | tar xz -C /usr/local/bin stellar
+          stellar --version
+      - name: Compilar wasm
+        run: stellar contract build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pasanaku-wasm
+          path: target/wasm32v1-none/release/pasanaku.wasm

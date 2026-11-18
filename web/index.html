@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Awayu · el pasanaku que teje tu historial</title>
+    <meta name="description" content="Pasanaku en dólares digitales sobre Stellar: el pozo rinde mientras espera y cada pago teje un aguayo que es tu historial crediticio." />
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="stage"></div>
+
+    <header class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>Awayu</h1>
+        <p>El pasanaku que teje tu historial</p>
+      </div>
+    </header>
+
+    <nav class="modes" aria-label="Modo">
+      <button data-mode="demo" class="on">Demo</button>
+      <button data-mode="testnet">Stellar testnet</button>
+    </nav>
+
+    <aside class="panel" id="panel">
+      <div class="grip" aria-hidden="true"></div>
+      <section class="stats">
+        <div><span>Ronda</span><b id="s-round">–</b></div>
+        <div><span>Cuota</span><b id="s-amount">–</b></div>
+        <div><span>Pozo</span><b id="s-pot">–</b></div>
+      </section>
+
+      <section class="turn">
+        <span>Este turno cobra</span>
+        <strong id="s-recipient">–</strong>
+        <small id="s-deadline"></small>
+      </section>
+
+      <section class="yield" id="yield">
+        <span>Mientras espera, el pozo rinde</span>
+        <b id="s-yield">–</b>
+        <small>Proyección con Vaquita (pools de Blend/DeFindex). Simulado.</small>
+      </section>
+
+      <section class="actions">
+        <button id="btn-contribute" class="primary">Aportar</button>
+        <button id="btn-payout">Pagar el pozo</button>
+        <label class="late"><input type="checkbox" id="chk-late" /> Simular aporte tardío</label>
+      </section>
+
+      <section class="members">
+        <h2>Miembros <small>tocá uno para ver su aguayo</small></h2>
+        <ul id="members"></ul>
+      </section>
+
+      <section class="person" id="person" hidden></section>
+
+      <footer class="foot">
+        <button id="btn-story" class="ghost">▶ Contar la historia</button>
+        <button id="btn-login" class="ghost">Entrar con Google</button>
+        <a id="lnk-contract" target="_blank" rel="noopener" hidden>Ver contrato ↗</a>
+      </footer>
+    </aside>
+
+    <div class="legend">
+      <span><i class="k1"></i>A tiempo</span>
+      <span><i class="k2"></i>Tarde</span>
+      <span><i class="k3"></i>Faltó</span>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+    <div class="caption" id="caption"></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

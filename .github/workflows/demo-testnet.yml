@@ -1,0 +1,32 @@
+name: Demo en testnet
+# Despliega un círculo de prueba en Stellar testnet con cuentas efímeras
+# (creadas y fondeadas con Friendbot dentro del propio job, sin secretos),
+# juega tres rondas reales y publica el resultado en testnet.json.
+on:
+  workflow_dispatch:
+    inputs:
+      periodo:
+        description: "Segundos por ronda"
+        default: "120"
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust con destino wasm
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup target add wasm32v1-none
+      - uses: Swatinem/rust-cache@v2
+      - name: Stellar CLI
+        run: curl -sSL https://github.com/stellar/stellar-cli/releases/download/v30.0.1/stellar-cli-30.0.1-x86_64-unknown-linux-gnu.tar.gz | tar xz -C /usr/local/bin stellar
+      - name: Compilar wasm
+        run: stellar contract build
+      - name: Desplegar y jugar rondas
+        run: bash scripts/demo-testnet.sh "${{ inputs.periodo }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: testnet
+          path: testnet.json

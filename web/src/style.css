@@ -91,6 +91,11 @@ button { font: inherit; cursor: pointer; }
 .wallet > button { border: 1px solid var(--gold); background: var(--glass); color: var(--gold); padding: 9px 16px; border-radius: 999px; font-weight: 700; backdrop-filter: blur(10px); white-space: nowrap; }
 .wallet > button.on { background: var(--gold); color: #1b1030; }
 .wallet-menu { position: absolute; right: 0; top: 46px; display: grid; gap: 4px; background: #1b1030; border: 1px solid var(--line); border-radius: 14px; padding: 6px; min-width: 190px; }
+.wallet-menu[hidden] { display: none; }
+@media (max-width: 1200px) and (min-width: 761px) {
+  .wallet { top: 92px; left: 24px; right: auto; }
+  .wallet-menu { left: 0; right: auto; }
+}
 .wallet-menu button { border: 0; background: none; color: var(--ink); text-align: left; padding: 10px 12px; border-radius: 10px; }
 .wallet-menu button:hover { background: rgba(255, 255, 255, 0.08); }
 .wallet-menu button:disabled { opacity: 0.4; }

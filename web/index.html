@@ -61,10 +61,47 @@
 
       <footer class="foot">
         <button id="btn-story" class="ghost">▶ Contar la historia</button>
-        <button id="btn-login" class="ghost">Entrar con Google</button>
+        <button id="btn-create" class="ghost">＋ Crear un pasanaku</button>
+        <button id="btn-share" class="ghost" hidden>Compartir enlace</button>
         <a id="lnk-contract" target="_blank" rel="noopener" hidden>Ver contrato ↗</a>
       </footer>
     </aside>
+
+    <div class="wallet">
+      <button id="btn-wallet">Conectar billetera</button>
+      <div class="wallet-menu" id="wallet-menu" hidden>
+        <button data-w="freighter">Freighter</button>
+        <button data-w="google">Google (Pollar)</button>
+        <button data-w="email">Correo (Pollar)</button>
+      </div>
+    </div>
+
+    <dialog id="dlg-create">
+      <form method="dialog" id="form-create">
+        <h2>Crear un pasanaku en testnet</h2>
+        <p class="muted">Vos firmás el despliegue. El orden de cobro lo sortea la red.</p>
+        <label>Cuota por ronda (XLM de testnet)
+          <input name="amount" type="number" min="1" step="1" value="10" required />
+        </label>
+        <label>Duración de cada ronda
+          <select name="period">
+            <option value="300">5 minutos (para demos)</option>
+            <option value="3600">1 hora</option>
+            <option value="86400">1 día</option>
+            <option value="604800" selected>1 semana</option>
+            <option value="2592000">30 días</option>
+          </select>
+        </label>
+        <label>Miembros (una dirección G… por línea; la tuya ya está incluida)
+          <textarea name="members" rows="5" placeholder="GABC…&#10;GDEF…"></textarea>
+        </label>
+        <p class="err" id="create-err"></p>
+        <menu>
+          <button value="cancel" formnovalidate class="ghost">Cancelar</button>
+          <button id="btn-create-go" value="ok" class="primary">Crear y firmar</button>
+        </menu>
+      </form>
+    </dialog>
 
     <div class="legend">
       <span><i class="k1"></i>A tiempo</span>

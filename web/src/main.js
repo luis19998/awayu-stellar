@@ -1,14 +1,19 @@
 import "./style.css";
+import { StrKey } from "@stellar/stellar-sdk";
 import { createScene } from "./scene.js";
 import { historyStripDataURL } from "./aguayo.js";
 import {
-  demoCircle, contribute, payout, pot, recipientOf, score, creditLine, idleYield, ON_TIME, LATE,
+  demoCircle, contribute, payout, pot, recipientOf, score, creditLine, idleYield, ON_TIME, LATE, MISSED,
 } from "./model.js";
-import { loadDeployment, readCircle, explorerUrl } from "./chain.js";
-import { pollarEnabled, login } from "./wallet.js";
+import {
+  loadDeployment, readCircle, explorerUrl, buildContributeXdr, buildPayoutXdr, buildCreateXdr,
+  submit, ensureFunded, short,
+} from "./chain.js";
+import { pollarEnabled, connectFreighter, connectPollar, sign, wallet } from "./wallet.js";
 
 const $ = (s) => document.querySelector(s);
 const fmt = (n, t) => `${n.toLocaleString("es-BO", { maximumFractionDigits: 2 })} ${t}`;
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 let circle = demoCircle();
 let selected = -1;
@@ -16,13 +21,24 @@ let busy = false;
 let deployment = null;
 
 const scene = createScene($("#stage"), { onPick: (i) => pick(i) });
-rebuild();
+
+// ---------- Render ----------
 
 function rebuild() {
   scene.setMembers(circle.members);
   circle.paid.forEach((mark, i) => scene.setPending(i, mark, circle.round));
   scene.setTurn(recipientOf(circle), false);
   render();
+}
+
+const me = () => wallet()?.address;
+const myIndex = () => circle.members.findIndex((m) => m.address === me());
+const isTestnet = () => circle.mode === "testnet";
+
+function canPayout(c) {
+  if (c.round >= c.order.length) return false;
+  if (!isTestnet()) return c.paid.size > 0;
+  return Boolean(me()) && (c.paid.size === c.order.length || Date.now() / 1000 > c.deadline);
 }
 
 function render() {
@@ -37,9 +53,7 @@ function render() {
   $("#s-deadline").textContent = deadlineText(c);
   $("#s-yield").textContent = "+" + fmt(idleYield(c), c.token);
   scene.setPotLevel(pot(c) / (c.amount * n));
-
-  const scores = c.members.map((m) => `${score(m.history)} pts`);
-  scene.updateLabels(c.members, scores, rec);
+  scene.updateLabels(c.members, c.members.map((m) => `${score(m.history)} pts`), rec);
 
   const ul = $("#members");
   ul.innerHTML = "";
@@ -47,9 +61,9 @@ function render() {
     const li = document.createElement("li");
     li.className = (i === selected ? "sel " : "") + (i === rec ? "turn-of" : "");
     const paid = c.paid.get(i);
-    li.innerHTML = `<b>${m.name}</b><span class="sc">${score(m.history)} pts</span>
-      <span class="st ${paid ? "ok" : ""}">${paid === ON_TIME ? "Aportó" : paid === LATE ? "Aportó tarde" : "Falta aportar"} · ${m.role}</span>
-      <span></span>`;
+    li.innerHTML = `<b></b><span class="sc">${score(m.history)} pts</span>
+      <span class="st ${paid ? "ok" : ""}">${paid === ON_TIME ? "Aportó" : paid === LATE ? "Aportó tarde" : "Falta aportar"} · ${m.role}</span><span></span>`;
+    li.querySelector("b").textContent = m.name;
     if (m.history.length) {
       const img = new Image();
       img.alt = `Aguayo de ${m.name}`;
@@ -60,40 +74,47 @@ function render() {
     ul.appendChild(li);
   });
 
-  const testnet = c.mode === "testnet";
-  $("#btn-contribute").disabled = busy || done || testnet || (selected >= 0 && c.paid.has(selected));
-  $("#btn-payout").disabled = busy || done || testnet || c.paid.size === 0;
-  $("#btn-contribute").textContent = selected >= 0 ? `Aportar como ${c.members[selected].name}` : "Aportar (todos)";
-  $(".late").style.display = testnet ? "none" : "";
+  const t = isTestnet();
+  const mine = myIndex();
+  const bC = $("#btn-contribute");
+  if (t) {
+    bC.disabled = busy || done || !me() || mine < 0 || c.paid.has(mine);
+    bC.textContent = !me() ? "Conectá tu billetera" : mine < 0 ? "No sos miembro" : c.paid.has(mine) ? "Ya aportaste" : "Aportar y firmar";
+  } else {
+    bC.disabled = busy || done || (selected >= 0 && c.paid.has(selected));
+    bC.textContent = selected >= 0 ? `Aportar como ${c.members[selected].name}` : "Aportar (todos)";
+  }
+  $("#btn-payout").disabled = busy || !canPayout(c);
+  $(".late").style.display = t ? "none" : "";
   const link = $("#lnk-contract");
   link.hidden = !c.contractId;
   if (c.contractId) link.href = explorerUrl(c.contractId);
+  $("#btn-share").hidden = !t;
   renderPerson();
 }
 
 function deadlineText(c) {
-  if (c.mode === "testnet" && c.deadline) {
+  if (isTestnet() && c.deadline) {
     const s = c.deadline - Date.now() / 1000;
-    return s > 0 ? `Plazo: ${Math.ceil(s / 60)} min` : "Plazo vencido: ya se puede pagar el pozo";
+    if (s <= 0) return "Plazo vencido: ya se puede pagar el pozo";
+    return s < 3600 ? `Plazo: ${Math.ceil(s / 60)} min` : s < 172800 ? `Plazo: ${Math.ceil(s / 3600)} h` : `Plazo: ${Math.ceil(s / 86400)} días`;
   }
   return `Una ronda cada ${c.periodDays} días`;
 }
 
 function renderPerson() {
   const box = $("#person");
-  if (selected < 0) {
-    box.hidden = true;
-    return;
-  }
+  if (selected < 0 || !circle.members[selected]) return void (box.hidden = true);
   const m = circle.members[selected];
   const credit = creditLine(m.history, circle.amount);
   box.hidden = false;
-  box.innerHTML = `<h3>${m.name}</h3>
-    <p>${m.role}</p>
+  box.innerHTML = `<h3></h3><p class="role"></p>
     <p>${m.history.length} rondas tejidas · reputación ${score(m.history)}/100</p>
     <p>Con este aguayo podría acceder a un microcrédito de</p>
     <div class="credit">${credit ? fmt(credit, circle.token) : "aún sin historial suficiente"}</div>
     <p><small>Historial en la cadena, portable y verificable por cualquier cooperativa. Monto ilustrativo.</small></p>`;
+  box.querySelector("h3").textContent = m.name;
+  box.querySelector(".role").textContent = m.role;
 }
 
 function pick(i) {
@@ -103,90 +124,266 @@ function pick(i) {
   render();
 }
 
-function toast(msg) {
+function toast(msg, ms = 3200) {
   const t = $("#toast");
   t.textContent = msg;
   t.classList.add("on");
   clearTimeout(toast.h);
-  toast.h = setTimeout(() => t.classList.remove("on"), 2600);
+  toast.h = setTimeout(() => t.classList.remove("on"), ms);
 }
 
-const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+// ---------- Acciones: demo ----------
 
-async function doContribute(i, late) {
-  const mark = contribute(circle, i, late);
-  if (!mark) return;
+async function animateContribution(i, mark) {
   await new Promise((r) => scene.flyContribution(i, r));
   scene.setPending(i, mark, circle.round);
-  render();
 }
 
-async function contributeAction() {
-  if (busy) return;
-  busy = true;
-  render();
+async function animatePayout(to, amount, marks, round) {
+  await new Promise((r) => scene.flyPayout(to, amount / circle.amount, r));
+  marks.forEach((m, i) => scene.commitPending(i, m ?? MISSED, round));
+  toast(`${circle.members[to].name} recibió ${fmt(amount, circle.token)}`);
+  await wait(500);
+}
+
+async function demoContribute() {
   const late = $("#chk-late").checked;
   const who = selected >= 0 ? [selected] : circle.members.map((_, i) => i).filter((i) => !circle.paid.has(i));
   for (const i of who) {
-    await doContribute(i, late);
+    const mark = contribute(circle, i, late);
+    if (!mark) continue;
+    await animateContribution(i, mark);
+    render();
     await wait(180);
   }
-  busy = false;
-  render();
 }
 
-async function payoutAction() {
-  if (busy) return;
-  busy = true;
-  render();
+async function demoPayout() {
   const round = circle.round;
   const marks = circle.members.map((_, i) => circle.paid.get(i));
   const res = payout(circle);
-  if (!res) return void (busy = false);
-  await new Promise((r) => scene.flyPayout(res.to, res.amount / circle.amount, r));
-  marks.forEach((m, i) => scene.commitPending(i, m ?? 3, round));
-  toast(`${circle.members[res.to].name} recibió ${fmt(res.amount, circle.token)}`);
-  await wait(500);
+  if (!res) return;
+  await animatePayout(res.to, res.amount, marks, round);
   scene.setTurn(recipientOf(circle));
-  busy = false;
-  render();
 }
 
-$("#btn-contribute").onclick = contributeAction;
-$("#btn-payout").onclick = payoutAction;
+// ---------- Acciones: testnet (firmadas con la billetera) ----------
 
-// Modo demo / testnet
-document.querySelectorAll(".modes button").forEach((b) => {
-  b.onclick = async () => {
-    if (b.classList.contains("on") || busy) return;
-    if (b.dataset.mode === "testnet") {
-      deployment ??= await loadDeployment();
-      if (!deployment) return toast("Aún no hay contrato desplegado (falta testnet.json)");
-      toast("Leyendo el contrato en Stellar testnet…");
-      try {
-        circle = await readCircle(deployment);
-      } catch (e) {
-        console.error(e);
-        return toast("No se pudo leer el contrato: " + e.message);
-      }
-    } else {
-      circle = demoCircle();
+async function signAndSend(buildXdr, what) {
+  toast(`Preparando ${what}…`);
+  const xdr = await buildXdr();
+  toast("Firmá en tu billetera…", 60000);
+  const signed = await sign(xdr);
+  toast("Enviando a Stellar testnet…", 60000);
+  return submit(deployment, signed);
+}
+
+async function chainContribute() {
+  const i = myIndex();
+  await signAndSend(() => buildContributeXdr(deployment, circle.contractId, me()), "tu aporte");
+  await animateContribution(i, ON_TIME);
+  toast("Aporte registrado en la cadena ✓");
+  await refreshChain();
+}
+
+async function chainPayout() {
+  const round = circle.round;
+  const marks = circle.members.map((_, i) => circle.paid.get(i));
+  const amount = pot(circle);
+  const res = await signAndSend(() => buildPayoutXdr(deployment, circle.contractId, me()), "el pago del pozo");
+  const to = circle.members.findIndex((m) => m.address === String(res?.value));
+  await animatePayout(to < 0 ? recipientOf(circle) : to, amount, marks, round);
+  await refreshChain(true);
+}
+
+async function run(fn) {
+  if (busy) return;
+  busy = true;
+  render();
+  try {
+    await fn();
+  } catch (e) {
+    console.error(e);
+    toast("No se pudo: " + friendly(e), 5000);
+  } finally {
+    busy = false;
+    render();
+  }
+}
+
+function friendly(e) {
+  const m = String(e?.message || e);
+  if (/User declined|rejected|denied/i.test(m)) return "cancelaste la firma";
+  if (/Error\(Contract, #8\)/.test(m)) return "la ronda sigue abierta";
+  if (/Error\(Contract, #6\)/.test(m)) return "ya aportaste en esta ronda";
+  if (/Error\(Contract, #5\)/.test(m)) return "no sos miembro del círculo";
+  return m.length > 140 ? m.slice(0, 140) + "…" : m;
+}
+
+$("#btn-contribute").onclick = () => run(isTestnet() ? chainContribute : demoContribute);
+$("#btn-payout").onclick = () => run(isTestnet() ? chainPayout : demoPayout);
+
+// ---------- Modos y carga de círculos ----------
+
+async function openTestnet(contractId) {
+  deployment ??= await loadDeployment();
+  if (!deployment) throw new Error("Falta testnet.json");
+  const id = contractId || deployment.contractId;
+  toast("Leyendo el contrato en Stellar testnet…");
+  circle = await readCircle(deployment, id, me() ? { [me()]: "Vos" } : {});
+  setModeButton("testnet");
+  selected = -1;
+  rebuild();
+  const url = new URL(location.href);
+  if (id !== deployment.contractId) url.searchParams.set("c", id);
+  else url.searchParams.delete("c");
+  history.replaceState(null, "", url);
+  toast("Datos reales del contrato en testnet");
+}
+
+async function refreshChain(full = false) {
+  if (!isTestnet()) return;
+  const before = circle;
+  const next = await readCircle(deployment, circle.contractId, me() ? { [me()]: "Vos" } : {});
+  circle = next;
+  const changed = full || next.round !== before.round || next.members.length !== before.members.length;
+  if (changed) {
+    rebuild();
+    scene.setTurn(recipientOf(circle));
+  } else {
+    // Aportes nuevos de otros miembros: los animamos
+    for (const [i, mark] of next.paid) {
+      if (!before.paid.has(i)) await animateContribution(i, mark);
     }
-    document.querySelectorAll(".modes button").forEach((x) => x.classList.toggle("on", x === b));
+    render();
+  }
+}
+
+function setModeButton(mode) {
+  document.querySelectorAll(".modes button").forEach((x) => x.classList.toggle("on", x.dataset.mode === mode));
+}
+
+document.querySelectorAll(".modes button").forEach((b) => {
+  b.onclick = () => {
+    if (b.classList.contains("on") || busy) return;
+    if (b.dataset.mode === "testnet") return run(() => openTestnet());
+    circle = demoCircle();
+    setModeButton("demo");
     selected = -1;
     rebuild();
-    toast(circle.mode === "testnet" ? "Datos reales del contrato en testnet" : "Modo demo");
+    history.replaceState(null, "", location.pathname);
+    toast("Modo demo");
   };
 });
 
-$("#btn-login").onclick = async () => {
-  if (!pollarEnabled) {
-    return toast("Falta la clave publicable de Pollar (VITE_POLLAR_KEY) para entrar con Google");
+setInterval(() => {
+  if (!isTestnet() || busy) return;
+  $("#s-deadline").textContent = deadlineText(circle);
+  refreshChain().catch(() => {});
+}, 20000);
+
+// ---------- Billetera ----------
+
+const menu = $("#wallet-menu");
+if (!pollarEnabled) {
+  menu.querySelectorAll("[data-w=google],[data-w=email]").forEach((x) => {
+    x.disabled = true;
+    x.title = "Falta la clave publicable de Pollar (VITE_POLLAR_KEY)";
+  });
+}
+$("#btn-wallet").onclick = () => (menu.hidden = !menu.hidden);
+
+async function onConnected(w) {
+  menu.hidden = true;
+  const btn = $("#btn-wallet");
+  btn.textContent = `${w.kind === "pollar" ? "Pollar" : "Freighter"} · ${short(w.address)}`;
+  btn.classList.add("on");
+  deployment ??= await loadDeployment();
+  if (deployment && (await ensureFunded(deployment, w.address))) toast("Cuenta de testnet fondeada con Friendbot");
+  else toast("Billetera conectada");
+  if (isTestnet()) await refreshChain(true);
+  render();
+}
+
+menu.querySelectorAll("button").forEach((b) => {
+  b.onclick = () =>
+    run(async () => {
+      if (b.dataset.w === "freighter") {
+        try {
+          await onConnected(await connectFreighter());
+        } catch (e) {
+          if (e.message === "FREIGHTER_MISSING") {
+            window.open("https://www.freighter.app/", "_blank", "noopener");
+            throw new Error("instalá Freighter (se abrió su página) y elegí la red Testnet");
+          }
+          throw e;
+        }
+      } else if (b.dataset.w === "google") {
+        await connectPollar("google", (w) => onConnected(w));
+      } else {
+        const email = prompt("Tu correo para recibir el código de Pollar:");
+        if (email) await connectPollar({ provider: "email", email }, (w) => onConnected(w));
+      }
+    });
+});
+
+// ---------- Crear un pasanaku ----------
+
+const dlg = $("#dlg-create");
+$("#btn-create").onclick = () => {
+  if (!me()) {
+    menu.hidden = false;
+    return toast("Primero conectá tu billetera");
   }
-  await login("google", (address) => toast(`Billetera lista: ${address.slice(0, 6)}…${address.slice(-4)}`));
+  $("#create-err").textContent = "";
+  dlg.showModal();
 };
 
-// Recorrido guiado para el pitch
+$("#form-create").addEventListener("submit", (ev) => {
+  if (ev.submitter?.value !== "ok") return;
+  ev.preventDefault();
+  const f = new FormData(ev.target);
+  const others = String(f.get("members")).split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
+  const bad = others.find((a) => !StrKey.isValidEd25519PublicKey(a));
+  const err = $("#create-err");
+  if (bad) return void (err.textContent = `Dirección inválida: ${short(bad)}`);
+  const members = [...new Set([me(), ...others])];
+  if (members.length < 2) return void (err.textContent = "Hacen falta al menos 2 miembros");
+  const amount = Number(f.get("amount"));
+  const periodSeconds = Number(f.get("period"));
+  dlg.close();
+  run(async () => {
+    deployment ??= await loadDeployment();
+    for (const a of members) await ensureFunded(deployment, a).catch(() => {});
+    const res = await signAndSend(() => buildCreateXdr(deployment, me(), { members, amount, periodSeconds }), "el nuevo círculo");
+    const id = String(res.value);
+    saveCircle(id);
+    toast("¡Pasanaku creado! Compartí el enlace con los miembros");
+    busy = false;
+    await openTestnet(id);
+  });
+});
+
+function saveCircle(id) {
+  try {
+    const list = JSON.parse(localStorage.getItem("awayu.circles") || "[]");
+    localStorage.setItem("awayu.circles", JSON.stringify([id, ...list.filter((x) => x !== id)].slice(0, 20)));
+  } catch {}
+}
+
+$("#btn-share").onclick = async () => {
+  const url = new URL(location.href);
+  url.searchParams.set("c", circle.contractId);
+  try {
+    await navigator.clipboard.writeText(url.toString());
+    toast("Enlace copiado: cualquiera puede ver el círculo; los miembros aportan con su billetera");
+  } catch {
+    prompt("Copiá este enlace:", url.toString());
+  }
+};
+
+// ---------- Recorrido guiado para el pitch ----------
+
 const STORY = [
   ["En Bolivia, millones ahorran en pasanakus: confianza pura, cero historial.", null],
   ["Awayu lleva el pasanaku a Stellar: cuotas en dólares digitales, reglas en un contrato.", null],
@@ -209,7 +406,8 @@ $("#btn-story").onclick = async () => {
   if (busy) return;
   if (circle.mode !== "demo" || circle.round >= circle.order.length) {
     circle = demoCircle();
-    document.querySelectorAll(".modes button").forEach((x) => x.classList.toggle("on", x.dataset.mode === "demo"));
+    setModeButton("demo");
+    history.replaceState(null, "", location.pathname);
     rebuild();
   }
   selected = -1;
@@ -219,12 +417,12 @@ $("#btn-story").onclick = async () => {
     if (step === "contribute") {
       $("#chk-late").checked = false;
       await wait(600);
-      await contributeAction();
+      await run(demoContribute);
     } else if (step === "pot") {
       scene.focus(null);
     } else if (step === "payout") {
       await wait(400);
-      await payoutAction();
+      await run(demoPayout);
     } else if (step === "person") {
       const best = circle.members.reduce((b, m, i) => (score(m.history) > score(circle.members[b].history) ? i : b), 0);
       pick(best);
@@ -233,5 +431,8 @@ $("#btn-story").onclick = async () => {
   }
 };
 
-// Refrescar el contador de plazo
-setInterval(() => circle.mode === "testnet" && ($("#s-deadline").textContent = deadlineText(circle)), 15000);
+rebuild();
+
+// Abrir un círculo compartido por enlace (?c=C…)
+const shared = new URLSearchParams(location.search).get("c");
+if (shared && StrKey.isValidContract(shared)) run(() => openTestnet(shared));

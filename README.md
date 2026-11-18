@@ -24,6 +24,15 @@ npm --prefix web run dev      # http://localhost:5173
 
 Contrato (Linux, macOS, Codespaces o CI): `cargo test` y `stellar contract build`.
 
+Prueba en testnet de punta a punta (crear, aportar, cobrar): `node web/scripts-e2e.mjs`.
+
+## Usar la web con una billetera
+
+1. Instalá [Freighter](https://www.freighter.app/) y elegí la red **Testnet** (o entrá con Google vía Pollar si la web tiene `VITE_POLLAR_KEY`).
+2. **Conectar billetera**: si la cuenta no existe en testnet, la web la fondea con Friendbot.
+3. **Crear un pasanaku**: cuota, duración de la ronda y direcciones de los miembros. Firmás el despliegue y la web abre el círculo nuevo.
+4. **Compartir enlace** (`?c=C…`): cada miembro abre el enlace, conecta su billetera y aporta. Cuando todos aportaron o venció el plazo, cualquiera paga el pozo.
+
 ## Estado
 
-Base del proyecto (2026-11-17). Pendiente: firmar aportes desde la web con Pollar o Freighter, token USDC de testnet, integración real con Vaquita, garantía para quien no paga y video del pitch.
+Base del proyecto (2026-11-17). Pendiente: token USDC de testnet, integración real con Vaquita, garantía para quien no paga y video del pitch.

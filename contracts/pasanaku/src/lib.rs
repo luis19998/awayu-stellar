@@ -105,6 +105,8 @@ fn bump(env: &Env) {
     env.storage().instance().extend_ttl(BUMP_THRESHOLD, BUMP_TO);
 }
 
+// Los eventos usan publish (obsoleto en sdk 28 pero válido); migrar a #[contractevent] luego.
+#[allow(deprecated)]
 #[contractimpl]
 impl Pasanaku {
     /// Crea el círculo. El orden de cobro se sortea con el PRNG de la red, así

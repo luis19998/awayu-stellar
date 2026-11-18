@@ -5,6 +5,10 @@ use super::*;
 use soroban_sdk::testutils::{Address as _, Ledger};
 use soroban_sdk::{token, vec, Address, Env};
 
+fn code(e: Error) -> soroban_sdk::Error {
+    soroban_sdk::Error::from_contract_error(e as u32)
+}
+
 const CUOTA: i128 = 100_0000000; // 100 USDC con 7 decimales
 const SEMANA: u64 = 7 * 24 * 3600;
 
@@ -84,17 +88,16 @@ fn no_se_puede_cobrar_antes_de_tiempo() {
     let s = setup();
     s.circle.contribute(&s.members[0]);
     let r = s.circle.try_payout();
-    assert_eq!(r, Err(Ok(Error::RoundStillOpen)));
+    assert_eq!(r.unwrap_err().unwrap(), code(Error::RoundStillOpen));
 }
 
 #[test]
 fn no_se_aporta_dos_veces_ni_sin_ser_miembro() {
     let s = setup();
     s.circle.contribute(&s.members[0]);
-    assert_eq!(
-        s.circle.try_contribute(&s.members[0]),
-        Err(Ok(Error::AlreadyPaid))
-    );
+    let r = s.circle.try_contribute(&s.members[0]);
+    assert_eq!(r.unwrap_err().unwrap(), code(Error::AlreadyPaid));
     let extrano = Address::generate(&s.env);
-    assert_eq!(s.circle.try_contribute(&extrano), Err(Ok(Error::NotMember)));
+    let r = s.circle.try_contribute(&extrano);
+    assert_eq!(r.unwrap_err().unwrap(), code(Error::NotMember));
 }

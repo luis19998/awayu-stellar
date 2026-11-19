@@ -50,7 +50,7 @@ aporta ana; aporta bruno
   echo "  \"contractId\": \"$ID\","
   echo "  \"token\": \"$XLM\","
   echo "  \"tokenSymbol\": \"XLM\","
-  echo "  \"version\": 2,"
+  echo "  \"version\": 3,"
   echo "  \"members\": {"
   for i in "${!NAMES[@]}"; do
     sep=","; (( i == ${#NAMES[@]} - 1 )) && sep=""

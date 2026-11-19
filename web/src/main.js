@@ -1,7 +1,8 @@
 import "./style.css";
 import "./features.css";
 import { StrKey } from "@stellar/stellar-sdk";
-import { createScene } from "./scene.js";
+import { createScene, VESSELS, TABLES } from "./scene.js";
+import { SCENARIOS } from "./scenarios.js";
 import { historyStripDataURL, applyPalette } from "./aguayo.js";
 import { THEMES, loadThemeId, saveThemeId } from "./themes.js";
 import { t, initLang, setLang, getLang, applyStatic } from "./i18n.js";
@@ -34,6 +35,21 @@ let busy = false;
 let deployment = null;
 
 const scene = createScene($("#stage"), { onPick: (i) => pick(i) });
+
+// Escenario, vasija y mesa elegidos (se recuerdan en este navegador)
+const SKIN_DEFAULT = { scenario: "altiplano", vessel: "cantaro", table: "suelo" };
+let skin = SKIN_DEFAULT;
+try {
+  skin = { ...SKIN_DEFAULT, ...JSON.parse(localStorage.getItem("awayu.skin") || "{}") };
+} catch {}
+scene.setSkin(skin);
+function saveSkin(patch) {
+  skin = { ...skin, ...patch };
+  scene.setSkin(skin);
+  try {
+    localStorage.setItem("awayu.skin", JSON.stringify(skin));
+  } catch {}
+}
 
 // ---------- Render ----------
 
@@ -626,6 +642,13 @@ function saveDemoOpts(o) {
 
 const dlgCustom = $("#dlg-custom");
 const selTheme = $("#sel-theme");
+function fillSelect(sel, items, value, onChange) {
+  sel.innerHTML = "";
+  for (const [id, it] of Object.entries(items)) sel.add(new Option(t(it.label), id));
+  sel.value = value;
+  sel.onchange = () => onChange(sel.value);
+}
+
 function fillThemes() {
   selTheme.innerHTML = "";
   for (const [id, th] of Object.entries(THEMES)) selTheme.add(new Option(t(th.label), id));
@@ -636,6 +659,9 @@ $("#btn-custom").onclick = () => {
   const f = $("#form-custom");
   fillThemes();
   selTheme.value = themeId;
+  fillSelect($("#sel-scenario"), SCENARIOS, skin.scenario, (v) => saveSkin({ scenario: v }));
+  fillSelect($("#sel-vessel"), VESSELS, skin.vessel, (v) => saveSkin({ vessel: v }));
+  fillSelect($("#sel-table"), TABLES, skin.table, (v) => saveSkin({ table: v }));
   const src = demoOpts?.people || circle.members.map((m) => ({ name: m.name, role: m.role }));
   f.people.value = src.map((p) => (p.role && p.role !== "Miembro" ? `${p.name}, ${p.role}` : p.name)).join("\n");
   f.amount.value = demoOpts?.amount || 100;

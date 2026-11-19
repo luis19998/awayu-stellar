@@ -58,3 +58,6 @@ dialog .row3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(120
 .sim-out tbody { display: block; max-height: 180px; overflow-y: auto; }
 .sim-out thead, .sim-out tbody tr { display: table; width: 100%; table-layout: fixed; }
 .person .cert { margin-top: 8px; width: 100%; }
+
+/* El logo se lee sobre cielos claros (Uyuni, valle) */
+.brand { background: rgba(11, 8, 32, 0.55); padding: 8px 14px 8px 8px; border-radius: 18px; backdrop-filter: blur(8px); }

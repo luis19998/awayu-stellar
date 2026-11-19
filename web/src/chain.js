@@ -60,14 +60,24 @@ export async function readCircle(dep, contractId = dep.contractId, names = {}) {
   const [cfg, info] = await Promise.all([view(server, id, "get_config"), view(server, id, "round_info")]);
   const known = { ...Object.fromEntries(Object.entries(dep.members || {}).map(([n, a]) => [a, cap(n)])), ...names };
   const order = cfg.members.map(String);
-  const histories = await Promise.all(order.map((a) => view(server, id, "history", new Address(a).toScVal())));
+  const [histories, infos] = await Promise.all([
+    Promise.all(order.map((a) => view(server, id, "history", new Address(a).toScVal()))),
+    // Contrato v2: garantías y alias. Un contrato v1 no tiene members(): seguimos sin eso.
+    view(server, id, "members").catch(() => null),
+  ]);
+  const byAddr = new Map((infos || []).map((m) => [String(m.address), m]));
   const round = Number(info.round);
-  const members = order.map((address, i) => ({
-    name: known[address] || short(address),
-    role: short(address),
-    address,
-    history: histories[i].map(Number),
-  }));
+  const members = order.map((address, i) => {
+    const extra = byAddr.get(address);
+    return {
+      name: names[address] || extra?.alias || known[address] || short(address),
+      alias: extra?.alias || null,
+      role: short(address),
+      address,
+      guarantee: extra ? Number(extra.guarantee) / DECIMALS : 0,
+      history: histories[i].map(Number),
+    };
+  });
   // El historial guarda una marca por ronda: si ya tiene la de la ronda actual, aportó.
   const paid = new Map();
   members.forEach((m, i) => {
@@ -90,6 +100,7 @@ export async function readCircle(dep, contractId = dep.contractId, names = {}) {
     payouts: [],
     apy: 0.062,
     contractId: id,
+    version: infos ? 2 : 1,
   };
 }
 
@@ -108,6 +119,24 @@ async function prepare(dep, source, op) {
 
 export function buildContributeXdr(dep, contractId, member) {
   return prepare(dep, member, new Contract(contractId).call("contribute", nativeToScVal(member, { type: "address" })));
+}
+
+const addr = (a) => nativeToScVal(a, { type: "address" });
+
+export function buildGuaranteeXdr(dep, contractId, member) {
+  return prepare(dep, member, new Contract(contractId).call("deposit_guarantee", addr(member)));
+}
+
+export function buildWithdrawXdr(dep, contractId, member) {
+  return prepare(dep, member, new Contract(contractId).call("withdraw_guarantee", addr(member)));
+}
+
+export function buildAliasXdr(dep, contractId, member, alias) {
+  return prepare(
+    dep,
+    member,
+    new Contract(contractId).call("set_alias", addr(member), nativeToScVal(alias, { type: "string" }))
+  );
 }
 
 export function buildPayoutXdr(dep, contractId, caller) {

@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "skills": {
+    "netlify-config": {
+      "source": "netlify/context-and-tools",
+      "commit": "f75a2839ff954314d6b653d811341d601d509b07",
+      "sourceType": "github",
+      "skillPath": "skills/netlify-config/SKILL.md",
+      "computedHash": "467d3457dec6baa465ec4c110cf39f85d8fd4783ee444af70cf84a0bc6f38e9e",
+      "installMode": "copy"
+    },
+    "netlify-deploy": {
+      "source": "netlify/context-and-tools",
+      "commit": "f75a2839ff954314d6b653d811341d601d509b07",
+      "sourceType": "github",
+      "skillPath": "skills/netlify-deploy/SKILL.md",
+      "computedHash": "aaaba5bd1404064c4edb94ee0d2d5455d20d4d4cf9776f474cc7771dca776072",
+      "installMode": "copy"
+    },
+    "netlify-frameworks": {
+      "source": "netlify/context-and-tools",
+      "commit": "f75a2839ff954314d6b653d811341d601d509b07",
+      "sourceType": "github",
+      "skillPath": "skills/netlify-frameworks/SKILL.md",
+      "computedHash": "99f9126a210dba3008a61d20657f7b21e80795138aac2948aa8d4ad03432bb46",
+      "installMode": "copy"
+    }
+  }
+}

@@ -1,5 +1,8 @@
 import "./style.css";
 import "./features.css";
+import "./dashboard.css";
+import { initDashboard, relabel } from "./dashboard.js";
+import { setState } from "./state.js";
 import { StrKey } from "@stellar/stellar-sdk";
 import { createScene, VESSELS, TABLES } from "./scene.js";
 import { SCENARIOS } from "./scenarios.js";
@@ -148,6 +151,7 @@ function render() {
   link.hidden = !c.contractId;
   if (c.contractId) link.href = explorerUrl(c.contractId);
   $("#btn-share").hidden = !tn;
+  setState({ circle: c, deployment, address: me() || null });
   renderPerson();
   renderTimeline();
 }
@@ -768,6 +772,7 @@ btnLang.onclick = () => {
   setLang(getLang() === "es" ? "en" : "es");
   syncLangButton();
   render();
+  relabel();
 };
 
 // ---------- Recorrido guiado para el pitch ----------
@@ -820,6 +825,19 @@ $("#btn-story").onclick = async () => {
 };
 
 rebuild();
+
+// Panel con secciones: la escena del círculo se pausa cuando no está a la vista
+initDashboard({
+  onCircleActive: (on) => scene.setActive(on),
+  openCircle: (id) => {
+    location.hash = "#/circulo";
+    run(() => openTestnet(id));
+  },
+  connectWallet: () => {
+    menu.hidden = false;
+    $("#btn-wallet").focus();
+  },
+});
 
 // Abrir un círculo compartido por enlace (?c=C…)
 const shared = new URLSearchParams(location.search).get("c");

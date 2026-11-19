@@ -578,8 +578,15 @@ export function createScene(container, { onPick } = {}) {
   resize();
 
   // Sin pestaña visible no dibujamos
-  document.addEventListener("visibilitychange", () => renderer.setAnimationLoop(document.hidden ? null : frame));
+  let active = true;
+  document.addEventListener("visibilitychange", () => renderer.setAnimationLoop(document.hidden || !active ? null : frame));
   renderer.setAnimationLoop(frame);
+  /** Pausa la escena cuando otra sección del panel está a la vista. */
+  function setActive(on) {
+    active = on;
+    renderer.setAnimationLoop(on && !document.hidden ? frame : null);
+    if (on) resize();
+  }
   function frame() {
     const t = (performance.now() - t0) / 1000;
     const now = performance.now();
@@ -722,7 +729,7 @@ export function createScene(container, { onPick } = {}) {
   setTable("suelo");
 
   return {
-    placeIlla, retheme, setDeadline, setSkin, setFigure, figuresReady,
+    placeIlla, retheme, setDeadline, setSkin, setActive, setFigure, figuresReady,
     figureNames: () => (figures ? [...figures.keys()].sort() : []),
     setMembers, updateLabels, setTurn, addLayer, setPending, commitPending,
     flyContribution, flyPayout, setPotLevel, select, focus, controls,

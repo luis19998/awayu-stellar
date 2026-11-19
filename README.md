@@ -7,6 +7,16 @@ Demo pública: **https://awayu-pasanaku.netlify.app**
 - **La solución:** las cuotas se pagan en dólares digitales y las reglas viven en un contrato Soroban. El orden de cobro lo sortea la red. Una **garantía** opcional cubre a quien no paga, así quien cobra recibe el pozo completo. Cada ronda deja una marca (a tiempo, tarde, faltó, cubierto) que la web teje como un **aguayo 3D**: evidencia de pagos portable y verificable.
 - **Ecosistema:** login sin frase semilla con **Pollar** (Google, correo) o **Freighter**; el pozo que espera puede rendir en **Vaquita** (pools de Blend y DeFindex). En esta demo el rendimiento es una proyección.
 
+## Panel
+
+Nueve secciones: **Inicio** (fotos reales, métricas en vivo del registro on-chain y de Stellar), **Círculo 3D**, **Mapa de Bolivia** (círculos del registro por departamento), **Billetera y pasaporte** (planeta 3D con saldos de Horizon y reputación sumada de todos los círculos), **Probabilidades** (Monte Carlo y modelo Beta-Bernoulli), **Juegos** (tejido, quiz y sorteo justo, sin dinero), **Amawta** (IA con Gemini y respaldo local), **Ecosistema** (estado en vivo de cada integración) y **Pulso de Stellar** (ledgers en vivo).
+
+Personalización: 36 personajes estilo Alasitas, 6 escenarios (incluye el salar de Uyuni y el Titicaca con reflejo real), 5 vasijas, 5 mesas y 4 estilos de aguayo.
+
+Contratos en testnet: `pasanaku` v3 (garantías, alias, TTL) y `registro` (memoria colectiva: círculos, miembros, regiones y avales). Integraciones: Pollar (login, Earn con Blend/DeFindex, swaps y rampas), Trustless Work (escrow de garantías), n8n (tres flujos) y Gemini. Ver `docs/INTEGRACIONES.md`, `docs/REGISTRO.md`, `docs/SERVICIOS.md` y `docs/HOSTING.md`.
+
+Lighthouse (escritorio): rendimiento 70, accesibilidad 100, buenas prácticas 100, SEO 100.
+
 ## Qué hace
 
 | Función | Dónde |

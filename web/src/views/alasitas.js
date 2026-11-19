@@ -111,7 +111,7 @@ export function mount(container, opts = {}) {
       const meta = document.createElement("div"); meta.className = "awayu-alasitas__meta"; const type = document.createElement("span"); type.textContent = t.types[goal.kind] || t.types.otro; const memberLabel = document.createElement("span"); memberLabel.textContent = `${goal.members?.length || 1} ${t.people.toLowerCase()}`; meta.append(type, memberLabel);
       const bar = document.createElement("div"); bar.className = "awayu-alasitas__bar"; bar.setAttribute("role", "progressbar"); bar.setAttribute("aria-label", `${t.goal}: ${goal.title}`); bar.setAttribute("aria-valuemin", "0"); bar.setAttribute("aria-valuemax", String(goal.target)); bar.setAttribute("aria-valuenow", String(goal.saved)); const fill = document.createElement("div"); fill.className = "awayu-alasitas__fill"; fill.style.width = `${progressOf(goal).ratio * 100}%`; bar.append(fill);
       const numbers = document.createElement("div"); numbers.className = "awayu-alasitas__numbers"; const saved = document.createElement("span"); saved.textContent = `${money(goal.saved)} ${goal.token || t.currency} ${t.saved}`; const target = document.createElement("span"); target.textContent = `${t.goal}: ${money(goal.target)}`; numbers.append(saved, target);
-      const people = document.createElement("p"); people.className = "awayu-alasitas__members"; const me = isChain ? address : "Tú"; const streak = streakOf(goal, me) || streakOf(goal, "Tú"); people.append(document.createTextNode(`${goal.members?.join(", ") || me} · `)); const flames = document.createElement("span"); flames.className = "awayu-alasitas__flames"; flames.setAttribute("aria-label", `${streak} ${t.week}`); flames.textContent = `${"🔥".repeat(Math.min(streak, 7))} ${streak} ${t.week}`; people.append(flames);
+      const people = document.createElement("p"); people.className = "awayu-alasitas__members"; const me = isChain ? address : "Tú"; const streak = streakOf(goal, me) || streakOf(goal, "Tú"); people.append(document.createTextNode(`${goal.members?.map(shortName).join(", ") || shortName(me)} · `)); const flames = document.createElement("span"); flames.className = "awayu-alasitas__flames"; flames.setAttribute("aria-label", `${streak} ${t.week}`); flames.textContent = `${"🔥".repeat(Math.min(streak, 7))} ${streak} ${t.week}`; people.append(flames);
       const actions = document.createElement("div"); actions.className = "awayu-alasitas__buttons";
       const deposit = document.createElement("button"); deposit.type = "button"; deposit.className = "awayu-alasitas__action"; deposit.textContent = t.save; deposit.disabled = Boolean(goal.closed) || (isChain && !address);
       const eligible = progressOf(goal).ratio >= 1 || Date.now() / 1000 >= goal.unlockAt;
@@ -147,6 +147,13 @@ export function mount(container, opts = {}) {
     { name: "members", label: t.membersLabel, required: false },
   ], (data) => createGoal(data)));
 
+  // Las direcciones de Stellar son largas: G…ABCD, o el nombre si lo conocemos
+  function shortName(who) {
+    const known = opts.deployment?.ayni?.memberNames?.[who];
+    if (known) return known;
+    if (who === address) return lang === "en" ? "You" : "Tú";
+    return /^G[A-Z2-7]{55}$/.test(who) ? `${who.slice(0, 4)}…${who.slice(-4)}` : who;
+  }
   async function signAndSubmit(build) {
     if (typeof opts.sign !== "function") throw new Error(lang === "en" ? "Connect a wallet to sign this action." : "Conectá una billetera para firmar esta acción.");
     return submit(opts.deployment, await opts.sign(await build()));

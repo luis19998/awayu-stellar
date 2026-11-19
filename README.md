@@ -13,7 +13,17 @@ Nueve secciones: **Inicio** (fotos reales, métricas en vivo del registro on-cha
 
 Personalización: 36 personajes estilo Alasitas, 6 escenarios (incluye el salar de Uyuni y el Titicaca con reflejo real), 5 vasijas, 5 mesas y 4 estilos de aguayo.
 
-Contratos en testnet: `pasanaku` v3 (garantías, alias, TTL) y `registro` (memoria colectiva: círculos, miembros, regiones y avales). Integraciones: Pollar (login, Earn con Blend/DeFindex, swaps y rampas), Trustless Work (escrow de garantías), n8n (tres flujos) y Gemini. Ver `docs/INTEGRACIONES.md`, `docs/REGISTRO.md`, `docs/SERVICIOS.md` y `docs/HOSTING.md`.
+Cinco contratos Soroban en testnet, todos con actividad real:
+
+| Contrato | Qué hace | Dirección |
+|---|---|---|
+| `pasanaku` v3 | Ahorro rotativo con garantías, alias y TTL | [`CCNZYP…FSRS`](https://stellar.expert/explorer/testnet/contract/CCNZYPMRSWINOELDI2HGMJ5O3IVA5JW4MVQGJFT2PG3ZNDWUT6DFFSRS) |
+| `registro` | Memoria colectiva: círculos, miembros, regiones y avales | [`CCGJXJ…J267`](https://stellar.expert/explorer/testnet/contract/CCGJXJMCVCJP5NCB2YMTZT7KFDVDDC3UGAAY2DAJCMDHYCRKWXQLJ267) |
+| `ayni` | Fondo de ayuda mutua: pedidos, votos con quórum y devolución sin intereses | [`CBF34P…BYNX`](https://stellar.expert/explorer/testnet/contract/CBF34PAM3OH27GO2HQDMASLBIZIT4Z2YESJQOQWFS2ABLMKECK3KBYNX) |
+| `minka` | Proyectos comunitarios con fondos liberados por hitos aprobados | [`CAB7GA…4GVC`](https://stellar.expert/explorer/testnet/contract/CAB7GA2RADZFOQJXPUBN3QTHVJKBAVC6CTY4HOOGWQ767ZZLVK2K4GVC) |
+| `alasitas` | Metas de ahorro individuales o grupales con racha y bloqueo por fecha | [`CAOFDO…4HUE`](https://stellar.expert/explorer/testnet/contract/CAOFDOC5A6C5RH62KDOS6TXRLAJY6BTYZ472D3LZ7JCDZQJVE44H4HUE) |
+
+Integraciones: Pollar (login, Earn con Blend/DeFindex, swaps y rampas), Trustless Work (escrow de garantías), n8n (tres flujos) y Gemini. Ver `docs/INTEGRACIONES.md`, `docs/REGISTRO.md`, `docs/SERVICIOS.md` y `docs/HOSTING.md`.
 
 Lighthouse (escritorio): rendimiento 70, accesibilidad 100, buenas prácticas 100, SEO 100.
 
@@ -45,6 +55,7 @@ Lighthouse (escritorio): rendimiento 70, accesibilidad 100, buenas prácticas 10
 | `web` | Vite + three.js + stellar-sdk + Pollar; pruebas con Vitest. |
 | `assets` | Fuentes de los modelos 3D y de los íconos. |
 | `scripts/demo-testnet.sh` | Despliega un círculo de prueba con alias y garantías y juega tres rondas. |
+| `scripts/modos-testnet.sh` | Despliega Ayni, Minka y Alasitas y les da actividad real (pedidos, votos, hitos, metas). |
 | `docs` | Pitch, arquitectura, revisión de seguridad del contrato y plan del reto. |
 | `.github/workflows` | Contrato (pruebas y wasm), Web (pruebas y build) y Demo en testnet. |
 

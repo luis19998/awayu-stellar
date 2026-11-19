@@ -57,7 +57,8 @@ const el = (tag, className, content) => {
 function safeImageUrl(uri) {
   try {
     const url = new URL(uri);
-    return ["http:", "https:"].includes(url.protocol) ? url.href : null;
+    // Solo se muestra como imagen si parece una; si no, queda el enlace
+    return ["http:", "https:"].includes(url.protocol) && /\.(png|jpe?g|webp|gif|avif|svg)$/i.test(url.pathname) ? url.href : null;
   } catch { return null; }
 }
 

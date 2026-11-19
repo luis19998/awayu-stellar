@@ -124,7 +124,7 @@ export function mount(container, { lang = "es", mode = "demo", deployment = null
         if (imageUrl) {
           const image = el("img", "awayu-minka__evidence"); image.src = imageUrl; image.alt = lang === "en" ? `Evidence for ${milestone.title}` : `Evidencia para ${milestone.title}`;
           image.loading = "lazy"; image.referrerPolicy = "no-referrer"; card.append(image);
-        } else card.append(el("div", "awayu-minka__evidence-fallback", locale.evidence));
+        }
         const link = el("a", "awayu-minka__meta", locale.evidence); link.href = String(milestone.evidence); link.target = "_blank"; link.rel = "noopener noreferrer";
         card.append(link);
       } else card.append(el("div", "awayu-minka__evidence-fallback", locale.emptyEvidence));

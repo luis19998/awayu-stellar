@@ -49,7 +49,7 @@ aporta ana; aporta bruno
   echo "  \"rpc\": \"https://soroban-testnet.stellar.org\","
   echo "  \"contractId\": \"$ID\","
   echo "  \"token\": \"$XLM\","
-  echo "  \"tokenSymbol\": \"XLM\",
+  echo "  \"tokenSymbol\": \"XLM\","
   echo "  \"version\": 2,"
   echo "  \"members\": {"
   for i in "${!NAMES[@]}"; do

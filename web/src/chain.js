@@ -176,16 +176,54 @@ export async function buildCreateXdr(dep, creator, { members, amount, periodSeco
 }
 
 /** Envía una transacción firmada y espera el resultado. Devuelve el valor de retorno. */
+/** Contrato, función y argumentos de la primera operación (para la consola de desarrollador). */
+export function describeCall(xdrText) {
+  try {
+    const tx = TransactionBuilder.fromXDR(xdrText, PASSPHRASE);
+    const op = tx.operations[0];
+    if (op?.type !== "invokeHostFunction") return { fn: op?.type || "?" };
+    const f = op.func;
+    const ic = typeof f.invokeContract === "function" ? f.invokeContract() : f.invokeContract;
+    if (!ic) return { fn: "createContract" };
+    const val = (x) => (typeof x === "function" ? x.call(ic) : x);
+    const args = (val(ic.args) || []).map((a) => {
+      try {
+        return scValToNative(a);
+      } catch {
+        return "?";
+      }
+    });
+    return { contract: Address.fromScAddress(val(ic.contractAddress)).toString(), fn: String(val(ic.functionName)), args };
+  } catch {
+    return {};
+  }
+}
+
+const tell = (detail) => {
+  try {
+    window.dispatchEvent(new CustomEvent("awayu:tx", { detail: { network: "testnet", at: Date.now(), ...detail } }));
+  } catch {}
+};
+
 export async function submit(dep, { signedXdr, hash }) {
   const server = serverFor(dep);
+  const call = signedXdr ? describeCall(signedXdr) : {};
   if (signedXdr) {
     const sent = await server.sendTransaction(TransactionBuilder.fromXDR(signedXdr, PASSPHRASE));
-    if (sent.status === "ERROR") throw new Error("La red rechazó la transacción");
+    if (sent.status === "ERROR") {
+      tell({ ...call, status: "rechazada" });
+      throw new Error("La red rechazó la transacción");
+    }
     hash = sent.hash;
   }
   if (!hash) return null;
+  tell({ ...call, hash, status: "pendiente" });
   const res = await server.pollTransaction(hash, { attempts: 30 });
-  if (res.status !== "SUCCESS") throw new Error("La transacción falló (" + res.status + ")");
+  if (res.status !== "SUCCESS") {
+    tell({ ...call, hash, status: "fallida" });
+    throw new Error("La transacción falló (" + res.status + ")");
+  }
+  tell({ ...call, hash, status: "confirmada" });
   return { hash, value: res.returnValue ? scValToNative(res.returnValue) : null };
 }
 

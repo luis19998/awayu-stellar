@@ -1,0 +1,15 @@
+{
+ "vasijas": [
+  "cantaro",
+  "vasija_qero",
+  "vasija_chanchito",
+  "vasija_olla",
+  "vasija_cofre"
+ ],
+ "mesas": [
+  "mesa_madera_h0.55",
+  "mesa_piedra_h0.7",
+  "mesa_sal_h0.45",
+  "mesa_tronco_h0.6"
+ ]
+}

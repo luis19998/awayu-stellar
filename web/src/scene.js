@@ -389,6 +389,32 @@ export function createScene(container, { onPick } = {}) {
     });
   }
 
+  // Anillo de plazo alrededor de la vasija: se llena a medida que pasa la ronda
+  const ringGroup = new THREE.Group();
+  ringGroup.rotation.x = -Math.PI / 2;
+  ringGroup.position.y = 0.03;
+  const ringBg = new THREE.Mesh(
+    new THREE.RingGeometry(1.32, 1.42, 96),
+    new THREE.MeshBasicMaterial({ color: "#2b1b33", transparent: true, opacity: 0.85 })
+  );
+  const ringMat = new THREE.MeshBasicMaterial({ color: "#5fe0ea", transparent: true, opacity: 0.95 });
+  let ringFg = new THREE.Mesh(new THREE.RingGeometry(1.32, 1.42, 96, 1, Math.PI / 2, 0.0001), ringMat);
+  ringGroup.add(ringBg, ringFg);
+  scene.add(ringGroup);
+  let ringValue = -1;
+
+  function setDeadline(f) {
+    const v = Math.round(Math.min(1, Math.max(0, f)) * 200) / 200;
+    if (v === ringValue) return;
+    ringValue = v;
+    ringGroup.remove(ringFg);
+    ringFg.geometry.dispose();
+    // De cian (tiempo de sobra) a rojo (plazo por vencer)
+    ringMat.color.setHSL(0.5 - 0.5 * v, 0.85, 0.55);
+    ringFg = new THREE.Mesh(new THREE.RingGeometry(1.32, 1.42, 96, 1, Math.PI / 2, Math.max(0.0001, -v * Math.PI * 2)), ringMat);
+    ringGroup.add(ringFg);
+  }
+
   function setPotLevel(f) {
     glow.material.color.setHSL(0.11, 1, 0.35 + 0.35 * f);
     hearth.intensity = 10 + 30 * f;
@@ -498,7 +524,7 @@ export function createScene(container, { onPick } = {}) {
   }
 
   return {
-    placeIlla, retheme,
+    placeIlla, retheme, setDeadline,
     setMembers, updateLabels, setTurn, addLayer, setPending, commitPending,
     flyContribution, flyPayout, setPotLevel, select, focus, controls,
   };

@@ -161,4 +161,45 @@ fn alias_y_estado_de_miembros() {
     let bi = info.iter().find(|m| &m.address == b).unwrap();
     assert_eq!(bi.paid, ON_TIME);
     assert_eq!(s.circle.version(), VERSION);
+    assert_eq!(VERSION, 3);
+}
+
+#[test]
+fn alias_rechaza_controles_e_invisibles() {
+    let s = setup();
+    let a = &s.members[0];
+    for malo in ["", "hola\nmundo", "Ana\u{202E}lamron", "Bruno\u{200B}", "tab\tulado"] {
+        let r = s.circle.try_set_alias(a, &String::from_str(&s.env, malo));
+        assert_eq!(r.unwrap_err().unwrap(), code(Error::InvalidAlias), "{malo:?}");
+    }
+    s.circle.set_alias(a, &String::from_str(&s.env, "Ñusta · Tarija"));
+}
+
+#[test]
+fn round_info_cuenta_las_cuotas_que_cubriria_la_garantia() {
+    let s = setup();
+    let [a, b, c] = &s.members;
+    s.circle.deposit_guarantee(b);
+    s.circle.deposit_guarantee(c);
+    s.circle.contribute(c);
+    let info = s.circle.round_info();
+    assert_eq!(info.paid, 1);
+    assert_eq!(info.pot, CUOTA);
+    // b no pagó y tiene garantía; c pagó; a no pagó y no tiene garantía
+    assert_eq!(info.covered, 1);
+    let _ = a;
+}
+
+#[test]
+fn rondas_de_mas_de_90_dias_no_se_permiten() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let sac = env.register_stellar_asset_contract_v2(admin.clone());
+    let list = vec![&env, Address::generate(&env), Address::generate(&env)];
+    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        env.register(Pasanaku, (admin.clone(), sac.address(), CUOTA, MAX_PERIOD + 1, list.clone()))
+    }));
+    assert!(r.is_err());
+    env.register(Pasanaku, (admin, sac.address(), CUOTA, MAX_PERIOD, list));
 }

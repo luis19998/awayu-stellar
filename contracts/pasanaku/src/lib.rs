@@ -20,8 +20,11 @@ pub const MISSED: u32 = 3;
 pub const COVERED: u32 = 4;
 
 /// Versión del contrato (la web la usa para saber qué funciones existen).
-pub const VERSION: u32 = 2;
+pub const VERSION: u32 = 3;
 const MAX_ALIAS: u32 = 24;
+/// Una ronda dura como máximo 90 días: así cada ronda renueva el TTL de los
+/// datos de todos los miembros (120 días) antes de que venza.
+pub const MAX_PERIOD: u64 = 90 * 24 * 3600;
 
 const DAY_LEDGERS: u32 = 17_280;
 const BUMP_THRESHOLD: u32 = 30 * DAY_LEDGERS;
@@ -67,7 +70,10 @@ pub struct RoundInfo {
     pub recipient: Option<Address>,
     pub deadline: u64,
     pub paid: u32,
+    /// Cuotas efectivamente recibidas en esta ronda.
     pub pot: i128,
+    /// Miembros que no aportaron todavía pero tienen garantía para cubrir la cuota.
+    pub covered: u32,
 }
 
 /// Estado de un miembro en la ronda actual, para la web.
@@ -141,6 +147,52 @@ fn set_guarantee(env: &Env, member: &Address, value: i128) {
         .extend_ttl(&key, BUMP_THRESHOLD, BUMP_TO);
 }
 
+/// Renueva el TTL de todo lo que guarda un miembro (historial, garantía, alias),
+/// para que nada venza mientras el círculo sigue activo.
+fn touch_member(env: &Env, member: &Address) {
+    let st = env.storage().persistent();
+    for key in [
+        Key::History(member.clone()),
+        Key::Guarantee(member.clone()),
+        Key::Alias(member.clone()),
+    ] {
+        if st.has(&key) {
+            st.extend_ttl(&key, BUMP_THRESHOLD, BUMP_TO);
+        }
+    }
+}
+
+/// Un alias válido: UTF-8, sin caracteres de control, sin caracteres invisibles
+/// ni de dirección bidireccional (que permiten nombres engañosos).
+fn valid_alias(alias: &String) -> bool {
+    let n = alias.len();
+    if n == 0 || n > MAX_ALIAS {
+        return false;
+    }
+    let mut buf = [0u8; MAX_ALIAS as usize];
+    let bytes = &mut buf[..n as usize];
+    alias.copy_into_slice(bytes);
+    if core::str::from_utf8(bytes).is_err() {
+        return false;
+    }
+    for (i, b) in bytes.iter().enumerate() {
+        if *b < 0x20 || *b == 0x7f {
+            return false;
+        }
+        // U+200B..U+200F (ancho cero y marcas de dirección), U+202A..U+202E y U+2066..U+2069
+        if *b == 0xE2 && i + 2 < bytes.len() {
+            let (b1, b2) = (bytes[i + 1], bytes[i + 2]);
+            if b1 == 0x80 && ((0x8B..=0x8F).contains(&b2) || (0xAA..=0xAE).contains(&b2)) {
+                return false;
+            }
+            if b1 == 0x81 && (0xA6..=0xA9).contains(&b2) {
+                return false;
+            }
+        }
+    }
+    true
+}
+
 fn require_member(env: &Env, cfg: &Config, member: &Address) {
     if !cfg.members.contains(member) {
         panic_with_error!(env, Error::NotMember);
@@ -187,7 +239,7 @@ impl Pasanaku {
         if amount <= 0 {
             panic_with_error!(&env, Error::InvalidAmount);
         }
-        if period == 0 {
+        if period == 0 || period > MAX_PERIOD {
             panic_with_error!(&env, Error::InvalidPeriod);
         }
         let mut seen: Map<Address, bool> = Map::new(&env);
@@ -245,6 +297,7 @@ impl Pasanaku {
             .persistent()
             .extend_ttl(&key, BUMP_THRESHOLD, BUMP_TO);
         push_mark(&env, &member, mark);
+        touch_member(&env, &member);
         bump(&env);
 
         env.events()
@@ -282,6 +335,11 @@ impl Pasanaku {
                     push_mark(&env, &m, MISSED);
                 }
             }
+        }
+
+        // Cada ronda renueva los datos de todos los miembros
+        for m in cfg.members.iter() {
+            touch_member(&env, &m);
         }
 
         let recipient = cfg.members.get(round).unwrap();
@@ -347,7 +405,7 @@ impl Pasanaku {
         member.require_auth();
         let cfg = config(&env);
         require_member(&env, &cfg, &member);
-        if alias.len() == 0 || alias.len() > MAX_ALIAS {
+        if !valid_alias(&alias) {
             panic_with_error!(&env, Error::InvalidAlias);
         }
         let key = Key::Alias(member);
@@ -359,6 +417,8 @@ impl Pasanaku {
     }
 
     /// Estado de todos los miembros en la ronda actual (en orden de cobro).
+    /// Ojo: todo lo que guarda un contrato en Stellar es público; esta vista
+    /// solo lo junta. Los miembros aceptan que su alias, marcas y garantía se vean.
     pub fn members(env: Env) -> Vec<MemberInfo> {
         let cfg = config(&env);
         let paid = paid_map(&env, current_round(&env));
@@ -392,12 +452,21 @@ impl Pasanaku {
         let cfg = config(&env);
         let round = current_round(&env);
         let paid = paid_map(&env, round);
+        let mut covered = 0u32;
+        if round < cfg.members.len() {
+            for m in cfg.members.iter() {
+                if !paid.contains_key(m.clone()) && guarantee_of(&env, &m) >= cfg.amount {
+                    covered += 1;
+                }
+            }
+        }
         RoundInfo {
             round,
             recipient: cfg.members.get(round),
             deadline: deadline(&cfg, round),
             paid: paid.len(),
             pot: cfg.amount * paid.len() as i128,
+            covered,
         }
     }
 

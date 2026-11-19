@@ -84,7 +84,8 @@ fn evidencia_mayoria_simple_y_hitos_en_orden_liberan_fondos() {
     assert_eq!(s.project.info().released, 400);
     assert_eq!(s.token.balance(&s.organizer), 400);
     assert!(s.project.milestones().get(0).unwrap().released);
-    let r = s.project.try_submit_evidence(&s.organizer, &1, &String::from_str(&s.env, "ipfs://antes")).unwrap_err().unwrap();
+    // Después del hito 0 corresponde el 1: subir evidencia del 2 está fuera de orden
+    let r = s.project.try_submit_evidence(&s.organizer, &2, &String::from_str(&s.env, "ipfs://antes")).unwrap_err().unwrap();
     assert_eq!(r, code(Error::OutOfOrder));
 }
 

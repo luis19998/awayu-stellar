@@ -101,8 +101,24 @@ function show(id, force = false) {
   // Transición entre secciones con la API View Transitions cuando existe
   const calm = matchMedia?.("(prefers-reduced-motion: reduce)").matches;
   let rendered;
-  if (document.startViewTransition && !calm) {
-    rendered = new Promise((done) => document.startViewTransition(() => done(swap())));
+  if (document.startViewTransition && !calm && !document.hidden) {
+    rendered = new Promise((done) => {
+      let ran = false;
+      const run = () => {
+        if (!ran) {
+          ran = true;
+          done(swap());
+        }
+      };
+      try {
+        const vt = document.startViewTransition(run);
+        // Si el navegador cancela la transición (pestaña oculta), igual se muestra la sección
+        vt.ready?.catch(run);
+        vt.finished?.catch(() => {});
+      } catch {
+        run();
+      }
+    });
   } else rendered = Promise.resolve(swap());
   rendered.then(() => {
     // Lectores de pantalla: el foco va al título de la sección nueva
@@ -153,7 +169,8 @@ async function renderMode(v, tk, name) {
   adopt(tk, m.mount($("#mode-box"), {
     lang: getLang(),
     mode: live ? "testnet" : "demo",
-    deployment: dep ? { ...dep, contractId: contract || dep.contractId } : null,
+    // Cada vista busca su contrato con un nombre distinto: se lo damos con todos
+    deployment: dep ? { ...dep, contractId: contract || dep.contractId, [`${name}ContractId`]: contract, [name]: contract ? { contractId: contract } : undefined } : null,
     address: state.address,
     sign,
   }));

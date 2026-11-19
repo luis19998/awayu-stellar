@@ -2,7 +2,7 @@
 extern crate std;
 
 use super::*;
-use soroban_sdk::testutils::Address as _;
+use soroban_sdk::testutils::{Address as _, Ledger};
 use soroban_sdk::{vec, Address, Env};
 
 fn code(e: Error) -> soroban_sdk::Error {

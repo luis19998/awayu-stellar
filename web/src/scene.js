@@ -14,8 +14,10 @@ const RING = 4.4;
 const LAYER_H = 0.3;
 
 export function createScene(container, { onPick } = {}) {
-  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  // En pantallas chicas (celulares) bajamos resolución y sombras para cuidar batería
+  const small = Math.min(innerWidth, innerHeight) < 760;
+  const renderer = new THREE.WebGLRenderer({ antialias: !small, powerPreference: "high-performance" });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, small ? 1.5 : 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   renderer.shadowMap.enabled = true;
@@ -47,7 +49,7 @@ export function createScene(container, { onPick } = {}) {
   const moon = new THREE.DirectionalLight("#c9d4ff", 1.2);
   moon.position.set(-8, 14, 6);
   moon.castShadow = true;
-  moon.shadow.mapSize.set(2048, 2048);
+  moon.shadow.mapSize.set(small ? 1024 : 2048, small ? 1024 : 2048);
   Object.assign(moon.shadow.camera, { left: -10, right: 10, top: 10, bottom: -10 });
   scene.add(moon);
   const hearth = new THREE.PointLight("#ffb347", 18, 14, 1.6);
@@ -478,7 +480,10 @@ export function createScene(container, { onPick } = {}) {
   new ResizeObserver(resize).observe(container);
   resize();
 
-  renderer.setAnimationLoop(() => {
+  // Sin pestaña visible no dibujamos
+  document.addEventListener("visibilitychange", () => renderer.setAnimationLoop(document.hidden ? null : frame));
+  renderer.setAnimationLoop(frame);
+  function frame() {
     const t = (performance.now() - t0) / 1000;
     const now = performance.now();
     for (let k = tweens.length - 1; k >= 0; k--) {
@@ -499,7 +504,7 @@ export function createScene(container, { onPick } = {}) {
     });
     controls.update();
     composer.render();
-  });
+  }
 
   /** Vuelve a tejer el aguayo del suelo y la franja de la vasija con la paleta actual. */
   function retheme() {

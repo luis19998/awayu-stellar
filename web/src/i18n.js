@@ -189,7 +189,8 @@ export function initLang() {
   try {
     saved = localStorage.getItem("awayu.lang");
   } catch {}
-  lang = saved === "en" || saved === "es" ? saved : navigator.language?.startsWith("es") ? "es" : "en";
+  // El público principal es boliviano: castellano por defecto, inglés a un clic
+  lang = saved === "en" || saved === "es" ? saved : "es";
   applyStatic();
   return lang;
 }

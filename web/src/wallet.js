@@ -32,7 +32,6 @@ async function getPollar() {
   return pollar;
 }
 
-/** Login con Pollar. login() no devuelve nada: avisa por la suscripción. */
 /**
  * Login con Pollar. login() no devuelve nada y avisa por la suscripción, así
  * que esta función envuelve el flujo en una promesa: se resuelve con la
@@ -48,8 +47,10 @@ export async function connectPollar(provider) {
   if (ready()) return current;
   return new Promise((resolve, reject) => {
     let started = false;
+    let settled = false;
+    let off = null;
     const timer = setTimeout(() => finish(new Error("El inicio de sesión tardó demasiado")), 5 * 60 * 1000);
-    const off = c.onAuthStateChange((state) => {
+    off = c.onAuthStateChange((state) => {
       const w = ready();
       if (w) return finish(null, w);
       const step = state?.step || c.getAuthState?.()?.step;
@@ -58,6 +59,8 @@ export async function connectPollar(provider) {
       else if (step === "idle" && started) finish(new Error("Inicio de sesión cancelado"));
     });
     function finish(err, w) {
+      if (settled) return;
+      settled = true;
       clearTimeout(timer);
       off?.();
       err ? reject(err) : resolve(w);

@@ -120,7 +120,7 @@ def body(lower):
     b = bpy.context.active_object
     rm = b.modifiers.new("fundir", "REMESH")
     rm.mode = "VOXEL"
-    rm.voxel_size = 0.016
+    rm.voxel_size = 0.013
     bpy.ops.object.modifier_apply(modifier=rm.name)
     sm = b.modifiers.new("pulir", "SMOOTH")
     sm.factor = 0.7
@@ -129,14 +129,21 @@ def body(lower):
     for v in b.data.vertices:  # textura tallada suave
         v.co += v.normal * noise.noise(v.co * 14.0) * 0.004
     dec = b.modifiers.new("simplificar", "DECIMATE")
-    dec.ratio = min(1.0, 2600 / max(1, len(b.data.polygons)))
+    dec.ratio = min(1.0, 3400 / max(1, len(b.data.polygons)))
     bpy.ops.object.modifier_apply(modifier=dec.name)
     return b
 
 def body_colors(lower, skin, top, bottom, accent):
     S, T, B, A, D = lin(skin), lin(top), lin(bottom), lin(accent), lin(DARK)
+    M, B = lin("#7a1f2b"), lin("#e07a7a")
     def f(p):
         if (p - HEAD).length < 0.2 or (p.z > 0.86 and abs(p.x) < 0.08):
+            # Boca sonriente: un arco bajo la nariz
+            if p.y < -0.12 and abs(p.x) < 0.055 and abs(p.z - (0.95 + 2.2 * p.x * p.x)) < 0.013:
+                return M
+            # Mejillas sonrosadas
+            if p.y < -0.09 and 0.06 < abs(p.x) < 0.12 and 0.975 < p.z < 1.01:
+                return B
             return S
         if p.z < 0.07:
             return D
@@ -261,9 +268,15 @@ def extras(names, a, b, c):
 def eyes():
     p = []
     for s in (1, -1):
-        e = prim("sphere", (s * 0.06, -0.15, 1.04), (0.022, 0.012, 0.026), seg=10, rings=6)
+        e = prim("sphere", (s * 0.06, -0.15, 1.04), (0.024, 0.013, 0.028), seg=12, rings=8)
         apply_all(e)
         p.append(solid(e, "#120c0c"))
+        glint = prim("sphere", (s * 0.06 + 0.008, -0.162, 1.05), (0.007, 0.004, 0.007), seg=8, rings=4)
+        apply_all(glint)
+        p.append(solid(glint, "#ffffff"))
+        brow = prim("cube", (s * 0.062, -0.148, 1.09), (0.028, 0.006, 0.006), rot=(0, s * 0.22, 0))
+        apply_all(brow)
+        p.append(solid(brow, "#1c1414"))
     return p
 
 # ---------------- Construcción ----------------

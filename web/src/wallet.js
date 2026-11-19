@@ -33,21 +33,37 @@ async function getPollar() {
 }
 
 /** Login con Pollar. login() no devuelve nada: avisa por la suscripción. */
-export async function connectPollar(provider, onReady) {
+/**
+ * Login con Pollar. login() no devuelve nada y avisa por la suscripción, así
+ * que esta función envuelve el flujo en una promesa: se resuelve con la
+ * billetera lista y se rechaza si el login falla, se cancela o tarda demasiado.
+ */
+export async function connectPollar(provider) {
   const c = await getPollar();
-  const done = () => {
+  const ready = () => {
     const w = c.getWallet();
     const address = w?.address || w?.publicKey;
-    if (!address) return false;
-    current = { kind: "pollar", address };
-    onReady(current, w);
-    return true;
+    return address ? (current = { kind: "pollar", address }) : null;
   };
-  if (done()) return;
-  const off = c.onAuthStateChange(() => {
-    if (done()) off?.();
+  if (ready()) return current;
+  return new Promise((resolve, reject) => {
+    let started = false;
+    const timer = setTimeout(() => finish(new Error("El inicio de sesión tardó demasiado")), 5 * 60 * 1000);
+    const off = c.onAuthStateChange((state) => {
+      const w = ready();
+      if (w) return finish(null, w);
+      const step = state?.step || c.getAuthState?.()?.step;
+      if (step && step !== "idle") started = true;
+      if (step === "error") finish(new Error(state?.error?.message || "Pollar no pudo iniciar sesión"));
+      else if (step === "idle" && started) finish(new Error("Inicio de sesión cancelado"));
+    });
+    function finish(err, w) {
+      clearTimeout(timer);
+      off?.();
+      err ? reject(err) : resolve(w);
+    }
+    c.login(typeof provider === "string" ? { provider } : provider);
   });
-  c.login(typeof provider === "string" ? { provider } : provider);
 }
 
 /**

@@ -528,10 +528,10 @@ menu.querySelectorAll("button").forEach((b) => {
           throw e;
         }
       } else if (b.dataset.w === "google") {
-        await connectPollar("google", (w) => onConnected(w));
+        await onConnected(await connectPollar("google"));
       } else {
         const email = prompt("Tu correo para recibir el código de Pollar:");
-        if (email) await connectPollar({ provider: "email", email }, (w) => onConnected(w));
+        if (email) await onConnected(await connectPollar({ provider: "email", email }));
       }
     });
 });

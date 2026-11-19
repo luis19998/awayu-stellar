@@ -31,7 +31,21 @@ const PEOPLE = [
   { name: "Wilber", role: "Albañil · Vinto" },
 ];
 
-export function demoCircle() {
+/** Generador pseudoaleatorio con semilla, para que la demo sea repetible. */
+function seeded(seed) {
+  let s = seed >>> 0 || 1;
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 2 ** 32;
+  };
+}
+
+/**
+ * Círculo de demostración. Sin opciones reproduce la demo original; con
+ * opciones arma uno propio: { people: [{name, role}], amount, played }.
+ */
+export function demoCircle(opts = null) {
+  if (opts) return customCircle(opts);
   const members = PEOPLE.map((p, i) => ({
     ...p,
     address: "G" + "DEMO".padEnd(55, String.fromCharCode(65 + i)),
@@ -67,6 +81,51 @@ export function demoCircle() {
     payout(c);
   }
   return c;
+}
+
+function customCircle({ people, amount = 100, played = 0 }) {
+  const list = (people || []).filter((p) => p && p.name).slice(0, 12);
+  if (list.length < 2) return demoCircle();
+  const rnd = seeded(list.reduce((a, p) => a + p.name.length * 31, list.length));
+  const members = list.map((p, i) => ({
+    name: p.name.slice(0, 24),
+    role: p.role || "Miembro",
+    address: "G" + "DEMO".padEnd(55, String.fromCharCode(65 + (i % 26))),
+    history: [],
+    guarantee: rnd() < 0.3 ? amount : 0,
+  }));
+  const order = members.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  const c = {
+    mode: "demo", token: "USDC", amount, periodDays: 7, members, order,
+    round: 0, paid: new Map(), payouts: [], apy: 0.062, contractId: null,
+  };
+  const rounds = Math.min(Math.max(0, played | 0), order.length - 1);
+  for (let r = 0; r < rounds; r++) {
+    members.forEach((_, i) => {
+      const x = rnd();
+      if (x < 0.8) c.paid.set(i, ON_TIME);
+      else if (x < 0.93) c.paid.set(i, LATE);
+    });
+    payout(c);
+  }
+  return c;
+}
+
+/** Convierte el texto del formulario ("Nombre, oficio · lugar" por línea) en personas. */
+export function parsePeople(text) {
+  return String(text || "")
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => {
+      const [name, ...rest] = l.split(",");
+      return { name: name.trim(), role: rest.join(",").trim() || "Miembro" };
+    })
+    .filter((p) => p.name);
 }
 
 export function recipientOf(c, round = c.round) {

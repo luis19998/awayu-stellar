@@ -8,6 +8,7 @@ import {
   creditLine,
   demoCircle,
   depositGuarantee,
+  parsePeople,
   idleYield,
   payout,
   pot,
@@ -153,5 +154,35 @@ describe("demoCircle", () => {
     expect(circle.paid.size).toBe(0);
     expect(circle.payouts).toHaveLength(3);
     expect(recipientOf(circle)).toBe(circle.order[3]);
+  });
+});
+
+describe("custom demo circles", () => {
+  it("parses one person per line with an optional role", () => {
+    expect(parsePeople("Lucía, Vendedora · Cancha\n\n  Ramiro  \n")).toEqual([
+      { name: "Lucía", role: "Vendedora · Cancha" },
+      { name: "Ramiro", role: "Miembro" },
+    ]);
+  });
+
+  it("builds a repeatable circle with the requested amount and played rounds", () => {
+    const people = parsePeople("A\nB\nC\nD");
+    const a = demoCircle({ people, amount: 50, played: 2 });
+    const b = demoCircle({ people, amount: 50, played: 2 });
+    expect(a.amount).toBe(50);
+    expect(a.round).toBe(2);
+    expect(a.members.map((m) => m.history.length)).toEqual([2, 2, 2, 2]);
+    expect(a.order).toEqual(b.order);
+    expect([...a.order].sort()).toEqual([0, 1, 2, 3]);
+  });
+
+  it("falls back to the original demo with fewer than two people", () => {
+    expect(demoCircle({ people: parsePeople("Solo") }).members).toHaveLength(6);
+  });
+
+  it("never plays the whole circle in advance", () => {
+    const c = demoCircle({ people: parsePeople("A\nB\nC"), played: 99 });
+    expect(c.round).toBe(2);
+    expect(recipientOf(c)).not.toBeNull();
   });
 });

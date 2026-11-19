@@ -76,10 +76,25 @@ function render() {
     const li = document.createElement("li");
     li.className = (i === selected ? "sel " : "") + (i === rec ? "turn-of" : "");
     const paid = c.paid.get(i);
-    li.innerHTML = `<b></b><span class="sc">${score(m.history)} pts</span>
-      <span class="st ${paid ? "ok" : ""}">${t(paid === ON_TIME ? "Aportó" : paid === LATE ? "Aportó tarde" : "Falta aportar")} · ${m.role}</span>
-      <span class="chips">${m.guarantee > 0 ? `<i class="chip shield" title="Garantía disponible">${t("Garantía {amount}", { amount: fmt(m.guarantee, c.token) })}</i>` : ""}</span>`;
-    li.querySelector("b").textContent = m.name;
+    // Nombre y oficio vienen del usuario o de la cadena: siempre como texto, nunca como HTML
+    const el = (tag, cls, text) => {
+      const e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text != null) e.textContent = text;
+      return e;
+    };
+    li.append(
+      el("b", null, m.name),
+      el("span", "sc", `${score(m.history)} pts`),
+      el("span", `st ${paid ? "ok" : ""}`, `${t(paid === ON_TIME ? "Aportó" : paid === LATE ? "Aportó tarde" : "Falta aportar")} · ${m.role}`)
+    );
+    const chips = el("span", "chips");
+    if (m.guarantee > 0) {
+      const chip = el("i", "chip shield", t("Garantía {amount}", { amount: fmt(m.guarantee, c.token) }));
+      chip.title = t("Garantía disponible");
+      chips.append(chip);
+    }
+    li.append(chips);
     if (m.history.length) {
       const img = new Image();
       img.alt = `Aguayo de ${m.name}`;

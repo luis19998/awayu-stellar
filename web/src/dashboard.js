@@ -140,20 +140,40 @@ const MODES = {
   alasitas: { title: "Alasitas: metas de ahorro", lead: "Como en la feria: elegí la miniatura de lo que deseás y ahorrá hasta lograrlo, solo o en grupo, con racha semanal." },
 };
 
+// Qué eligió ver la persona en cada modo (demo o testnet) durante la visita
+const modeChoice = {};
+
 async function renderMode(v, tk, name) {
   const info = MODES[name];
   v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t(info.title)}</h1><p>${t(info.lead)}</p>
-    <p class="mode-tag" id="mode-tag"></p></header><div class="mode-box" id="mode-box"></div></section>`;
+    <div class="mode-bar"><p class="mode-tag" id="mode-tag"></p><div class="mode-switch" id="mode-switch" hidden role="group" aria-label="${t("Ver en")}">
+      <button type="button" data-m="demo">${t("Demo")}</button><button type="button" data-m="testnet">${t("Testnet en vivo")}</button></div></div>
+    </header><div class="mode-box" id="mode-box"></div></section>`;
   const chain = await import("./chain.js");
   const dep = state.deployment || (await chain.loadDeployment().catch(() => null));
-  const contract = dep?.[name];
-  const live = Boolean(contract && state.address);
+  // testnet.json guarda cada tradición como {contractId, ...config}; aceptamos también un id suelto
+  const cfg = dep?.[name];
+  const conf = typeof cfg === "string" ? { contractId: cfg } : cfg || null;
+  const contract = conf?.contractId || null;
   if (!alive(tk)) return;
+  // Con contrato desplegado se puede elegir; por defecto, en vivo si hay billetera
+  const pick = contract ? modeChoice[name] || (state.address ? "testnet" : "demo") : "demo";
+  const live = pick === "testnet";
   $("#mode-tag").textContent = live
-    ? t("En vivo en Stellar testnet: firmás con tu billetera.")
+    ? state.address
+      ? t("En vivo en Stellar testnet: firmás con tu billetera.")
+      : t("Datos reales de Stellar testnet. Conectá tu billetera para firmar.")
     : contract
-      ? t("Contrato desplegado en testnet. Conectá tu billetera para usarlo; mientras tanto, demo.")
+      ? t("Modo demo: todo funciona en tu navegador. El contrato ya está en testnet.")
       : t("Modo demo: todo funciona en tu navegador.");
+  const sw = $("#mode-switch");
+  if (contract) {
+    sw.hidden = false;
+    sw.querySelectorAll("button").forEach((b) => {
+      b.setAttribute("aria-pressed", String(b.dataset.m === pick));
+      b.onclick = () => { if (b.dataset.m !== pick) { modeChoice[name] = b.dataset.m; show(current, true); } };
+    });
+  }
   const sign = async (xdr) => {
     const [{ sign: walletSign }] = await Promise.all([import("./wallet.js")]);
     return chain.submit(dep, await walletSign(xdr));
@@ -170,7 +190,7 @@ async function renderMode(v, tk, name) {
     lang: getLang(),
     mode: live ? "testnet" : "demo",
     // Cada vista busca su contrato con un nombre distinto: se lo damos con todos
-    deployment: dep ? { ...dep, contractId: contract || dep.contractId, [`${name}ContractId`]: contract, [name]: contract ? { contractId: contract } : undefined } : null,
+    deployment: dep ? { ...dep, ...(conf || {}), contractId: contract || dep.contractId, [`${name}ContractId`]: contract || undefined, [name]: conf || undefined } : null,
     address: state.address,
     sign,
   }));

@@ -3,7 +3,7 @@ import { PALETTE } from "../aguayo.js";
 import {
   createDemoGoals, depositDemo, earlyExitDemo, progressOf, streakOf, withdrawDemo,
   buildCreateGoalXdr, buildDepositXdr, buildEarlyExitXdr, buildWithdrawGoalXdr,
-  readGoals, readStreak, submit,
+  readGoals, readGoal, readStreak, submit,
 } from "../modes/alasitas.js";
 
 const STYLE = `
@@ -152,6 +152,12 @@ export function mount(container, opts = {}) {
     return submit(opts.deployment, await opts.sign(await build()));
   }
   async function loadChainGoals() {
+    // Sin billetera mostramos las metas públicas de ejemplo que dejó el despliegue
+    if (!address) {
+      const ids = (opts.deployment?.alasitas?.goals || []).filter((id) => id !== null && id !== undefined);
+      const rows = await Promise.all(ids.map((id) => readGoal(opts.deployment, id).catch(() => null)));
+      return rows.filter(Boolean).map((goal) => ({ ...goal, streaks: {} }));
+    }
     const rows = await readGoals(opts.deployment, address);
     return Promise.all(rows.map(async (goal) => ({
       ...goal,
@@ -199,7 +205,7 @@ export function mount(container, opts = {}) {
     const colors = Object.values(PALETTE); const pieces = Array.from({ length: 80 }, () => ({ x: Math.random() * rect.width, y: -Math.random() * rect.height * 0.35, vy: 1.5 + Math.random() * 3, vx: (Math.random() - 0.5) * 1.3, color: colors[Math.floor(Math.random() * colors.length)], size: 3 + Math.random() * 5 }));
     let frame = 0; const start = performance.now(); const draw = (now) => { ctx.clearRect(0, 0, rect.width, rect.height); for (const p of pieces) { p.x += p.vx; p.y += p.vy; ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.size, p.size * 1.6); } if (now - start < 1700 && !stopped) frame = requestAnimationFrame(draw); else { cancelAnimationFrame(frame); canvas.remove(); } }; frame = requestAnimationFrame(draw);
   }
-  async function load() { if (!isChain || !address) return; try { goals = await loadChainGoals(); if (!stopped) render(); } catch (error) { setStatus(error?.message || (lang === "en" ? "Savings goals could not be loaded." : "No se pudieron cargar las metas.")); } }
+  async function load() { if (!isChain) return; try { goals = await loadChainGoals(); if (!stopped) render(); } catch (error) { setStatus(error?.message || (lang === "en" ? "Savings goals could not be loaded." : "No se pudieron cargar las metas.")); } }
   render(); load();
   return {
     update(next = {}) {

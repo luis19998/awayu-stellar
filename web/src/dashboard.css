@@ -188,3 +188,11 @@ body:not([data-route="circulo"]) .view .hero-in { padding-right: 260px; }
 @keyframes shine { to { background-position: -200% 0; } }
 @media (prefers-reduced-motion: reduce) { .pane-h h1 { animation: none; } }
 @media (max-width: 760px) { .hero .loom { width: 100%; opacity: 0.25; } }
+
+/* Demo o testnet en vivo, por tradición */
+.mode-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.mode-bar .mode-tag { margin: 0; }
+.mode-switch { display: inline-flex; padding: 3px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.04); }
+.mode-switch[hidden] { display: none; }
+.mode-switch button { border: 0; background: none; color: var(--muted); font: 700 12px var(--body, inherit); padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+.mode-switch button[aria-pressed="true"] { background: var(--gold); color: #1b1030; }

@@ -1,7 +1,7 @@
 # Awayu · el pasanaku que teje tu historial
 
 Pasanaku (círculo de ahorro rotativo) sobre **Stellar** para el hackatón **Stellar Bolivia 2026**.
-Demo pública: **https://awayu-pasanaku.netlify.app**
+Demo pública: **https://awayu-two.vercel.app** (espejo: https://awayu-pasanaku.netlify.app)
 
 - **El problema:** en Bolivia millones de personas ahorran en pasanakus. Funcionan por confianza, se rompen cuando alguien no paga y no dejan ningún historial que sirva para pedir un crédito. Además, con la escasez de dólares, el ahorro en bolivianos pierde valor.
 - **La solución:** las cuotas se pagan en dólares digitales y las reglas viven en un contrato Soroban. El orden de cobro lo sortea la red. Una **garantía** opcional cubre a quien no paga, así quien cobra recibe el pozo completo. Cada ronda deja una marca (a tiempo, tarde, faltó, cubierto) que la web teje como un **aguayo 3D**: evidencia de pagos portable y verificable.

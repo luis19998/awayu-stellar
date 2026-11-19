@@ -14,6 +14,6 @@
 
 **Por qué Vercel:** en un hackatón se despliega muchas veces por día y en paralelo con Codex. En Netlify cada despliegue gasta créditos, y la cuenta anterior ya se quedó sin ellos una vez. Vercel no tiene ese tope y crea una vista previa por rama, que es justo el flujo Claude Code + Codex.
 
-**Estado:** `web/vercel.json` y las funciones en `web/api/` están listos. Falta que el usuario dé acceso del conector de Vercel al equipo de su cuenta (o inicie sesión en la CLI con `vercel login`) para crear el proyecto `awayu` enlazado a `luis19998/awayu-stellar` con directorio raíz `web`. Netlify (`https://awayu-pasanaku.netlify.app`) queda publicado con las mismas funciones.
+**Estado (2026-11-19):** migrado. Producción en **https://awayu-two.vercel.app** (proyecto `awayu`, equipo `radar-tech`, raíz `web`, Vite, Node 22), con las funciones `/api/amawta`, `/api/eventos` y `/api/og`. Se despliega con `vercel deploy --prod` desde la raíz del repo (`.vercelignore` deja afuera `referencias/`, `assets/` y `contracts/`). Para que cada push despliegue solo y cada rama tenga vista previa, falta instalar la app de Vercel en GitHub con acceso a `luis19998/awayu-stellar` y correr `vercel git connect`. Netlify (`https://awayu-pasanaku.netlify.app`) queda como espejo.
 
 **Variables de entorno** (en el panel del proveedor, nunca en el repositorio): `GEMINI_API_KEY`, `GEMINI_MODEL`, `N8N_WEBHOOK_URL`, `N8N_SECRET`, `VITE_POLLAR_KEY`, y la clave de Trustless Work en un proxy de servidor.

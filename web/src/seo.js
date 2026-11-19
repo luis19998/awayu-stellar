@@ -1,4 +1,4 @@
-const SITE_URL = "https://awayu-pasanaku.netlify.app";
+const SITE_URL = "https://awayu-two.vercel.app";
 
 export function structuredData() {
   const organization = {

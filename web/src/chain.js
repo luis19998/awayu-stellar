@@ -60,10 +60,11 @@ export async function readCircle(dep, contractId = dep.contractId, names = {}) {
   const [cfg, info] = await Promise.all([view(server, id, "get_config"), view(server, id, "round_info")]);
   const known = { ...Object.fromEntries(Object.entries(dep.members || {}).map(([n, a]) => [a, cap(n)])), ...names };
   const order = cfg.members.map(String);
-  const [histories, infos] = await Promise.all([
+  const [histories, infos, version] = await Promise.all([
     Promise.all(order.map((a) => view(server, id, "history", new Address(a).toScVal()))),
-    // Contrato v2: garantías y alias. Un contrato v1 no tiene members(): seguimos sin eso.
+    // Contrato v2+: garantías y alias. Un contrato v1 no tiene members(): seguimos sin eso.
     view(server, id, "members").catch(() => null),
+    view(server, id, "version").catch(() => 1),
   ]);
   const byAddr = new Map((infos || []).map((m) => [String(m.address), m]));
   const round = Number(info.round);
@@ -101,7 +102,7 @@ export async function readCircle(dep, contractId = dep.contractId, names = {}) {
     payouts: [],
     apy: 0.062,
     contractId: id,
-    version: infos ? 2 : 1,
+    version: Number(version) || 1,
   };
 }
 

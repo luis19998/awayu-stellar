@@ -12,3 +12,6 @@ referencias/
 .env*
 !.env.example
 *.blend1
+
+# Videos renderizados (pesados): se comparten aparte
+video/*.mp4

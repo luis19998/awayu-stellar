@@ -1,0 +1,207 @@
+1
+00:00:04,450 --> 00:00:07,957
+En Bolivia, el ahorro y la ayuda se hacen en comunidad.
+
+2
+00:00:07,977 --> 00:00:11,385
+El pasanaku, el ayni, la minka y las alasitas mueven la
+
+3
+00:00:11,415 --> 00:00:13,447
+economía de millones de familias.
+
+4
+00:00:13,517 --> 00:00:15,741
+Pero toda esa confianza no deja rastro:
+
+5
+00:00:15,771 --> 00:00:18,746
+quien cumple durante años no tiene cómo demostrarlo.
+
+6
+00:00:19,780 --> 00:00:22,730
+Awayu lleva estas cuatro tradiciones a Stellar.
+
+7
+00:00:22,750 --> 00:00:24,634
+Las reglas viven en contratos Soroban,
+
+8
+00:00:24,664 --> 00:00:26,750
+los aportes se hacen en dólares digitales,
+
+9
+00:00:26,780 --> 00:00:28,866
+y cada compromiso cumplido teje un aguayo:
+
+10
+00:00:28,896 --> 00:00:30,680
+un historial portable y verificable.
+
+11
+00:00:32,410 --> 00:00:34,630
+En el pasanaku, todos aportan y,
+
+12
+00:00:34,660 --> 00:00:37,021
+por turno, alguien recibe el pozo.
+
+13
+00:00:37,041 --> 00:00:40,194
+El orden lo sortea la red, no el organizador.
+
+14
+00:00:40,264 --> 00:00:43,203
+Si alguien no paga, su garantía cubre la cuota,
+
+15
+00:00:43,233 --> 00:00:45,603
+y quien cobra recibe el pozo completo.
+
+16
+00:00:45,673 --> 00:00:48,319
+Cada ronda deja una marca en el aguayo:
+
+17
+00:00:48,349 --> 00:00:50,651
+a tiempo, tarde, faltó o cubierto.
+
+18
+00:00:51,710 --> 00:00:53,582
+La mesa del círculo es un mundo en 3D,
+
+19
+00:00:53,612 --> 00:00:56,486
+con treinta y seis personajes inspirados en las alasitas y
+
+20
+00:00:56,516 --> 00:00:59,189
+seis escenarios de Bolivia, del salar de Uyuni al lago
+
+21
+00:00:59,219 --> 00:00:59,640
+Titicaca.
+
+22
+00:01:01,340 --> 00:01:05,022
+Ayni es ayuda mutua: un fondo común para emergencias.
+
+23
+00:01:05,042 --> 00:01:07,778
+Carla pidió para medicinas, la comunidad votó,
+
+24
+00:01:07,808 --> 00:01:09,822
+y el contrato le prestó el dinero,
+
+25
+00:01:09,852 --> 00:01:11,626
+que se devuelve sin intereses.
+
+26
+00:01:11,696 --> 00:01:15,200
+Esto no es una simulación: son datos reales de Stellar
+
+27
+00:01:15,230 --> 00:01:15,724
+testnet.
+
+28
+00:01:16,770 --> 00:01:18,868
+Minka es trabajo colectivo.
+
+29
+00:01:18,888 --> 00:01:21,720
+Un sistema de riego reunió sesenta lúmenes de prueba,
+
+30
+00:01:21,750 --> 00:01:23,719
+y el dinero solo se libera por hitos,
+
+31
+00:01:23,749 --> 00:01:26,149
+cuando los validadores aprueban la evidencia.
+
+32
+00:01:27,170 --> 00:01:29,102
+Y en Alasitas, como en la feria,
+
+33
+00:01:29,132 --> 00:01:31,371
+cada miniatura es una meta de ahorro,
+
+34
+00:01:31,401 --> 00:01:34,928
+propia o compartida: Ana ahorra para su casita en El Alto.
+
+35
+00:01:35,940 --> 00:01:39,021
+Cada círculo se inscribe en un registro público.
+
+36
+00:01:39,041 --> 00:01:40,884
+El mapa muestra la red por departamento,
+
+37
+00:01:40,914 --> 00:01:43,459
+y el pasaporte reúne las marcas de una persona en todos
+
+38
+00:01:43,489 --> 00:01:46,128
+sus círculos, para que una cooperativa pueda verificarlas
+
+39
+00:01:46,158 --> 00:01:46,971
+sin pedir papeles.
+
+40
+00:01:49,170 --> 00:01:51,605
+Para entrar no hace falta saber de cripto:
+
+41
+00:01:51,635 --> 00:01:54,306
+se ingresa con Pollar, usando correo o Google,
+
+42
+00:01:54,336 --> 00:01:55,245
+o con Freighter.
+
+43
+00:01:55,265 --> 00:01:57,974
+Hay un recorrido guiado, videos tutoriales en cada
+
+44
+00:01:58,004 --> 00:02:00,986
+herramienta y un asistente con inteligencia artificial.
+
+45
+00:02:02,870 --> 00:02:04,706
+Son cinco contratos en testnet,
+
+46
+00:02:04,736 --> 00:02:06,632
+con pruebas en Rust y en la web,
+
+47
+00:02:06,662 --> 00:02:08,016
+todo de código abierto.
+
+48
+00:02:08,036 --> 00:02:11,039
+Las cooperativas pagarían por administrar círculos y
+
+49
+00:02:11,069 --> 00:02:12,730
+emitir reportes verificables.
+
+50
+00:02:12,800 --> 00:02:15,679
+Awayu no reemplaza la confianza de la comunidad:
+
+51
+00:02:15,709 --> 00:02:17,254
+la convierte en evidencia.
+
+52
+00:02:17,324 --> 00:02:20,324
+Awayu, el pasanaku que teje tu historial.

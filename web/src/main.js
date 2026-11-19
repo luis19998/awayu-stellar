@@ -471,11 +471,24 @@ document.querySelectorAll(".modes button").forEach((b) => {
   };
 });
 
-setInterval(() => {
-  if (!isTestnet() || busy) return;
+// Refresco periódico con espera creciente si Stellar RPC no responde
+let rpcFailures = 0;
+let nextRefresh = 0;
+setInterval(async () => {
+  if (!isTestnet() || busy || document.hidden || Date.now() < nextRefresh) return;
   $("#s-deadline").textContent = deadlineText(circle);
   scene.setDeadline(roundProgress(circle));
-  refreshChain().catch(() => {});
+  try {
+    await refreshChain();
+    if (rpcFailures) toast(t("Conexión con Stellar recuperada"));
+    rpcFailures = 0;
+    $(".panel").classList.remove("stale");
+  } catch {
+    rpcFailures += 1;
+    nextRefresh = Date.now() + Math.min(5 * 60_000, 20_000 * 2 ** rpcFailures);
+    $(".panel").classList.add("stale");
+    if (rpcFailures === 1) toast(t("No se pudo actualizar desde Stellar; se muestran los últimos datos y se reintentará"), 5000);
+  }
 }, 20000);
 
 // ---------- Billetera ----------

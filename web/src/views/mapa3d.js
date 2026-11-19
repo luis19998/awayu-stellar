@@ -82,7 +82,7 @@ function geometryFor(feature) {
   const polygons = feature.geometry.type === "Polygon"
     ? [feature.geometry.coordinates]
     : feature.geometry.coordinates;
-  return new THREE.ExtrudeGeometry(polygons.flatMap(polygonShapes), {
+  return new THREE.ExtrudeGeometry(polygonShapes(polygons), {
     depth: 1,
     bevelEnabled: true,
     bevelSegments: 1,

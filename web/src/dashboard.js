@@ -79,14 +79,22 @@ function show(id, force = false) {
   const view = $("#view");
   view.hidden = isCircle;
   if (isCircle) return;
-  view.innerHTML = "";
-  view.scrollTop = 0;
-  view.classList.remove("enter");
-  void view.offsetWidth;
-  view.classList.add("enter");
-  const render = VIEWS[id];
   const tk = token;
-  Promise.resolve(render?.(view, tk)).then(() => {
+  const swap = () => {
+    view.innerHTML = "";
+    view.scrollTop = 0;
+    view.classList.remove("enter");
+    void view.offsetWidth;
+    view.classList.add("enter");
+    return VIEWS[id]?.(view, tk);
+  };
+  // Transición entre secciones con la API View Transitions cuando existe
+  const calm = matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  let rendered;
+  if (document.startViewTransition && !calm) {
+    rendered = new Promise((done) => document.startViewTransition(() => done(swap())));
+  } else rendered = Promise.resolve(swap());
+  rendered.then(() => {
     // Lectores de pantalla: el foco va al título de la sección nueva
     const h = alive(tk) && view.querySelector("h1");
     if (h && document.activeElement?.closest?.("#nav")) {
@@ -122,9 +130,10 @@ const VIEWS = {
   },
 };
 
-async function renderHome(v) {
+async function renderHome(v, tk = token) {
   v.innerHTML = `
   <section class="hero" style="--bg:url('/img/uyuni.webp')">
+    <canvas class="loom" aria-hidden="true"></canvas>
     <div class="hero-in">
       <p class="eyebrow">${t("Hackatón Stellar Bolivia 2026 · Soroban · Pollar · Vaquita")}</p>
       <h1>${t("El pasanaku que teje tu historial")}</h1>
@@ -155,7 +164,10 @@ async function renderHome(v) {
   </section>
   <footer class="credits" id="credits"></footer>`;
   $("#home-wallet").onclick = () => hooks.connectWallet?.();
-  const tk = token;
+  const { mountLoom, tilt } = await import("./motion/loom.js");
+  const loom = mountLoom(v.querySelector(".loom"));
+  const untilt = tilt(v);
+  adopt(tk, { destroy: () => { loom.destroy(); untilt(); } });
   fetch("/img/creditos.json").then((r) => r.json()).then((credits) => {
     const el = alive(tk) && $("#credits");
     if (el) el.innerHTML = `${t("Fotos")}: ${Object.values(credits).map((c) => `<a href="${esc(c.source)}" target="_blank" rel="noopener">${esc(c.title.replace(/^File:/, ""))}</a> (${esc(c.author)}, ${esc(c.license)})`).join(" · ")}`;

@@ -153,47 +153,59 @@ jar_parts = make_jar()
 export(jar_parts, "cantaro.glb")
 
 # ---------------- Illa (llamita tallada) ----------------
+# Se arma con piezas simples y se funden con un remallado por vóxeles, que da
+# una sola superficie continua como de piedra esculpida; luego se suaviza y se
+# le marcan golpes de cincel con ruido.
 reset()
-mb = bpy.data.metaballs.new("illa")
-mb.resolution = 0.035
-mb.render_resolution = 0.03
-mbo = bpy.data.objects.new("IllaMeta", mb)
-bpy.context.collection.objects.link(mbo)
 
-def ball(co, radius, size=None, kind="ELLIPSOID"):
-    e = mb.elements.new()
-    e.type = kind
-    e.co = co
-    e.radius = radius
-    if size:
-        e.size_x, e.size_y, e.size_z = size
-    return e
+def part(kind, loc, scale, rot=(0, 0, 0)):
+    if kind == "sphere":
+        bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=16, location=loc, rotation=rot)
+    elif kind == "cyl":
+        bpy.ops.mesh.primitive_cylinder_add(vertices=24, location=loc, rotation=rot)
+    else:
+        bpy.ops.mesh.primitive_cone_add(vertices=16, location=loc, rotation=rot)
+    o = bpy.context.active_object
+    o.scale = scale
+    return o
 
-# Cuerpo, cuello, cabeza, orejas, patas y cola
-ball((0, 0, 0.62), 0.42, (1.0, 0.55, 0.5))
-ball((0.42, 0, 0.92), 0.22, (0.5, 0.45, 1.0), "CAPSULE")
-ball((0.5, 0, 1.22), 0.17, (0.6, 0.45, 0.5))
-ball((0.66, 0, 1.17), 0.1, (0.6, 0.5, 0.45))
-for y in (0.07, -0.07):
-    ball((0.47, y, 1.42), 0.07, (0.4, 0.4, 1.0), "CAPSULE")
-for x in (0.28, -0.28):
-    for y in (0.13, -0.13):
-        ball((x, y, 0.28), 0.1, (0.6, 0.6, 1.6), "CAPSULE")
-ball((-0.44, 0, 0.78), 0.1, (0.7, 0.6, 0.6))
-bpy.context.view_layer.update()
+pieces = [
+    part("sphere", (0, 0, 0.78), (0.56, 0.3, 0.32)),            # cuerpo
+    part("sphere", (0.3, 0, 0.86), (0.3, 0.27, 0.3)),           # pecho
+    part("cyl", (0.5, 0, 1.12), (0.12, 0.12, 0.3), (0, -0.25, 0)),  # cuello
+    part("sphere", (0.58, 0, 1.44), (0.2, 0.13, 0.14)),         # cabeza
+    part("sphere", (0.76, 0, 1.39), (0.12, 0.085, 0.09)),       # hocico
+    part("cone", (0.54, 0.07, 1.62), (0.045, 0.045, 0.11), (-0.25, 0, 0)),  # orejas
+    part("cone", (0.54, -0.07, 1.62), (0.045, 0.045, 0.11), (0.25, 0, 0)),
+    part("sphere", (-0.56, 0, 0.92), (0.13, 0.09, 0.11)),       # cola
+]
+for x in (0.34, -0.36):
+    for y in (0.15, -0.15):
+        pieces.append(part("cyl", (x, y, 0.38), (0.075, 0.075, 0.3)))   # patas
+        pieces.append(part("sphere", (x + 0.02, y, 0.1), (0.09, 0.08, 0.06)))  # pezuñas
 
 bpy.ops.object.select_all(action="DESELECT")
-mbo.select_set(True)
-bpy.context.view_layer.objects.active = mbo
-bpy.ops.object.convert(target="MESH")
+for o in pieces:
+    o.select_set(True)
+bpy.context.view_layer.objects.active = pieces[0]
+bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
+bpy.ops.object.join()
 illa = bpy.context.active_object
 illa.name = "Illa"
-# Tallado: superficie con marcas de cincel suaves
+rm = illa.modifiers.new("fundir", "REMESH")
+rm.mode = "VOXEL"
+rm.voxel_size = 0.022
+bpy.ops.object.modifier_apply(modifier=rm.name)
+sm = illa.modifiers.new("pulir", "SMOOTH")
+sm.factor = 0.6
+sm.iterations = 6
+bpy.ops.object.modifier_apply(modifier=sm.name)
+# Tallado: marcas de cincel suaves
 for v in illa.data.vertices:
-    d = noise.noise(v.co * 9.0) * 0.012 + noise.noise(v.co * 22.0) * 0.004
+    d = noise.noise(v.co * 9.0) * 0.01 + noise.noise(v.co * 24.0) * 0.004
     v.co += v.normal * d
 dec = illa.modifiers.new("simplificar", "DECIMATE")
-dec.ratio = 0.35
+dec.ratio = 0.3
 bpy.ops.object.modifier_apply(modifier=dec.name)
 bpy.ops.object.shade_smooth()
 
@@ -202,23 +214,25 @@ BORLAS = [hex2lin(h) for h in ("#d81b60", "#f9c22e", "#13a3b0", "#1f9d55")]
 
 def illa_color(p, n):
     # Borlas de lana en las orejas y collar de colores
-    if p.z > 1.36:
+    if p.z > 1.56:
         return BORLAS[0] if p.y > 0 else BORLAS[2]
-    if 0.98 < p.z < 1.06 and p.x > 0.3:
-        return BORLAS[int((math.atan2(p.y, p.x - 0.42) + math.pi) / (2 * math.pi) * 8) % 4]
+    if 1.0 < p.z < 1.1 and p.x > 0.32:
+        return BORLAS[int((math.atan2(p.y, p.x - 0.47) + math.pi) / (2 * math.pi) * 8) % 4]
+    if p.x < -0.6 and p.z > 0.85:
+        return BORLAS[1]
     shade = 0.92 + noise.noise(p * 6.0) * 0.08
     return [PIEDRA[0] * shade, PIEDRA[1] * shade, PIEDRA[2] * shade, 1.0]
 
 paint(illa, illa_color)
 illa.data.materials.append(vc_material("piedra", rough=0.45))
 # Base tallada
-bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=0.62, depth=0.12, location=(0, 0, 0.12))
+bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=0.7, depth=0.12, location=(0, 0, 0.0))
 base = bpy.context.active_object
 base.name = "IllaBase"
 bev = base.modifiers.new("bisel", "BEVEL")
 bev.width = 0.03
 bev.segments = 3
-paint(base, lambda p, n: hex2lin("#5b2a86") if abs(p.z - 0.12) < 0.03 else hex2lin("#2b1b33"))
+paint(base, lambda p, n: hex2lin("#5b2a86") if p.z > 0.035 else hex2lin("#2b1b33"))
 base.data.materials.append(vc_material("base", rough=0.8))
 export([illa, base], "illa.glb")
 

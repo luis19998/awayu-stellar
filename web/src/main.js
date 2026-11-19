@@ -849,6 +849,7 @@ btnLang.onclick = () => {
   syncLangButton();
   render();
   relabel();
+  renderHowto();
 };
 
 // ---------- Recorrido guiado para el pitch ----------
@@ -903,8 +904,48 @@ $("#btn-story").onclick = async () => {
 rebuild();
 
 // API para el panel (app.js): la escena se pausa cuando no está a la vista
+// ---------- Tutoriales en la vista del círculo ----------
+const HOWTO = [
+  ["contribute", "Aportar"],
+  ["payout", "Pagar el pozo"],
+  ["guarantee", "Garantía"],
+  ["create", "Crear círculo"],
+  ["customize", "Personalizar"],
+  ["simulator", "Simulador"],
+  ["wallet", "Billetera"],
+];
+function renderHowto() {
+  const box = $("#howto-chips");
+  if (!box) return;
+  box.innerHTML = "";
+  for (const [id, label] of HOWTO) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "howto-chip";
+    b.textContent = `▶ ${t(label)}`;
+    b.onclick = async () => {
+      const { openHelp } = await import("./guide/help.js");
+      openHelp(id, { lang: getLang(), anchor: b });
+    };
+    box.appendChild(b);
+  }
+}
+renderHowto();
+
+let toured = false;
+async function maybeTour() {
+  if (toured) return;
+  toured = true;
+  const { startTour, TOURS, hasSeenTour } = await import("./guide/tour.js");
+  if (hasSeenTour("firstVisit")) return;
+  setTimeout(() => startTour(TOURS.firstVisit, { lang: getLang(), id: "firstVisit" }), 2600);
+}
+
 export const circleApp = {
-  setActive: (on) => scene.setActive(on),
+  setActive: (on) => {
+    scene.setActive(on);
+    if (on) maybeTour();
+  },
   openCircle: (id) => {
     location.hash = "#/circulo";
     run(() => openTestnet(id));
@@ -914,7 +955,7 @@ export const circleApp = {
     $("#btn-wallet").focus();
   },
 };
-if (location.hash.startsWith("#/circulo")) scene.setActive(true);
+if (location.hash.startsWith("#/circulo")) circleApp.setActive(true);
 
 // Abrir un círculo compartido por enlace (?c=C…)
 const shared = new URLSearchParams(location.search).get("c");

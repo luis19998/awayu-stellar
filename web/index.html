@@ -63,6 +63,11 @@
         <label class="late"><input type="checkbox" id="chk-late" /> <span data-i18n>Simular aporte tardío</span></label>
       </section>
 
+      <section class="howto" aria-label="Tutoriales">
+        <span data-i18n>¿Cómo se hace?</span>
+        <div id="howto-chips"></div>
+      </section>
+
       <section class="members">
         <h2><span data-i18n>Miembros</span> <small data-i18n>tocá uno para ver su aguayo</small></h2>
         <ul id="members"></ul>
@@ -84,6 +89,9 @@
         <a id="lnk-contract" target="_blank" rel="noopener" hidden data-i18n>Ver contrato ↗</a>
       </footer>
     </aside>
+
+    <button id="help-fab" class="help-fab" aria-haspopup="menu" aria-expanded="false" title="Ayuda">?</button>
+    <div id="help-menu" class="help-menu" role="menu" hidden></div>
 
     <div class="wallet">
       <button id="btn-sound" class="lang" aria-label="Silenciar">🔊</button>

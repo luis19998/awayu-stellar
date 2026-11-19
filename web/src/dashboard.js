@@ -19,7 +19,14 @@ export const ROUTES = [
   { id: "amawta", icon: "✺", label: "Amawta (IA)" },
   { id: "ecosistema", icon: "⬡", label: "Ecosistema" },
   { id: "pulso", icon: "◌", label: "Pulso de Stellar" },
+  { id: "dev", icon: "⌘", label: "Desarrolladores" },
 ];
+
+// Las transacciones quedan guardadas para mostrarlas al abrir la consola
+const txLog = [];
+addEventListener("awayu:tx", (e) => {
+  if (!e.detail?.replay) txLog.push(e.detail);
+});
 
 let current = null;
 let mounted = null; // { destroy }
@@ -107,6 +114,15 @@ function show(id, force = false) {
 // ---------------- Vistas ----------------
 
 const VIEWS = {
+  dev: async (v, tk) => {
+    v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t("Para desarrolladores")}</h1>
+      <p>${t("Cada transacción que firmás aparece en vivo con su contrato, función y argumentos. Abajo: cómo integrar Awayu en tu app y los contratos desplegados.")}</p></header>
+      <div class="game-box" id="dev-box"></div></section>`;
+    const m = await import("./guide/devconsole.js");
+    if (!alive(tk)) return;
+    adopt(tk, m.mount($("#dev-box"), { lang: getLang() }));
+    for (const d of txLog) dispatchEvent(new CustomEvent("awayu:tx", { detail: { ...d, replay: true } }));
+  },
   inicio: renderHome,
   mapa: renderMap,
   billetera: renderWallet,

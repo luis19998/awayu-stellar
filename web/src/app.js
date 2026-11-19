@@ -29,6 +29,38 @@ try {
   document.head.appendChild(ld);
 } catch {}
 
+// ---------- Ayuda: botón flotante con recorridos y mini tutoriales ----------
+const fab = document.querySelector("#help-fab");
+const helpMenu = document.querySelector("#help-menu");
+const TOPIC_ORDER = ["wallet", "contribute", "payout", "guarantee", "create", "customize", "simulator", "map", "passport", "amawta"];
+async function fillHelpMenu() {
+  const [{ HELP_TOPICS }, { t, getLang }] = await Promise.all([import("./guide/help.js"), import("./i18n.js")]);
+  const en = getLang() === "en";
+  helpMenu.innerHTML = `<button role="menuitem" data-tour="firstVisit">▶ ${t("Recorrido de bienvenida")}</button>` +
+    TOPIC_ORDER.filter((id) => HELP_TOPICS[id]).map((id) => `<button role="menuitem" data-topic="${id}">🎬 ${HELP_TOPICS[id].title[en ? "en" : "es"]}</button>`).join("");
+}
+fab?.addEventListener("click", async () => {
+  const open = helpMenu.hidden;
+  if (open) await fillHelpMenu();
+  helpMenu.hidden = !open;
+  fab.setAttribute("aria-expanded", String(open));
+});
+helpMenu?.addEventListener("click", async (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  helpMenu.hidden = true;
+  fab.setAttribute("aria-expanded", "false");
+  const { getLang } = await import("./i18n.js");
+  if (b.dataset.topic) {
+    const { openHelp } = await import("./guide/help.js");
+    openHelp(b.dataset.topic, { lang: getLang(), anchor: fab });
+  } else if (b.dataset.tour) {
+    if (!location.hash.startsWith("#/circulo")) location.hash = "#/circulo";
+    const { startTour, TOURS } = await import("./guide/tour.js");
+    setTimeout(() => startTour(TOURS[b.dataset.tour], { lang: getLang(), id: b.dataset.tour }), 900);
+  }
+});
+
 let appPromise = null;
 const app = () => (appPromise ??= import("./main.js").then((m) => m.circleApp));
 

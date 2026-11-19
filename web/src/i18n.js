@@ -164,6 +164,16 @@ const EN = {
   "Profesora rural": "Rural teacher",
   "Abuelo tejedor": "Grandpa weaver",
   "Tejedora de Tarabuco": "Tarabuco weaver",
+  "¿Cómo se hace?": "How to?",
+  "Aportar": "Pay in",
+  "Garantía": "Guarantee",
+  "Crear círculo": "Create circle",
+  "Billetera": "Wallet",
+  "Recorrido de bienvenida": "Welcome tour",
+  "Desarrolladores": "Developers",
+  "Para desarrolladores": "For developers",
+  "Cada transacción que firmás aparece en vivo con su contrato, función y argumentos. Abajo: cómo integrar Awayu en tu app y los contratos desplegados.":
+    "Every transaction you sign shows up live with its contract, function and arguments. Below: how to integrate Awayu in your app and the deployed contracts.",
   // Simulador
   "Simulador": "Simulator",
   "Simulador de pasanaku": "Savings circle simulator",

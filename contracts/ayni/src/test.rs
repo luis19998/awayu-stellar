@@ -1,3 +1,6 @@
+#![cfg(test)]
+extern crate std;
+
 use crate::{Ayni, AyniClient, Error, MemberInfo, RequestInfo};
 use soroban_sdk::{testutils::{Address as _, Ledger}, token, vec, Address, Env, String};
 

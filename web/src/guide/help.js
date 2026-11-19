@@ -25,7 +25,7 @@ function ensureStyles() {
     .aw-guide-help-trigger:focus-visible,.aw-guide-help-close:focus-visible{outline:3px solid #ffe18a;outline-offset:2px}
     .aw-guide-help-pop{position:fixed;z-index:11000;box-sizing:border-box;width:min(350px,calc(100vw - 24px));padding:16px;border:1px solid #e9cf82;border-radius:15px;background:#171126;color:#fff;box-shadow:0 14px 42px #000b;font:14px/1.5 system-ui,sans-serif}
     .aw-guide-help-pop h2{margin:0 34px 10px 0;color:#ffe29b;font-size:18px}.aw-guide-help-pop ol{margin:0;padding-inline-start:22px}.aw-guide-help-pop li{margin:6px 0;color:#f4efff}
-    .aw-guide-help-pop video{display:block;width:100%;max-height:155px;margin-top:12px;border-radius:9px;background:#090714}.aw-guide-help-close{position:absolute;right:10px;top:9px;width:32px;height:32px;border:1px solid #9c8cad;border-radius:8px;background:#2b2140;color:#fff;font-size:19px;cursor:pointer}
+    .aw-guide-help-pop{max-height:calc(100vh - 24px);overflow-y:auto}.aw-guide-help-pop video{display:block;width:100%;aspect-ratio:5/3;object-fit:cover;margin-top:12px;border-radius:9px;background:#090714}.aw-guide-help-close{position:absolute;right:10px;top:9px;width:32px;height:32px;border:1px solid #9c8cad;border-radius:8px;background:#2b2140;color:#fff;font-size:19px;cursor:pointer}
     @media(prefers-reduced-motion:reduce){.aw-guide-help-pop{scroll-behavior:auto}}
   `;
   document.head.append(style);
@@ -56,11 +56,18 @@ export function openHelp(topicId, { lang = activeLang, anchor } = {}) {
   const video = document.createElement("video"); video.src = `/tutoriales/${encodeURIComponent(topicId)}.webm`; video.poster = `/tutoriales/${encodeURIComponent(topicId)}.jpg`; video.muted = true; video.loop = true; video.playsInline = true; video.autoplay = true; video.setAttribute("playsinline", ""); video.setAttribute("aria-label", english ? `${data.title.en} tutorial` : `Tutorial: ${data.title.es}`);
   video.addEventListener("error", () => video.remove(), { once: true }); pop.append(video);
   document.body.append(pop);
-  const rect = anchor?.getBoundingClientRect?.();
-  const width = pop.getBoundingClientRect().width;
-  const left = Math.max(12, Math.min(innerWidth - width - 12, rect ? rect.left : innerWidth - width - 18));
-  const top = rect ? Math.min(innerHeight - 20, rect.bottom + 8) : Math.max(12, innerHeight / 2 - pop.offsetHeight / 2);
-  Object.assign(pop.style, { left: `${left}px`, top: `${Math.min(top, innerHeight - pop.offsetHeight - 12)}px` });
+  // Debajo del botón si cabe; si no, encima; y siempre dentro de la pantalla.
+  // Se recalcula cuando el video sabe su tamaño, para que nunca quede cortado.
+  const place = () => {
+    const rect = anchor?.getBoundingClientRect?.();
+    const { width } = pop.getBoundingClientRect(); const h = pop.offsetHeight;
+    const left = Math.max(12, Math.min(innerWidth - width - 12, rect ? rect.left : innerWidth - width - 18));
+    let top = rect ? rect.bottom + 8 : innerHeight / 2 - h / 2;
+    if (rect && top + h > innerHeight - 12) top = rect.top - h - 8;
+    top = Math.max(12, Math.min(top, innerHeight - h - 12));
+    Object.assign(pop.style, { left: `${left}px`, top: `${top}px` });
+  };
+  place(); video.addEventListener("loadedmetadata", place, { once: true });
   const onKey = (event) => { if (event.key === "Escape") { event.preventDefault(); closeHelp(); } };
   const onOutside = (event) => { if (!pop.contains(event.target) && event.target !== anchor) closeHelp(); };
   activePopover = { node: pop, onKey, onOutside, returnFocus: anchor };

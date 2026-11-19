@@ -1,17 +1,6 @@
-import "./style.css";
-import "./features.css";
-import "./dashboard.css";
-import { initDashboard, relabel } from "./dashboard.js";
+// Vista del círculo 3D y billetera. Se carga bajo demanda desde app.js.
+import { relabel } from "./dashboard.js";
 import { setState } from "./state.js";
-import { structuredData } from "./seo.js";
-
-// Datos estructurados para buscadores (JSON-LD)
-try {
-  const ld = document.createElement("script");
-  ld.type = "application/ld+json";
-  ld.textContent = JSON.stringify(structuredData());
-  document.head.appendChild(ld);
-} catch {}
 import { StrKey } from "@stellar/stellar-sdk";
 import { createScene, VESSELS, TABLES } from "./scene.js";
 import { SCENARIOS } from "./scenarios.js";
@@ -47,7 +36,9 @@ let selected = -1;
 let busy = false;
 let deployment = null;
 
-const scene = createScene($("#stage"), { onPick: (i) => pick(i) });
+// La escena 3D del círculo arranca dormida si la página no abre en #/circulo
+const startsOnCircle = /^#\/circulo/.test(location.hash) || new URLSearchParams(location.search).has("c");
+const scene = createScene($("#stage"), { onPick: (i) => pick(i), active: startsOnCircle });
 
 // Escenario, vasija y mesa elegidos (se recuerdan en este navegador)
 const SKIN_DEFAULT = { scenario: "altiplano", vessel: "cantaro", table: "suelo" };
@@ -911,9 +902,9 @@ $("#btn-story").onclick = async () => {
 
 rebuild();
 
-// Panel con secciones: la escena del círculo se pausa cuando no está a la vista
-initDashboard({
-  onCircleActive: (on) => scene.setActive(on),
+// API para el panel (app.js): la escena se pausa cuando no está a la vista
+export const circleApp = {
+  setActive: (on) => scene.setActive(on),
   openCircle: (id) => {
     location.hash = "#/circulo";
     run(() => openTestnet(id));
@@ -922,7 +913,8 @@ initDashboard({
     menu.hidden = false;
     $("#btn-wallet").focus();
   },
-});
+};
+if (location.hash.startsWith("#/circulo")) scene.setActive(true);
 
 // Abrir un círculo compartido por enlace (?c=C…)
 const shared = new URLSearchParams(location.search).get("c");

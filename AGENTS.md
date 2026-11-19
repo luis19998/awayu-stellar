@@ -6,7 +6,7 @@ Este archivo lo leen Codex y Claude Code (`CLAUDE.md` lo importa). Mantenerlo co
 Awayu es un pasanaku (círculo de ahorro rotativo) en Stellar para el hackatón Stellar Bolivia (etapa virtual hasta el 2026-11-22, final en Santa Cruz el 2026-11-27). Las cuotas van en un token (USDC en producción, XLM en la demo de testnet); el turno se sortea en la cadena; cada aporte deja una marca (1 a tiempo, 2 tarde, 3 faltó) que la web teje como un aguayo 3D y que funciona como reputación crediticia portable.
 
 ## Estructura
-- `contracts/pasanaku/`: contrato Soroban en Rust (soroban-sdk 28). Pruebas en `src/test.rs`.
+- `contracts/pasanaku/`: contrato Soroban en Rust (soroban-sdk 28), versión 3 (garantías, alias, TTL renovado). Pruebas en `src/test.rs`.
 - `web/`: Vite + three.js + `@stellar/stellar-sdk` + `@pollar/core`. Modo demo (simulado) y modo testnet (lee el contrato por RPC).
 - `scripts/demo-testnet.sh`: despliega un círculo de 4 cuentas efímeras y juega 3 rondas en testnet.
 - `.github/workflows/`: `contrato.yml` (pruebas y wasm) y `demo-testnet.yml` (despliegue manual).
@@ -25,5 +25,12 @@ Awayu es un pasanaku (círculo de ahorro rotativo) en Stellar para el hackatón 
 - Demo en testnet: `gh workflow run demo-testnet.yml`, luego `gh run download -n testnet -D web/public`.
 
 ## Trabajo en paralelo con Codex
-- Claude Code: arquitectura, contrato y escena 3D. Codex: revisiones (`codex review`), pruebas extra y tareas acotadas en ramas propias.
-- Una rama por agente y por tarea; nunca editar los mismos archivos a la vez.
+- Claude Code: arquitectura, contrato, escena 3D y modelos (Blender por línea de comandos, Fusion 360 por MCP). Codex: pruebas, CI, módulos independientes, documentación y revisiones de seguridad.
+- Una rama y un worktree por tarea de Codex (`git worktree add ../awayu-codexN -b codex/<tarea>`); cada brief lista los archivos que Codex no debe tocar.
+- Se lanza con `codex exec -s workspace-write -C <worktree> -o <resumen.md> - < brief.md`; para revisiones, `-s read-only` sobre este repo.
+- Límites conocidos del sandbox de Codex: sin red (no puede `npm install`) y no puede escribir en `.git` de un worktree, así que Claude Code instala dependencias, revisa el diff, corre pruebas y hace los commits indicando "Trabajo de Codex".
+- Nuevos estilos van en `web/src/features.css`; `style.css` es la base.
+
+## Modelos 3D
+- `blender --background --factory-startup --python assets/blender/modelos.py` regenera `cantaro.glb` e `illa.glb`; `assets/blender/moneda.py` convierte la moneda de Fusion (`assets/fusion/moneda.stl`).
+- El MCP de Blender necesita el servidor del complemento iniciado dentro de Blender; si no, usar la línea de comandos como arriba.

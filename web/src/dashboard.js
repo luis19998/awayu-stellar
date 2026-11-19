@@ -4,7 +4,6 @@
 import { state, subscribe } from "./state.js";
 import { t, getLang } from "./i18n.js";
 import { score } from "./model.js";
-import { historyStripDataURL } from "./aguayo.js";
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (x) => String(x ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -86,6 +85,7 @@ const VIEWS = {
     v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t("Probabilidades del círculo")}</h1>
       <p>${t("Monte Carlo con la confiabilidad de cada miembro (modelo Beta-Bernoulli) y las garantías depositadas.")}</p></header>
       <div id="risk"></div></section>`;
+    hooks.ensureApp?.();
     renderRisk();
   },
   juegos: renderGames,
@@ -101,9 +101,8 @@ const VIEWS = {
 };
 
 async function renderHome(v) {
-  const credits = await fetch("/img/creditos.json").then((r) => r.json()).catch(() => ({}));
   v.innerHTML = `
-  <section class="hero" style="--bg:url('/img/uyuni.jpg')">
+  <section class="hero" style="--bg:url('/img/uyuni.webp')">
     <div class="hero-in">
       <p class="eyebrow">${t("Hackatón Stellar Bolivia 2026 · Soroban · Pollar · Vaquita")}</p>
       <h1>${t("El pasanaku que teje tu historial")}</h1>
@@ -122,18 +121,22 @@ async function renderHome(v) {
     <h2>${t("Cómo funciona")}</h2>
     <div class="steps">
       ${[
-        ["1", "Armás tu círculo", "Elegís cuota, duración de la ronda y miembros. Se despliega un contrato Soroban y se registra en la memoria colectiva on-chain.", "/img/alasitas.jpg"],
-        ["2", "La red sortea el turno", "El orden de cobro sale del PRNG de Stellar: nadie elige quién cobra primero.", "/img/cochabamba.jpg"],
-        ["3", "Cada pago teje tu aguayo", "A tiempo, tarde, faltó o cubierto por garantía: cada ronda deja una capa de tejido verificable.", "/img/aguayo.jpg"],
-        ["4", "Tu historial viaja con vos", "El pasaporte junta tu cumplimiento en todos los círculos: evidencia para cooperativas, sin prometer créditos.", "/img/uyuni.jpg"],
+        ["1", "Armás tu círculo", "Elegís cuota, duración de la ronda y miembros. Se despliega un contrato Soroban y se registra en la memoria colectiva on-chain.", "/img/alasitas.webp"],
+        ["2", "La red sortea el turno", "El orden de cobro sale del PRNG de Stellar: nadie elige quién cobra primero.", "/img/cochabamba.webp"],
+        ["3", "Cada pago teje tu aguayo", "A tiempo, tarde, faltó o cubierto por garantía: cada ronda deja una capa de tejido verificable.", "/img/aguayo.webp"],
+        ["4", "Tu historial viaja con vos", "El pasaporte junta tu cumplimiento en todos los círculos: evidencia para cooperativas, sin prometer créditos.", "/img/uyuni.webp"],
       ].map(([n, h, p, img], i) => `<article class="step" style="--d:${i * 90}ms"><div class="ph" style="background-image:url('${img}')"><b>${n}</b></div><h3>${t(h)}</h3><p>${t(p)}</p></article>`).join("")}
     </div>
   </section>
   <section class="eco-strip">
     ${["Stellar", "Soroban", "Pollar", "Vaquita", "Blend", "DeFindex", "Trustless Work", "Freighter", "Horizon", "n8n", "Gemini"].map((x) => `<span>${x}</span>`).join("")}
   </section>
-  <footer class="credits">${t("Fotos")}: ${Object.values(credits).map((c) => `<a href="${esc(c.source)}" target="_blank" rel="noopener">${esc(c.title.replace(/^File:/, ""))}</a> (${esc(c.author)}, ${esc(c.license)})`).join(" · ")}</footer>`;
+  <footer class="credits" id="credits"></footer>`;
   $("#home-wallet").onclick = () => hooks.connectWallet?.();
+  fetch("/img/creditos.json").then((r) => r.json()).then((credits) => {
+    const el = $("#credits");
+    if (el) el.innerHTML = `${t("Fotos")}: ${Object.values(credits).map((c) => `<a href="${esc(c.source)}" target="_blank" rel="noopener">${esc(c.title.replace(/^File:/, ""))}</a> (${esc(c.author)}, ${esc(c.license)})`).join(" · ")}`;
+  }).catch(() => {});
   fillKpis();
 }
 
@@ -216,6 +219,7 @@ async function renderWallet(v) {
     data = { ...data, address: addr, balances: acct?.balances, payments: pays, circles: pp.circles.map((c, i) => ({ name: `${t("Círculo")} ${i + 1}`, contribution: 10 + c.history.length * 5 })), reputation: pp.score };
   }
   mounted = mount($("#wallet-box"), data);
+  const { historyStripDataURL } = await import("./aguayo.js");
   const strip = passport.history.length ? `<img class="strip" alt="" src="${historyStripDataURL(passport.history, 520, 34)}">` : "";
   $("#passport").innerHTML = `<h2>${t("Pasaporte de reputación")}</h2>
     <div class="score-ring" style="--p:${passport.score}"><b>${passport.score}</b><span>/100</span></div>

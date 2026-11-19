@@ -147,3 +147,13 @@ body:not([data-route="circulo"]) .brand { display: none; }
   body[data-route="circulo"] .brand { left: 12px; }
   .panel { padding-bottom: 96px !important; }
 }
+
+/* Fuera del círculo, la billetera y el idioma van arriba a la derecha */
+body:not([data-route="circulo"]) .wallet { left: auto !important; right: 24px !important; top: 16px !important; z-index: 45; }
+body:not([data-route="circulo"]) .view .pane-h,
+body:not([data-route="circulo"]) .view .hero-in { padding-right: 260px; }
+@media (max-width: 760px) {
+  body:not([data-route="circulo"]) .view .pane-h,
+  body:not([data-route="circulo"]) .view .hero-in { padding-right: 0; }
+  body:not([data-route="circulo"]) .view { padding-top: 64px; }
+}

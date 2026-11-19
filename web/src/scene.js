@@ -10,6 +10,7 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { clothTexture, markTexture, PALETTE } from "./aguayo.js";
 import { SCENARIOS, skyDome, hillsMesh, props, groundFor } from "./scenarios.js";
 
@@ -91,6 +92,24 @@ export function createScene(container, { onPick, active: startActive = true } = 
   scene.add(sky, starField);
   const landscape = new THREE.Group();
   scene.add(landscape);
+
+  // Partículas ambientales (luciérnagas de noche, polvo dorado de día)
+  const motesN = small ? 120 : 260;
+  const motesPos = new Float32Array(motesN * 3);
+  const motesSeed = new Float32Array(motesN);
+  for (let k = 0; k < motesN; k++) {
+    const a = Math.random() * Math.PI * 2;
+    const r = 2 + Math.random() * 12;
+    motesPos.set([Math.cos(a) * r, 0.3 + Math.random() * 5, Math.sin(a) * r], k * 3);
+    motesSeed[k] = Math.random() * 100;
+  }
+  const motesGeo = new THREE.BufferGeometry();
+  motesGeo.setAttribute("position", new THREE.BufferAttribute(motesPos, 3));
+  const motesMat = new THREE.PointsMaterial({
+    color: "#ffd98a", size: 0.07, transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending,
+  });
+  const motes = new THREE.Points(motesGeo, motesMat);
+  scene.add(motes);
 
   // Todo lo que está sobre la mesa vive en "stage", que sube con la altura de la mesa
   const stage = new THREE.Group();
@@ -220,13 +239,31 @@ export function createScene(container, { onPick, active: startActive = true } = 
   const coinMat = new THREE.MeshStandardMaterial({
     color: "#ffcf4a", metalness: 0.9, roughness: 0.25, emissive: "#a86b00", emissiveIntensity: 0.6,
   });
-  const layerGeo = new THREE.BoxGeometry(1.15, LAYER_H * 0.92, 0.8);
+  const layerGeo = new RoundedBoxGeometry(1.15, LAYER_H * 0.92, 0.8, 3, 0.045);
   const tweens = [];
   let selected = -1;
 
   function memberPos(i, n) {
     const a = (i / n) * Math.PI * 2 - Math.PI / 2;
     return new THREE.Vector3(Math.cos(a) * RING, 0, Math.sin(a) * RING);
+  }
+
+  // Flecos (borlas) alrededor de la base: un solo InstancedMesh por pila
+  const tasselGeo = new THREE.CylinderGeometry(0.018, 0.03, 0.16, 6);
+  const tasselColors = ["#d81b60", "#f9c22e", "#13a3b0", "#1f9d55", "#f57c1f"].map((c) => new THREE.Color(c));
+  function fringe() {
+    const n = 18;
+    const mat = new THREE.MeshStandardMaterial({ roughness: 0.8 });
+    const inst = new THREE.InstancedMesh(tasselGeo, mat, n);
+    const m4 = new THREE.Matrix4();
+    for (let k = 0; k < n; k++) {
+      const a = (k / n) * Math.PI * 2;
+      m4.makeTranslation(Math.cos(a) * 0.84, 0.02, Math.sin(a) * 0.84);
+      inst.setMatrixAt(k, m4);
+      inst.setColorAt(k, tasselColors[k % tasselColors.length]);
+    }
+    inst.castShadow = true;
+    return inst;
   }
 
   function makeLayer(mark, round) {
@@ -276,7 +313,7 @@ export function createScene(container, { onPick, active: startActive = true } = 
   function dispose(obj) {
     obj.traverse((o) => {
       if (o.userData.figure) return; // geometría compartida del catálogo de personajes
-      if (o.geometry && o.geometry !== layerGeo && o.geometry !== coinGeo) o.geometry.dispose();
+      if (o.geometry && o.geometry !== layerGeo && o.geometry !== coinGeo && o.geometry !== tasselGeo) o.geometry.dispose();
       const mats = o.userData.figure ? [] : Array.isArray(o.material) ? o.material : o.material ? [o.material] : [];
       for (const mat of new Set(mats)) {
         mat.map?.dispose();
@@ -328,6 +365,7 @@ export function createScene(container, { onPick, active: startActive = true } = 
       base.position.y = 0.06;
       base.receiveShadow = true;
       group.add(base);
+      group.add(fringe());
       const layers = mem.history.map((mark, r) => {
         const l = makeLayer(mark, r);
         l.position.y = 0.12 + LAYER_H * (r + 0.5);
@@ -470,7 +508,54 @@ export function createScene(container, { onPick, active: startActive = true } = 
     });
   }
 
+  // Confeti: rombos de colores del aguayo que caen sobre quien cobra
+  const confettiGeo = new THREE.PlaneGeometry(0.09, 0.09);
+  function confetti(at) {
+    if (calm) return;
+    const n = 90;
+    const mat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, transparent: true });
+    const inst = new THREE.InstancedMesh(confettiGeo, mat, n);
+    const parts = [];
+    for (let k = 0; k < n; k++) {
+      inst.setColorAt(k, tasselColors[k % tasselColors.length]);
+      parts.push({
+        p: at.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.6, 2.2 + Math.random(), (Math.random() - 0.5) * 0.6)),
+        v: new THREE.Vector3((Math.random() - 0.5) * 3, Math.random() * 2.5, (Math.random() - 0.5) * 3),
+        r: new THREE.Euler(Math.random() * 6, Math.random() * 6, Math.random() * 6),
+        w: (Math.random() - 0.5) * 12,
+      });
+    }
+    stage.add(inst);
+    const q = new THREE.Quaternion();
+    const m4 = new THREE.Matrix4();
+    const one = new THREE.Vector3(1, 1, 1);
+    let last = performance.now();
+    tween(2600, (k) => {
+      const now = performance.now();
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      parts.forEach((pt, j) => {
+        pt.v.y -= 4.5 * dt;
+        pt.v.multiplyScalar(0.985);
+        pt.p.addScaledVector(pt.v, dt);
+        pt.r.x += pt.w * dt;
+        pt.r.z += pt.w * 0.7 * dt;
+        q.setFromEuler(pt.r);
+        m4.compose(pt.p, q, one);
+        inst.setMatrixAt(j, m4);
+      });
+      inst.instanceMatrix.needsUpdate = true;
+      mat.opacity = k < 0.75 ? 1 : 1 - (k - 0.75) / 0.25;
+      if (k >= 1) {
+        stage.remove(inst);
+        mat.dispose();
+        inst.dispose();
+      }
+    });
+  }
+
   function flyPayout(i, count, done) {
+    confetti(members[i].pos);
     const n = Math.min(Math.max(count, 1), 12);
     for (let k = 0; k < n; k++) {
       coinArc(jarMouth, worldTop(i), k * 90, k === n - 1 ? done : null);
@@ -586,9 +671,18 @@ export function createScene(container, { onPick, active: startActive = true } = 
   document.addEventListener("visibilitychange", () => renderer.setAnimationLoop(document.hidden || !active ? null : frame));
   if (active) renderer.setAnimationLoop(frame);
   /** Pausa la escena cuando otra sección del panel está a la vista. */
+  let introDone = false;
   function setActive(on) {
     active = on;
     if (on) wake();
+    // Presentación: la cámara baja girando desde lo alto la primera vez
+    if (on && !introDone && !calm) {
+      introDone = true;
+      const end = camera.position.clone();
+      const startPos = new THREE.Vector3(end.x * 0.4 + 9, 16, end.z * 0.4 - 8);
+      camera.position.copy(startPos);
+      tween(2200, (k) => camera.position.lerpVectors(startPos, end, ease(k)));
+    }
     renderer.setAnimationLoop(on && !document.hidden ? frame : null);
     if (on) resize();
   }
@@ -605,9 +699,20 @@ export function createScene(container, { onPick, active: startActive = true } = 
     members.forEach((m, i) => {
       if (!m.fig) return;
       const hop = i === turnIndex ? Math.abs(Math.sin(t * 4)) * 0.18 : i === selected ? 0.06 : 0;
+      const breath = calm ? 0 : Math.sin(t * 1.6 + i * 1.3) * 0.012;
       m.fig.position.y = hop;
-      m.fig.rotation.y = Math.PI + (i === turnIndex ? Math.sin(t * 2) * 0.35 : 0);
+      m.fig.scale.set(1.3 - breath, 1.3 + breath * 1.6, 1.3 - breath);
+      m.fig.rotation.y = Math.PI + (i === turnIndex ? Math.sin(t * 2) * 0.35 : Math.sin(t * 0.5 + i) * 0.08);
     });
+    if (!calm) {
+      const pos = motesGeo.attributes.position;
+      for (let k = 0; k < motesN; k++) {
+        const y = pos.getY(k) + Math.sin(t * 0.6 + motesSeed[k]) * 0.003;
+        pos.setY(k, y > 5.5 ? 0.3 : y + 0.002);
+        pos.setX(k, pos.getX(k) + Math.cos(t * 0.3 + motesSeed[k]) * 0.002);
+      }
+      pos.needsUpdate = true;
+    }
     if (illa.visible) {
       illa.rotation.y = t * 0.6;
       illa.position.y = topOf(illaOwner) + 0.02 + Math.sin(t * 1.8) * 0.04;
@@ -644,6 +749,9 @@ export function createScene(container, { onPick, active: startActive = true } = 
     scene.background = new THREE.Color(sc.sky[2]);
     scene.fog = new THREE.FogExp2(sc.fog[0], sc.fog[1]);
     starField.visible = !!sc.night;
+    motesMat.color.set(sc.night ? "#ffe9a8" : "#fff6d8");
+    motesMat.size = sc.night ? 0.08 : 0.04;
+    motesMat.opacity = sc.night ? 0.9 : 0.45;
     hemi.color.set(sc.hemi[0]);
     hemi.groundColor.set(sc.hemi[1]);
     hemi.intensity = sc.hemi[2];

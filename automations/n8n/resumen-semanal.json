@@ -1,0 +1,19 @@
+{
+  "name": "Awayu · Resumen semanal del círculo",
+  "nodes": [
+    { "parameters": { "rule": { "interval": [{ "field": "weeks", "triggerAtDay": [1], "triggerAtHour": 9 }] } }, "id": "cron-semanal", "name": "Cada lunes", "type": "n8n-nodes-base.scheduleTrigger", "typeVersion": 1.2, "position": [220, 300] },
+    { "parameters": { "method": "POST", "url": "={{ $env.STELLAR_RPC_URL || 'https://soroban-testnet.stellar.org' }}", "sendHeaders": true, "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] }, "sendBody": true, "contentType": "raw", "rawContentType": "application/json", "body": "={{ JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'simulateTransaction', params: { transaction: $env.SOROBAN_ROUND_INFO_XDR } }) }}", "options": { "timeout": 30000 } }, "id": "rpc-simulate", "name": "Simular round_info en Stellar RPC", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [470, 300] },
+    { "parameters": { "jsCode": "const rpc = $input.first().json;\nif (rpc.error) throw new Error(`Stellar RPC: ${rpc.error.message || 'error'}`);\nconst result = rpc.result || {};\nconst events = result.events || [];\nreturn [{ json: { message: `Resumen semanal de Awayu\\nContrato: ${$env.AWAYU_CONTRACT_ID || 'configurar AWAYU_CONTRACT_ID'}\\nLa simulación de round_info respondió correctamente.\\nEventos del resultado: ${events.length}.\\nRevisá Awayu para ver cuota, ronda, miembros y garantías.` } }];" }, "id": "armar-resumen", "name": "Preparar mensaje", "type": "n8n-nodes-base.code", "typeVersion": 2, "position": [720, 300] },
+    { "parameters": { "chatId": "={{ $env.AWAYU_TELEGRAM_CHAT_ID }}", "text": "={{ $json.message }}", "additionalFields": {} }, "id": "telegram-semanal", "name": "Enviar resumen por Telegram", "type": "n8n-nodes-base.telegram", "typeVersion": 1.2, "position": [970, 300], "credentials": { "telegramApi": { "id": "REEMPLAZAR", "name": "Awayu Telegram" } } }
+  ],
+  "connections": {
+    "Cada lunes": { "main": [[{ "node": "Simular round_info en Stellar RPC", "type": "main", "index": 0 }]] },
+    "Simular round_info en Stellar RPC": { "main": [[{ "node": "Preparar mensaje", "type": "main", "index": 0 }]] },
+    "Preparar mensaje": { "main": [[{ "node": "Enviar resumen por Telegram", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "versionId": "57c654ad-5fc5-48ce-8e1a-96b52d311c28",
+  "meta": { "templateCredsSetupCompleted": false },
+  "tags": []
+}

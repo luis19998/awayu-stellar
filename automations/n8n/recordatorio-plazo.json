@@ -1,0 +1,18 @@
+{
+  "name": "Awayu · Recordatorio de plazo cercano",
+  "nodes": [
+    { "parameters": { "httpMethod": "POST", "path": "awayu-eventos-plazo", "responseMode": "onReceived", "options": {} }, "id": "plazo-webhook", "name": "Webhook Awayu", "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [240, 300], "webhookId": "awayu-eventos-plazo" },
+    { "parameters": { "conditions": { "options": { "caseSensitive": true, "typeValidation": "strict", "version": 2 }, "conditions": [{ "id": "tipo-plazo", "leftValue": "={{ $json.body.type }}", "rightValue": "plazo_cerca", "operator": { "type": "string", "operation": "equals" } }], "combinator": "and" }, "options": {} }, "id": "filtrar-plazo", "name": "¿Es plazo cercano?", "type": "n8n-nodes-base.if", "typeVersion": 2.2, "position": [460, 300] },
+    { "parameters": { "chatId": "={{ $env.AWAYU_TELEGRAM_CHAT_ID }}", "text": "=Awayu: se acerca el plazo del círculo {{ $json.body.circle }}. Ronda: {{ $json.body.data.round || $json.body.data.ronda || '—' }}. Revisá tu aporte.", "additionalFields": {} }, "id": "telegram-plazo", "name": "Avisar por Telegram", "type": "n8n-nodes-base.telegram", "typeVersion": 1.2, "position": [720, 200], "credentials": { "telegramApi": { "id": "REEMPLAZAR", "name": "Awayu Telegram" } } },
+    { "parameters": { "fromEmail": "awayu@example.org", "toEmail": "={{ $env.AWAYU_REMINDER_EMAIL }}", "subject": "Awayu: se acerca el plazo de tu ronda", "emailFormat": "text", "text": "=El plazo del círculo {{ $json.body.circle }} está cerca. Ronda: {{ $json.body.data.round || $json.body.data.ronda || '—' }}. Revisá la web de Awayu para conocer el estado del aporte.", "options": {} }, "id": "email-plazo", "name": "Avisar por correo", "type": "n8n-nodes-base.emailSend", "typeVersion": 2.1, "position": [720, 400], "credentials": { "smtp": { "id": "REEMPLAZAR", "name": "Awayu SMTP" } } }
+  ],
+  "connections": {
+    "Webhook Awayu": { "main": [[{ "node": "¿Es plazo cercano?", "type": "main", "index": 0 }]] },
+    "¿Es plazo cercano?": { "main": [[{ "node": "Avisar por Telegram", "type": "main", "index": 0 }, { "node": "Avisar por correo", "type": "main", "index": 0 }], []] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "versionId": "2da70e10-6b28-4e45-88c8-1b68b589e401",
+  "meta": { "templateCredsSetupCompleted": false },
+  "tags": []
+}

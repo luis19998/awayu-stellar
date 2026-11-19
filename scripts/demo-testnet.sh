@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Crea un pasanaku de 4 miembros en testnet y juega tres rondas:
-#   ronda 1: todos a tiempo; ronda 2: David paga tarde; ronda 3: Carla falta.
+#   ronda 1: todos a tiempo; ronda 2: David paga tarde;
+#   ronda 3: Carla falta sin garantía y Bruno falta pero su garantía lo cubre.
 # La ronda 4 queda abierta con dos aportes, para mostrarla "en vivo".
 set -euo pipefail
 PERIOD="${1:-120}"
@@ -22,16 +23,22 @@ ID=$(stellar contract deploy --wasm "$WASM" --source organizador $NET -- \
 echo "Contrato: $ID"
 
 aporta() { stellar contract invoke --id "$ID" --source "$1" $NET -- contribute --member "$(stellar keys address "$1")"; }
+alias()  { stellar contract invoke --id "$ID" --source "$1" $NET -- set_alias --member "$(stellar keys address "$1")" --alias "$2"; }
+garantia() { stellar contract invoke --id "$ID" --source "$1" $NET -- deposit_guarantee --member "$(stellar keys address "$1")"; }
 cobra()  { stellar contract invoke --id "$ID" --source organizador $NET -- payout; }
 espera_hasta() { local t=$(( START + $1 )); local now=$(date +%s); if (( now < t )); then sleep $(( t - now )); fi; }
+
+# Nombres visibles y garantías (Bruno y David dejan una cuota)
+alias ana "Ana · El Alto"; alias bruno "Bruno · Sacaba"; alias carla "Carla · Quillacollo"; alias david "David · Tiquipaya"
+garantia bruno; garantia david
 
 # Ronda 1: todos a tiempo
 for n in "${NAMES[@]}"; do aporta "$n"; done; cobra
 # Ronda 2: David paga después del plazo
 for n in ana bruno carla; do aporta "$n"; done
 espera_hasta $(( PERIOD * 2 + 15 )); aporta david; cobra
-# Ronda 3: Carla no paga
-for n in ana bruno david; do aporta "$n"; done
+# Ronda 3: Carla no paga (faltó) y Bruno tampoco, pero lo cubre su garantía
+for n in ana david; do aporta "$n"; done
 espera_hasta $(( PERIOD * 3 + 15 )); cobra
 # Ronda 4 en curso
 aporta ana; aporta bruno
@@ -42,7 +49,8 @@ aporta ana; aporta bruno
   echo "  \"rpc\": \"https://soroban-testnet.stellar.org\","
   echo "  \"contractId\": \"$ID\","
   echo "  \"token\": \"$XLM\","
-  echo "  \"tokenSymbol\": \"XLM\","
+  echo "  \"tokenSymbol\": \"XLM\",
+  echo "  \"version\": 2,"
   echo "  \"members\": {"
   for i in "${!NAMES[@]}"; do
     sep=","; (( i == ${#NAMES[@]} - 1 )) && sep=""

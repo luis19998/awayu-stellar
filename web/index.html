@@ -75,6 +75,7 @@
         <button id="btn-story" class="ghost" data-i18n>▶ Contar la historia</button>
         <button id="btn-create" class="ghost" data-i18n>＋ Crear un pasanaku</button>
         <button id="btn-custom" class="ghost" data-i18n>Personalizar</button>
+        <button id="btn-sim" class="ghost" data-i18n>Simulador</button>
         <button id="btn-share" class="ghost" hidden data-i18n>Compartir enlace</button>
         <a id="lnk-contract" target="_blank" rel="noopener" hidden data-i18n>Ver contrato ↗</a>
       </footer>
@@ -90,6 +91,21 @@
         <button data-w="email">Correo (Pollar)</button>
       </div>
     </div>
+
+    <dialog id="dlg-sim" class="wide-dialog">
+      <form method="dialog" id="form-sim">
+        <h2 data-i18n>Simulador de pasanaku</h2>
+        <p class="muted" data-i18n>Quien cobra temprano recibe un adelanto sin interés; quien cobra tarde está ahorrando.</p>
+        <div class="row3">
+          <label><span data-i18n>Miembros</span> <input name="members" type="number" min="2" max="50" value="6" /></label>
+          <label><span data-i18n>Cuota</span> <input name="amount" type="number" min="1" value="100" /></label>
+          <label><span data-i18n>Días por ronda</span> <input name="days" type="number" min="1" value="7" /></label>
+          <label><span data-i18n>Rendimiento anual estimado (%)</span> <input name="apy" type="number" min="0" max="30" step="0.1" value="6.2" /></label>
+        </div>
+        <div id="sim-out" class="sim-out"></div>
+        <menu><button value="close" class="primary" data-i18n>Cerrar</button></menu>
+      </form>
+    </dialog>
 
     <dialog id="dlg-custom">
       <form method="dialog" id="form-custom">

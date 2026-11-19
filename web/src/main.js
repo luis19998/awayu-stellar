@@ -4,7 +4,8 @@ import { StrKey } from "@stellar/stellar-sdk";
 import { createScene } from "./scene.js";
 import { historyStripDataURL, applyPalette } from "./aguayo.js";
 import { THEMES, loadThemeId, saveThemeId } from "./themes.js";
-import { t, initLang, setLang, getLang } from "./i18n.js";
+import { t, initLang, setLang, getLang, applyStatic } from "./i18n.js";
+import { simulate, simulationSvg } from "./simulator.js";
 import {
   demoCircle, contribute, payout, pot, recipientOf, score, creditLine, idleYield, depositGuarantee, parsePeople,
   ON_TIME, LATE, MISSED,
@@ -618,6 +619,43 @@ $("#form-custom").addEventListener("submit", (ev) => {
     toast(demoOpts ? "Círculo de demostración personalizado" : "Demo original");
   }
 });
+
+// ---------- Simulador ----------
+
+const dlgSim = $("#dlg-sim");
+const formSim = $("#form-sim");
+
+function renderSim() {
+  const f = formSim;
+  const sim = simulate({
+    members: Number(f.members.value),
+    amount: Number(f.amount.value),
+    periodDays: Number(f.days.value),
+    apy: Number(f.apy.value) / 100,
+  });
+  const cur = circle.token || "USDC";
+  const first = sim.turns[0];
+  const last = sim.turns.at(-1);
+  const rows = sim.turns
+    .map((x) => `<tr><td>${x.turn}</td><td>${t("día {n}", { n: x.day })}</td><td>${fmt(x.receives, cur)}</td><td>${x.advance ? fmt(x.advance, cur) : "—"}</td><td>${x.saved ? fmt(x.saved, cur) : "—"}</td></tr>`)
+    .join("");
+  $("#sim-out").innerHTML = `
+    <p>${t("Pozo de cada ronda: {pot}. El círculo dura {days} días.", { pot: fmt(sim.pot, cur), days: sim.days })}</p>
+    <p>${t("El turno 1 recibe un adelanto de {a} sin interés; el último turno ahorró {s} y cobra todo junto.", { a: fmt(first.advance, cur), s: fmt(last.saved, cur) })}</p>
+    ${sim.yieldTotal ? `<p class="muted">${t("Si el pozo rinde mientras espera, el círculo podría ganar unos {y} en total (estimado).", { y: fmt(sim.yieldTotal, cur) })}</p>` : ""}
+    ${simulationSvg(sim)}
+    <table><thead><tr><th>${t("Turno")}</th><th>${t("Cobra")}</th><th>${t("Recibe")}</th><th>${t("Adelanto")}</th><th>${t("Ahorro previo")}</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+$("#btn-sim").onclick = () => {
+  formSim.members.value = circle.order.length;
+  formSim.amount.value = circle.amount;
+  formSim.days.value = Math.max(1, Math.round(circle.periodDays)) || 7;
+  applyStatic(dlgSim);
+  renderSim();
+  dlgSim.showModal();
+};
+formSim.addEventListener("input", renderSim);
 
 // ---------- Idioma ----------
 

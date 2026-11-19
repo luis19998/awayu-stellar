@@ -45,3 +45,15 @@ dialog menu { flex-wrap: wrap; }
 
 /* Saldo de la billetera */
 .wallet .balance { align-self: center; font: 600 13px var(--mono); color: var(--gold); background: var(--glass); border: 1px solid var(--line); padding: 7px 10px; border-radius: 999px; }
+
+/* Simulador */
+dialog.wide-dialog { width: min(640px, 94vw); }
+dialog .row3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+.sim-out { margin-top: 14px; color: var(--ink); font-size: 14px; }
+.sim-out p { margin: 6px 0; }
+.sim-out svg { margin: 8px 0; color: var(--muted); }
+.sim-out table { width: 100%; border-collapse: collapse; font: 12px var(--mono); }
+.sim-out th, .sim-out td { text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.sim-out th:first-child, .sim-out td:first-child { text-align: center; }
+.sim-out tbody { display: block; max-height: 180px; overflow-y: auto; }
+.sim-out thead, .sim-out tbody tr { display: table; width: 100%; table-layout: fixed; }

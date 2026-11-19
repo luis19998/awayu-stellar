@@ -61,6 +61,25 @@ const EN = {
   "{name} recibió {amount}": "{name} received {amount}",
   "Modo demo": "Demo mode",
   "Datos reales del contrato en testnet": "Live contract data on testnet",
+  // Simulador
+  "Simulador": "Simulator",
+  "Simulador de pasanaku": "Savings circle simulator",
+  "Quien cobra temprano recibe un adelanto sin interés; quien cobra tarde está ahorrando.":
+    "Early turns get an interest-free advance; late turns are saving.",
+  "Días por ronda": "Days per round",
+  "Rendimiento anual estimado (%)": "Estimated yearly yield (%)",
+  "Cerrar": "Close",
+  "día {n}": "day {n}",
+  "Pozo de cada ronda: {pot}. El círculo dura {days} días.": "Pot each round: {pot}. The circle lasts {days} days.",
+  "El turno 1 recibe un adelanto de {a} sin interés; el último turno ahorró {s} y cobra todo junto.":
+    "Turn 1 gets an interest-free advance of {a}; the last turn saved {s} and collects it all at once.",
+  "Si el pozo rinde mientras espera, el círculo podría ganar unos {y} en total (estimado).":
+    "If the pot earns while it waits, the circle could make about {y} in total (estimate).",
+  "Turno": "Turn",
+  "Cobra": "Paid on",
+  "Recibe": "Receives",
+  "Adelanto": "Advance",
+  "Ahorro previo": "Saved before",
   // Recorrido del pitch
   "En Bolivia, millones ahorran en pasanakus: confianza pura, cero historial.":
     "In Bolivia, millions save in pasanakus: pure trust, zero record.",

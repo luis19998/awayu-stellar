@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  COVERED,
   LATE,
   MISSED,
   ON_TIME,
   contribute,
   creditLine,
   demoCircle,
+  depositGuarantee,
   idleYield,
   payout,
   pot,
@@ -76,10 +78,13 @@ describe("circle actions", () => {
     contribute(circle, 0);
     contribute(circle, 1, true);
 
-    expect(payout(circle)).toEqual({ to: 2, amount: 2 * circle.amount });
+    // Mery (2) y Wilber (5) tienen garantía: cubre sus cuotas y el pozo sale con 4
+    expect(payout(circle)).toEqual({ to: 2, amount: 4 * circle.amount });
     expect(circle.members[0].history.at(-1)).toBe(ON_TIME);
     expect(circle.members[1].history.at(-1)).toBe(LATE);
-    expect(circle.members[2].history.at(-1)).toBe(MISSED);
+    expect(circle.members[2].history.at(-1)).toBe(COVERED);
+    expect(circle.members[3].history.at(-1)).toBe(MISSED);
+    expect(circle.members[2].guarantee).toBe(0);
     expect(circle.paid.size).toBe(0);
     expect(circle.round).toBe(1);
   });
@@ -91,6 +96,30 @@ describe("circle actions", () => {
     expect(recipientOf(circle)).toBeNull();
     expect(contribute(circle, 0)).toBeNull();
     expect(payout(circle)).toBeNull();
+  });
+});
+
+describe("guarantees", () => {
+  it("scores a covered round at 25 points", () => {
+    expect(score([ON_TIME, COVERED])).toBe(63);
+  });
+
+  it("accepts one guarantee per member and none after the circle ends", () => {
+    const circle = demoCircle();
+    expect(depositGuarantee(circle, 0)).toBe(true);
+    expect(circle.members[0].guarantee).toBe(circle.amount);
+    expect(depositGuarantee(circle, 0)).toBe(false);
+    circle.round = circle.order.length;
+    expect(depositGuarantee(circle, 1)).toBe(false);
+  });
+
+  it("covers only once: a second miss without guarantee is recorded as missed", () => {
+    const circle = demoCircle();
+    circle.round = 0;
+    circle.paid.clear();
+    payout(circle);
+    payout(circle);
+    expect(circle.members[2].history.slice(-2)).toEqual([COVERED, MISSED]);
   });
 });
 

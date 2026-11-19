@@ -68,7 +68,18 @@ export function markTexture(mark, roundIndex) {
   c.height = 48;
   const ctx = c.getContext("2d");
   const colors = STRIPES[roundIndex % STRIPES.length];
-  if (mark === 3) {
+  if (mark === 4) {
+    // Cubierto por la garantía: fondo oscuro cosido con hilo dorado
+    ctx.fillStyle = "#2a1d0c";
+    ctx.fillRect(0, 0, 256, 48);
+    ctx.strokeStyle = PALETTE.amarillo;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    for (let x = 0; x <= 256; x += 16) ctx.lineTo(x, x % 32 ? 36 : 12);
+    ctx.stroke();
+    ctx.fillStyle = PALETTE.amarillo;
+    for (let x = 24; x < 256; x += 64) ctx.fillRect(x, 20, 8, 8);
+  } else if (mark === 3) {
     // Faltó: hueco oscuro con un hilo rojo en zigzag
     ctx.fillStyle = PALETTE.negro;
     ctx.fillRect(0, 0, 256, 48);

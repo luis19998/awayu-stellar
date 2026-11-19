@@ -4,10 +4,13 @@
 export const ON_TIME = 1;
 export const LATE = 2;
 export const MISSED = 3;
+/** Faltó, pero su garantía cubrió la cuota. */
+export const COVERED = 4;
+const POINTS = { [ON_TIME]: 100, [LATE]: 50, [COVERED]: 25 };
 
 export function score(history) {
   if (!history.length) return 0;
-  const pts = history.reduce((a, m) => a + (m === ON_TIME ? 100 : m === LATE ? 50 : 0), 0);
+  const pts = history.reduce((a, m) => a + (POINTS[m] || 0), 0);
   return Math.round(pts / history.length);
 }
 
@@ -33,6 +36,8 @@ export function demoCircle() {
     ...p,
     address: "G" + "DEMO".padEnd(55, String.fromCharCode(65 + i)),
     history: [],
+    // Mery y Wilber dejaron una cuota de garantía al entrar
+    guarantee: i === 2 || i === 5 ? 100 : 0,
   }));
   // Orden "sorteado" (en la cadena lo sortea el PRNG de la red)
   const order = [2, 0, 4, 1, 5, 3];
@@ -81,13 +86,32 @@ export function contribute(c, i, late = false) {
 
 export function payout(c) {
   if (c.round >= c.order.length) return null;
-  c.members.forEach((mem, i) => mem.history.push(c.paid.get(i) ?? MISSED));
+  let covered = 0;
+  c.members.forEach((mem, i) => {
+    let mark = c.paid.get(i);
+    if (!mark) {
+      if ((mem.guarantee || 0) >= c.amount) {
+        mem.guarantee -= c.amount;
+        covered += 1;
+        mark = COVERED;
+      } else mark = MISSED;
+    }
+    mem.history.push(mark);
+  });
   const to = recipientOf(c);
-  const amount = pot(c);
+  const amount = pot(c) + covered * c.amount;
   c.payouts.push({ round: c.round, to, amount });
   c.round += 1;
   c.paid = new Map();
   return { to, amount };
+}
+
+/** Deposita una cuota de garantía (una sola vez, antes de que termine el círculo). */
+export function depositGuarantee(c, i) {
+  const m = c.members[i];
+  if (!m || c.round >= c.order.length || (m.guarantee || 0) > 0) return false;
+  m.guarantee = c.amount;
+  return true;
 }
 
 /** Rendimiento estimado del pozo mientras espera (proyección, no real). */

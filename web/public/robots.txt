@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://awayu-pasanaku.netlify.app/sitemap.xml

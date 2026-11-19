@@ -23,65 +23,66 @@
       <div class="logo" aria-hidden="true"></div>
       <div>
         <h1>Awayu</h1>
-        <p>El pasanaku que teje tu historial</p>
+        <p data-i18n>El pasanaku que teje tu historial</p>
       </div>
     </header>
 
     <nav class="modes" aria-label="Modo">
-      <button data-mode="demo" class="on">Demo</button>
+      <button data-mode="demo" class="on" data-i18n>Demo</button>
       <button data-mode="testnet">Stellar testnet</button>
     </nav>
 
     <aside class="panel" id="panel">
       <div class="grip" aria-hidden="true"></div>
       <section class="stats">
-        <div><span>Ronda</span><b id="s-round">–</b></div>
-        <div><span>Cuota</span><b id="s-amount">–</b></div>
-        <div><span>Pozo</span><b id="s-pot">–</b></div>
+        <div><span data-i18n>Ronda</span><b id="s-round">–</b></div>
+        <div><span data-i18n>Cuota</span><b id="s-amount">–</b></div>
+        <div><span data-i18n>Pozo</span><b id="s-pot">–</b></div>
       </section>
 
       <section class="turn">
-        <span>Este turno cobra</span>
+        <span data-i18n>Este turno cobra</span>
         <strong id="s-recipient">–</strong>
         <small id="s-deadline"></small>
       </section>
 
       <section class="yield" id="yield">
-        <span>Mientras espera, el pozo rinde</span>
+        <span data-i18n>Mientras espera, el pozo rinde</span>
         <b id="s-yield">–</b>
-        <small>Proyección con Vaquita (pools de Blend/DeFindex). Simulado.</small>
+        <small data-i18n>Proyección con Vaquita (pools de Blend/DeFindex). Simulado.</small>
       </section>
 
       <section class="actions">
         <button id="btn-contribute" class="primary">Aportar</button>
-        <button id="btn-payout">Pagar el pozo</button>
+        <button id="btn-payout" data-i18n>Pagar el pozo</button>
         <button id="btn-guarantee" class="wide">Dejar garantía</button>
-        <label class="late"><input type="checkbox" id="chk-late" /> Simular aporte tardío</label>
+        <label class="late"><input type="checkbox" id="chk-late" /> <span data-i18n>Simular aporte tardío</span></label>
       </section>
 
       <section class="members">
-        <h2>Miembros <small>tocá uno para ver su aguayo</small></h2>
+        <h2><span data-i18n>Miembros</span> <small data-i18n>tocá uno para ver su aguayo</small></h2>
         <ul id="members"></ul>
       </section>
 
       <section class="person" id="person" hidden></section>
 
       <section class="timeline" id="timeline">
-        <h2>Historial del círculo</h2>
+        <h2 data-i18n>Historial del círculo</h2>
         <ol id="timeline-list"></ol>
       </section>
 
       <footer class="foot">
-        <button id="btn-story" class="ghost">▶ Contar la historia</button>
-        <button id="btn-create" class="ghost">＋ Crear un pasanaku</button>
-        <button id="btn-custom" class="ghost">Personalizar</button>
-        <button id="btn-share" class="ghost" hidden>Compartir enlace</button>
-        <a id="lnk-contract" target="_blank" rel="noopener" hidden>Ver contrato ↗</a>
+        <button id="btn-story" class="ghost" data-i18n>▶ Contar la historia</button>
+        <button id="btn-create" class="ghost" data-i18n>＋ Crear un pasanaku</button>
+        <button id="btn-custom" class="ghost" data-i18n>Personalizar</button>
+        <button id="btn-share" class="ghost" hidden data-i18n>Compartir enlace</button>
+        <a id="lnk-contract" target="_blank" rel="noopener" hidden data-i18n>Ver contrato ↗</a>
       </footer>
     </aside>
 
     <div class="wallet">
-      <button id="btn-wallet">Conectar billetera</button>
+      <button id="btn-lang" class="lang" aria-label="Cambiar idioma / Change language">EN</button>
+      <button id="btn-wallet" data-i18n>Conectar billetera</button>
       <div class="wallet-menu" id="wallet-menu" hidden>
         <button data-w="freighter">Freighter</button>
         <button data-w="google">Google (Pollar)</button>
@@ -146,10 +147,10 @@
     </dialog>
 
     <div class="legend">
-      <span><i class="k1"></i>A tiempo</span>
-      <span><i class="k2"></i>Tarde</span>
-      <span><i class="k3"></i>Faltó</span>
-      <span><i class="k4"></i>Cubierto por garantía</span>
+      <span><i class="k1"></i><span data-i18n>A tiempo</span></span>
+      <span><i class="k2"></i><span data-i18n>Tarde</span></span>
+      <span><i class="k3"></i><span data-i18n>Faltó</span></span>
+      <span><i class="k4"></i><span data-i18n>Cubierto por garantía</span></span>
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>

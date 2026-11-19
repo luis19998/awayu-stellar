@@ -4,6 +4,7 @@ import { StrKey } from "@stellar/stellar-sdk";
 import { createScene } from "./scene.js";
 import { historyStripDataURL, applyPalette } from "./aguayo.js";
 import { THEMES, loadThemeId, saveThemeId } from "./themes.js";
+import { t, initLang, setLang, getLang } from "./i18n.js";
 import {
   demoCircle, contribute, payout, pot, recipientOf, score, creditLine, idleYield, depositGuarantee, parsePeople,
   ON_TIME, LATE, MISSED,
@@ -18,6 +19,7 @@ const $ = (s) => document.querySelector(s);
 const fmt = (n, t) => `${n.toLocaleString("es-BO", { maximumFractionDigits: 2 })} ${t}`;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
+initLang();
 let themeId = loadThemeId();
 applyPalette(THEMES[themeId].palette);
 let demoOpts = loadDemoOpts();
@@ -53,10 +55,10 @@ function render() {
   const n = c.order.length;
   const done = c.round >= n;
   const rec = recipientOf(c);
-  $("#s-round").textContent = done ? "fin" : `${c.round + 1}/${n}`;
+  $("#s-round").textContent = done ? t("fin") : `${c.round + 1}/${n}`;
   $("#s-amount").textContent = fmt(c.amount, c.token);
   $("#s-pot").textContent = fmt(pot(c), c.token);
-  $("#s-recipient").textContent = done ? "Círculo completo" : c.members[rec].name;
+  $("#s-recipient").textContent = done ? t("Círculo completo") : c.members[rec].name;
   $("#s-deadline").textContent = deadlineText(c);
   $("#s-yield").textContent = "+" + fmt(idleYield(c), c.token);
   scene.setPotLevel(pot(c) / (c.amount * n));
@@ -70,8 +72,8 @@ function render() {
     li.className = (i === selected ? "sel " : "") + (i === rec ? "turn-of" : "");
     const paid = c.paid.get(i);
     li.innerHTML = `<b></b><span class="sc">${score(m.history)} pts</span>
-      <span class="st ${paid ? "ok" : ""}">${paid === ON_TIME ? "Aportó" : paid === LATE ? "Aportó tarde" : "Falta aportar"} · ${m.role}</span>
-      <span class="chips">${m.guarantee > 0 ? `<i class="chip shield" title="Garantía disponible">Garantía ${fmt(m.guarantee, c.token)}</i>` : ""}</span>`;
+      <span class="st ${paid ? "ok" : ""}">${t(paid === ON_TIME ? "Aportó" : paid === LATE ? "Aportó tarde" : "Falta aportar")} · ${m.role}</span>
+      <span class="chips">${m.guarantee > 0 ? `<i class="chip shield" title="Garantía disponible">${t("Garantía {amount}", { amount: fmt(m.guarantee, c.token) })}</i>` : ""}</span>`;
     li.querySelector("b").textContent = m.name;
     if (m.history.length) {
       const img = new Image();
@@ -93,23 +95,23 @@ function render() {
     ul.appendChild(li);
   });
 
-  const t = isTestnet();
+  const tn = isTestnet();
   const mine = myIndex();
   const bC = $("#btn-contribute");
-  if (t) {
+  if (tn) {
     bC.disabled = busy || done || !me() || mine < 0 || c.paid.has(mine);
-    bC.textContent = !me() ? "Conectá tu billetera" : mine < 0 ? "No sos miembro" : c.paid.has(mine) ? "Ya aportaste" : "Aportar y firmar";
+    bC.textContent = t(!me() ? "Conectá tu billetera" : mine < 0 ? "No sos miembro" : c.paid.has(mine) ? "Ya aportaste" : "Aportar y firmar");
   } else {
     bC.disabled = busy || done || (selected >= 0 && c.paid.has(selected));
-    bC.textContent = selected >= 0 ? `Aportar como ${c.members[selected].name}` : "Aportar (todos)";
+    bC.textContent = selected >= 0 ? t("Aportar como {name}", { name: c.members[selected].name }) : t("Aportar (todos)");
   }
   $("#btn-payout").disabled = busy || !canPayout(c);
   renderGuarantee(c, done);
-  $(".late").style.display = t ? "none" : "";
+  $(".late").style.display = tn ? "none" : "";
   const link = $("#lnk-contract");
   link.hidden = !c.contractId;
   if (c.contractId) link.href = explorerUrl(c.contractId);
-  $("#btn-share").hidden = !t;
+  $("#btn-share").hidden = !tn;
   renderPerson();
   renderTimeline();
 }
@@ -128,29 +130,35 @@ function bestMember(c) {
 function deadlineText(c) {
   if (isTestnet() && c.deadline) {
     const s = c.deadline - Date.now() / 1000;
-    if (s <= 0) return "Plazo vencido: ya se puede pagar el pozo";
-    return s < 3600 ? `Plazo: ${Math.ceil(s / 60)} min` : s < 172800 ? `Plazo: ${Math.ceil(s / 3600)} h` : `Plazo: ${Math.ceil(s / 86400)} días`;
+    if (s <= 0) return t("Plazo vencido: ya se puede pagar el pozo");
+    return s < 3600 ? t("Plazo: {n} min", { n: Math.ceil(s / 60) })
+      : s < 172800 ? t("Plazo: {n} h", { n: Math.ceil(s / 3600) })
+      : t("Plazo: {n} días", { n: Math.ceil(s / 86400) });
   }
-  return `Una ronda cada ${c.periodDays} días`;
+  return t("Una ronda cada {n} días", { n: c.periodDays });
 }
 
 /** Botón de garantía: dejarla (una cuota) o, al terminar el círculo, retirarla. */
 function renderGuarantee(c, done) {
   const b = $("#btn-guarantee");
-  const t = isTestnet();
-  if (t && c.version < 2) {
+  const tn = isTestnet();
+  if (tn && c.version < 2) {
     b.hidden = true;
     return;
   }
   b.hidden = false;
-  const who = t ? myIndex() : selected;
+  const who = tn ? myIndex() : selected;
   const m = c.members[who];
   if (done) {
-    b.textContent = "Retirar garantía";
-    b.disabled = busy || !t || !m || !(m.guarantee > 0);
+    b.textContent = t("Retirar garantía");
+    b.disabled = busy || !tn || !m || !(m.guarantee > 0);
   } else {
-    b.textContent = m ? (m.guarantee > 0 ? `${t ? "Tu" : "Su"} garantía está activa` : `Dejar garantía (${fmt(c.amount, c.token)})`) : "Elegí un miembro para dejar garantía";
-    b.disabled = busy || !m || m.guarantee > 0 || (t && !me());
+    b.textContent = m
+      ? m.guarantee > 0
+        ? t(tn ? "Tu garantía está activa" : "Su garantía está activa")
+        : t("Dejar garantía ({amount})", { amount: fmt(c.amount, c.token) })
+      : t("Elegí un miembro para dejar garantía");
+    b.disabled = busy || !m || m.guarantee > 0 || (tn && !me());
   }
 }
 
@@ -161,10 +169,10 @@ function renderPerson() {
   const credit = creditLine(m.history, circle.amount);
   box.hidden = false;
   box.innerHTML = `<h3></h3><p class="role"></p>
-    <p>${m.history.length} rondas tejidas · reputación ${score(m.history)}/100</p>
-    <p>Con este aguayo podría acceder a un microcrédito de</p>
-    <div class="credit">${credit ? fmt(credit, circle.token) : "aún sin historial suficiente"}</div>
-    <p><small>Es evidencia de pagos, verificable en la cadena; no es un crédito aprobado. Monto ilustrativo.</small></p>
+    <p>${t("{n} rondas tejidas · reputación {s}/100", { n: m.history.length, s: score(m.history) })}</p>
+    <p>${t("Con este aguayo podría acceder a un microcrédito de")}</p>
+    <div class="credit">${credit ? fmt(credit, circle.token) : t("aún sin historial suficiente")}</div>
+    <p><small>${t("Es evidencia de pagos, verificable en la cadena; no es un crédito aprobado. Monto ilustrativo.")}</small></p>
     <form class="alias" hidden><label>Tu nombre en el círculo
       <input name="alias" maxlength="24" required placeholder="Ej.: Doña Rosa" /></label>
       <button class="ghost">Guardar en la cadena</button></form>`;
@@ -195,22 +203,23 @@ function renderTimeline() {
   if (isTestnet()) {
     for (const e of activity) {
       const name = c.members.find((m) => m.address === e.who)?.name || (e.who ? short(e.who) : "");
-      const text = e.kind === "pozo" ? `Ronda ${e.round + 1}: ${name} recibió ${fmt(e.amount, c.token)}`
-        : e.kind === "cubre" ? `Ronda ${e.round + 1}: la garantía de ${name} cubrió su cuota`
-        : `${name} dejó ${fmt(e.amount, c.token)} de garantía`;
+      const vars = { n: e.round + 1, name, amount: fmt(e.amount, c.token) };
+      const text = e.kind === "pozo" ? t("Ronda {n}: {name} recibió {amount}", vars)
+        : e.kind === "cubre" ? t("Ronda {n}: la garantía de {name} cubrió su cuota", vars)
+        : t("{name} dejó {amount} de garantía", vars);
       rows.push({ text, href: e.tx ? txUrl(e.tx) : null, kind: e.kind });
     }
   } else {
     for (const p of c.payouts) {
-      rows.push({ text: `Ronda ${p.round + 1}: ${c.members[p.to].name} recibió ${fmt(p.amount, c.token)}`, kind: "pozo" });
+      rows.push({ text: t("Ronda {n}: {name} recibió {amount}", { n: p.round + 1, name: c.members[p.to].name, amount: fmt(p.amount, c.token) }), kind: "pozo" });
       c.members.forEach((m) => {
-        if (m.history[p.round] === 4) rows.push({ text: `Ronda ${p.round + 1}: la garantía de ${m.name} cubrió su cuota`, kind: "cubre" });
+        if (m.history[p.round] === 4) rows.push({ text: t("Ronda {n}: la garantía de {name} cubrió su cuota", { n: p.round + 1, name: m.name }), kind: "cubre" });
       });
     }
   }
   ol.innerHTML = "";
   if (!rows.length) {
-    ol.innerHTML = `<li class="empty">Todavía no se pagó ningún pozo.</li>`;
+    ol.innerHTML = `<li class="empty">${t("Todavía no se pagó ningún pozo.")}</li>`;
     return;
   }
   for (const r of rows.reverse()) {
@@ -253,7 +262,7 @@ async function animateContribution(i, mark) {
 async function animatePayout(to, amount, marks, round) {
   await new Promise((r) => scene.flyPayout(to, amount / circle.amount, r));
   marks.forEach((m, i) => scene.commitPending(i, m ?? MISSED, round));
-  toast(`${circle.members[to].name} recibió ${fmt(amount, circle.token)}`);
+  toast(t("{name} recibió {amount}", { name: circle.members[to].name, amount: fmt(amount, circle.token) }));
   await wait(500);
 }
 
@@ -368,7 +377,7 @@ async function openTestnet(contractId) {
   if (id !== deployment.contractId) url.searchParams.set("c", id);
   else url.searchParams.delete("c");
   history.replaceState(null, "", url);
-  toast("Datos reales del contrato en testnet");
+  toast(t("Datos reales del contrato en testnet"));
 }
 
 async function refreshChain(full = false) {
@@ -403,7 +412,7 @@ document.querySelectorAll(".modes button").forEach((b) => {
     selected = -1;
     rebuild();
     history.replaceState(null, "", location.pathname);
-    toast("Modo demo");
+    toast(t("Modo demo"));
   };
 });
 
@@ -427,6 +436,7 @@ $("#btn-wallet").onclick = () => (menu.hidden = !menu.hidden);
 async function onConnected(w) {
   menu.hidden = true;
   const btn = $("#btn-wallet");
+  btn.removeAttribute("data-i18n");
   btn.textContent = `${w.kind === "pollar" ? "Pollar" : "Freighter"} · ${short(w.address)}`;
   btn.classList.add("on");
   deployment ??= await loadDeployment();
@@ -579,6 +589,17 @@ $("#form-custom").addEventListener("submit", (ev) => {
   }
 });
 
+// ---------- Idioma ----------
+
+const btnLang = $("#btn-lang");
+const syncLangButton = () => (btnLang.textContent = getLang() === "es" ? "EN" : "ES");
+syncLangButton();
+btnLang.onclick = () => {
+  setLang(getLang() === "es" ? "en" : "es");
+  syncLangButton();
+  render();
+};
+
 // ---------- Recorrido guiado para el pitch ----------
 
 const STORY = [
@@ -592,7 +613,7 @@ const STORY = [
 
 async function caption(text, ms = 3200) {
   const el = $("#caption");
-  el.textContent = text;
+  el.textContent = t(text);
   el.classList.add("on");
   await wait(ms);
   el.classList.remove("on");

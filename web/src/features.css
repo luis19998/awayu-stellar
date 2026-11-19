@@ -38,3 +38,7 @@ dialog menu { flex-wrap: wrap; }
 @media (prefers-reduced-motion: reduce) {
   .toast, .caption { transition: none; }
 }
+
+/* Selector de idioma junto a la billetera */
+.wallet { display: flex; gap: 8px; align-items: flex-start; }
+.wallet .lang { border: 1px solid var(--line); background: var(--glass); color: var(--ink); padding: 9px 12px; border-radius: 999px; font-weight: 700; font-size: 13px; backdrop-filter: blur(10px); }

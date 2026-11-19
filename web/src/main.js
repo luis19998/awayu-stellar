@@ -384,7 +384,7 @@ async function openTestnet(contractId) {
   const id = contractId || deployment.contractId;
   toast("Leyendo el contrato en Stellar testnet…");
   circle = await readCircle(deployment, id, me() ? { [me()]: "Vos" } : {});
-  activity = await readActivity(deployment, id).catch(() => []);
+  activity = await readActivity(deployment, id, circle.start).catch(() => []);
   setModeButton("testnet");
   selected = -1;
   rebuild();
@@ -400,7 +400,7 @@ async function refreshChain(full = false) {
   const before = circle;
   const next = await readCircle(deployment, circle.contractId, me() ? { [me()]: "Vos" } : {});
   circle = next;
-  activity = await readActivity(deployment, circle.contractId).catch(() => activity);
+  activity = await readActivity(deployment, circle.contractId, circle.start).catch(() => activity);
   const changed = full || next.round !== before.round || next.members.length !== before.members.length;
   if (changed) {
     rebuild();

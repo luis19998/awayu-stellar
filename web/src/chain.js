@@ -93,6 +93,7 @@ export async function readCircle(dep, contractId = dep.contractId, names = {}) {
     periodSeconds: Number(cfg.period),
     deadline: Number(info.deadline),
     admin: String(cfg.admin),
+    start: Number(cfg.start),
     members,
     order: members.map((_, i) => i),
     round,
@@ -203,17 +204,27 @@ export async function ensureFunded(dep, address) {
  * Pagos del pozo y rondas cubiertas, leídos de los eventos del contrato.
  * El RPC solo guarda unos días de eventos: lo más viejo puede no aparecer.
  */
-export async function readActivity(dep, contractId) {
+export async function readActivity(dep, contractId, sinceTs = null) {
   const server = serverFor(dep);
   const latest = await server.getLatestLedger();
-  const startLedger = Math.max(1, latest.sequence - 17280 * 6);
-  const res = await server.getEvents({
-    startLedger,
-    filters: [{ type: "contract", contractIds: [contractId] }],
-    limit: 200,
-  });
+  // Empezamos cerca de la creación del círculo (~5 s por ledger) para no
+  // recorrer días de ledgers vacíos; el RPC guarda unos 7 días.
+  const back = sinceTs ? Math.ceil((Date.now() / 1000 - sinceTs) / 5) + 720 : 17280 * 6;
+  const startLedger = Math.max(1, latest.sequence - Math.min(back, 17280 * 6));
+  const filters = [{ type: "contract", contractIds: [contractId] }];
+  // El RPC revisa unos 10 000 ledgers por pedido y devuelve un cursor: hay que
+  // seguir pidiendo hasta llegar al último ledger.
+  const events = [];
+  let res = await server.getEvents({ startLedger, filters, limit: 200 });
+  for (let page = 0; page < 15; page++) {
+    events.push(...(res.events || []));
+    if (!res.cursor) break;
+    const reached = Number(BigInt(res.cursor.split("-")[0]) >> 32n);
+    if (reached >= (res.latestLedger || latest.sequence) && (res.events || []).length < 200) break;
+    res = await server.getEvents({ filters, cursor: res.cursor, limit: 200 });
+  }
   const out = [];
-  for (const e of res.events || []) {
+  for (const e of events) {
     const topic = e.topic.map((t) => scValToNative(t));
     const kind = String(topic[0]);
     const who = topic[1] ? String(topic[1]) : null;

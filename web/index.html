@@ -110,56 +110,56 @@
 
     <dialog id="dlg-custom">
       <form method="dialog" id="form-custom">
-        <h2>Personalizar</h2>
-        <label>Estilo del aguayo
+        <h2 data-i18n>Personalizar</h2>
+        <label><span data-i18n>Estilo del aguayo</span>
           <select name="theme" id="sel-theme"></select>
         </label>
         <fieldset>
-          <legend>Círculo de demostración</legend>
-          <label>Miembros (uno por línea: nombre, y si querés, oficio · lugar)
+          <legend data-i18n>Círculo de demostración</legend>
+          <label><span data-i18n>Miembros (uno por línea: nombre, y si querés, oficio · lugar)</span>
             <textarea name="people" rows="6" placeholder="Doña Rosa, Comerciante · La Cancha&#10;Don Teo, Productor de papa · Tiraque"></textarea>
           </label>
           <div class="row2">
-            <label>Cuota (USDC)
+            <label><span data-i18n>Cuota (USDC)</span>
               <input name="amount" type="number" min="1" step="1" value="100" />
             </label>
-            <label>Rondas ya jugadas
+            <label><span data-i18n>Rondas ya jugadas</span>
               <input name="played" type="number" min="0" max="20" step="1" value="3" />
             </label>
           </div>
         </fieldset>
-        <label class="check"><input type="checkbox" name="rotate" checked /> Girar la cámara sola</label>
+        <label class="check"><input type="checkbox" name="rotate" checked /> <span data-i18n>Girar la cámara sola</span></label>
         <menu>
-          <button value="reset" class="ghost">Volver a la demo original</button>
-          <button value="cancel" formnovalidate class="ghost">Cancelar</button>
-          <button value="ok" class="primary">Aplicar</button>
+          <button value="reset" class="ghost" data-i18n>Volver a la demo original</button>
+          <button value="cancel" formnovalidate class="ghost" data-i18n>Cancelar</button>
+          <button value="ok" class="primary" data-i18n>Aplicar</button>
         </menu>
       </form>
     </dialog>
 
     <dialog id="dlg-create">
       <form method="dialog" id="form-create">
-        <h2>Crear un pasanaku en testnet</h2>
-        <p class="muted">Vos firmás el despliegue. El orden de cobro lo sortea la red.</p>
-        <label>Cuota por ronda (XLM de testnet)
+        <h2 data-i18n>Crear un pasanaku en testnet</h2>
+        <p class="muted" data-i18n>Vos firmás el despliegue. El orden de cobro lo sortea la red.</p>
+        <label><span data-i18n>Cuota por ronda (XLM de testnet)</span>
           <input name="amount" type="number" min="1" step="1" value="10" required />
         </label>
-        <label>Duración de cada ronda
+        <label><span data-i18n>Duración de cada ronda</span>
           <select name="period">
-            <option value="300">5 minutos (para demos)</option>
-            <option value="3600">1 hora</option>
-            <option value="86400">1 día</option>
-            <option value="604800" selected>1 semana</option>
-            <option value="2592000">30 días</option>
+            <option value="300" data-i18n>5 minutos (para demos)</option>
+            <option value="3600" data-i18n>1 hora</option>
+            <option value="86400" data-i18n>1 día</option>
+            <option value="604800" selected data-i18n>1 semana</option>
+            <option value="2592000" data-i18n>30 días</option>
           </select>
         </label>
-        <label>Miembros (una dirección G… por línea; la tuya ya está incluida)
+        <label><span data-i18n>Miembros (una dirección G… por línea; la tuya ya está incluida)</span>
           <textarea name="members" rows="5" placeholder="GABC…&#10;GDEF…"></textarea>
         </label>
         <p class="err" id="create-err"></p>
         <menu>
-          <button value="cancel" formnovalidate class="ghost">Cancelar</button>
-          <button id="btn-create-go" value="ok" class="primary">Crear y firmar</button>
+          <button value="cancel" formnovalidate class="ghost" data-i18n>Cancelar</button>
+          <button id="btn-create-go" value="ok" class="primary" data-i18n>Crear y firmar</button>
         </menu>
       </form>
     </dialog>

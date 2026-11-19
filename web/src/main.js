@@ -223,7 +223,7 @@ function renderPerson() {
       token: circle.token,
       amount: circle.amount,
       date: new Date().toISOString().slice(0, 10),
-    }).catch((e) => toast("No se pudo crear el certificado: " + e.message));
+    }).catch((e) => toast(t("No se pudo crear el certificado: {why}", { why: e.message })));
   const form = box.querySelector(".alias");
   if (isTestnet() && circle.version >= 2 && m.address === me()) {
     form.hidden = false;
@@ -231,10 +231,10 @@ function renderPerson() {
     form.onsubmit = (e) => {
       e.preventDefault();
       const alias = form.alias.value.trim();
-      if (!alias || new TextEncoder().encode(alias).length > 24) return toast("El nombre debe tener entre 1 y 24 caracteres");
+      if (!alias || new TextEncoder().encode(alias).length > 24) return toast(t("El nombre debe tener entre 1 y 24 caracteres"));
       run(async () => {
         await signAndSend(() => buildAliasXdr(deployment, circle.contractId, me(), alias), "tu nombre");
-        toast("Nombre guardado en la cadena ✓");
+        toast(t("Nombre guardado en la cadena ✓"));
         await refreshChain(true);
       });
     };
@@ -340,11 +340,11 @@ async function demoPayout() {
 // ---------- Acciones: testnet (firmadas con la billetera) ----------
 
 async function signAndSend(buildXdr, what) {
-  toast(`Preparando ${what}…`);
+  toast(t("Preparando {what}…", { what: t(what) }));
   const xdr = await buildXdr();
-  toast("Firmá en tu billetera…", 60000);
+  toast(t("Firmá en tu billetera…"), 60000);
   const signed = await sign(xdr);
-  toast("Enviando a Stellar testnet…", 60000);
+  toast(t("Enviando a Stellar testnet…"), 60000);
   return submit(deployment, signed);
 }
 
@@ -352,7 +352,7 @@ async function chainContribute() {
   const i = myIndex();
   await signAndSend(() => buildContributeXdr(deployment, circle.contractId, me()), "tu aporte");
   await animateContribution(i, ON_TIME);
-  toast("Aporte registrado en la cadena ✓");
+  toast(t("Aporte registrado en la cadena ✓"));
   await refreshChain();
   await updateBalance();
 }
@@ -389,10 +389,10 @@ async function run(fn) {
 
 function friendly(e) {
   const m = String(e?.message || e);
-  if (/User declined|rejected|denied/i.test(m)) return "cancelaste la firma";
-  if (/Error\(Contract, #8\)/.test(m)) return "la ronda sigue abierta";
-  if (/Error\(Contract, #6\)/.test(m)) return "ya aportaste en esta ronda";
-  if (/Error\(Contract, #5\)/.test(m)) return "no sos miembro del círculo";
+  if (/User declined|rejected|denied/i.test(m)) return t("cancelaste la firma");
+  if (/Error\(Contract, #8\)/.test(m)) return t("la ronda sigue abierta");
+  if (/Error\(Contract, #6\)/.test(m)) return t("ya aportaste en esta ronda");
+  if (/Error\(Contract, #5\)/.test(m)) return t("no sos miembro del círculo");
   return m.length > 140 ? m.slice(0, 140) + "…" : m;
 }
 
@@ -402,15 +402,15 @@ $("#btn-guarantee").onclick = () =>
   run(async () => {
     const done = circle.round >= circle.order.length;
     if (!isTestnet()) {
-      if (depositGuarantee(circle, selected)) toast(`${circle.members[selected].name} dejó una cuota de garantía`);
+      if (depositGuarantee(circle, selected)) toast(t("{name} dejó una cuota de garantía", { name: circle.members[selected].name }));
       return;
     }
     if (done) {
       await signAndSend(() => buildWithdrawXdr(deployment, circle.contractId, me()), "el retiro de tu garantía");
-      toast("Garantía devuelta a tu billetera ✓");
+      toast(t("Garantía devuelta a tu billetera ✓"));
     } else {
       await signAndSend(() => buildGuaranteeXdr(deployment, circle.contractId, me()), "tu garantía");
-      toast("Garantía depositada: si un día no podés pagar, cubre tu cuota ✓");
+      toast(t("Garantía depositada: si un día no podés pagar, cubre tu cuota ✓"));
     }
     await refreshChain(true);
   });
@@ -422,7 +422,7 @@ async function openTestnet(contractId) {
   deployment ??= await loadDeployment();
   if (!deployment) throw new Error("Falta testnet.json");
   const id = contractId || deployment.contractId;
-  toast("Leyendo el contrato en Stellar testnet…");
+  toast(t("Leyendo el contrato en Stellar testnet…"));
   circle = await readCircle(deployment, id, me() ? { [me()]: "Vos" } : {});
   activity = await readActivity(deployment, id, circle.start).catch(() => []);
   setModeButton("testnet");
@@ -509,8 +509,8 @@ async function onConnected(w) {
   btn.textContent = `${w.kind === "pollar" ? "Pollar" : "Freighter"} · ${short(w.address)}`;
   btn.classList.add("on");
   deployment ??= await loadDeployment();
-  if (deployment && (await ensureFunded(deployment, w.address))) toast("Cuenta de testnet fondeada con Friendbot");
-  else toast("Billetera conectada");
+  if (deployment && (await ensureFunded(deployment, w.address))) toast(t("Cuenta de testnet fondeada con Friendbot"));
+  else toast(t("Billetera conectada"));
   if (isTestnet()) await refreshChain(true);
   render();
   await updateBalance();
@@ -558,9 +558,10 @@ const dlg = $("#dlg-create");
 $("#btn-create").onclick = () => {
   if (!me()) {
     menu.hidden = false;
-    return toast("Primero conectá tu billetera");
+    return toast(t("Primero conectá tu billetera"));
   }
   $("#create-err").textContent = "";
+  applyStatic(dlg);
   dlg.showModal();
 };
 
@@ -583,7 +584,7 @@ $("#form-create").addEventListener("submit", (ev) => {
     const res = await signAndSend(() => buildCreateXdr(deployment, me(), { members, amount, periodSeconds }), "el nuevo círculo");
     const id = String(res.value);
     saveCircle(id);
-    toast("¡Pasanaku creado! Compartí el enlace con los miembros");
+    toast(t("¡Pasanaku creado! Compartí el enlace con los miembros"));
     await openTestnet(id);
   });
 });
@@ -600,7 +601,7 @@ $("#btn-share").onclick = async () => {
   url.searchParams.set("c", circle.contractId);
   try {
     await navigator.clipboard.writeText(url.toString());
-    toast("Enlace copiado: cualquiera puede ver el círculo; los miembros aportan con su billetera");
+    toast(t("Enlace copiado: cualquiera puede ver el círculo; los miembros aportan con su billetera"));
   } catch {
     prompt("Copiá este enlace:", url.toString());
   }
@@ -625,16 +626,22 @@ function saveDemoOpts(o) {
 
 const dlgCustom = $("#dlg-custom");
 const selTheme = $("#sel-theme");
-for (const [id, t] of Object.entries(THEMES)) selTheme.add(new Option(t.label, id));
+function fillThemes() {
+  selTheme.innerHTML = "";
+  for (const [id, th] of Object.entries(THEMES)) selTheme.add(new Option(t(th.label), id));
+}
+fillThemes();
 
 $("#btn-custom").onclick = () => {
   const f = $("#form-custom");
+  fillThemes();
   selTheme.value = themeId;
   const src = demoOpts?.people || circle.members.map((m) => ({ name: m.name, role: m.role }));
   f.people.value = src.map((p) => (p.role && p.role !== "Miembro" ? `${p.name}, ${p.role}` : p.name)).join("\n");
   f.amount.value = demoOpts?.amount || 100;
   f.played.value = demoOpts?.played ?? 3;
   f.rotate.checked = scene.controls.autoRotate;
+  applyStatic(dlgCustom);
   dlgCustom.showModal();
 };
 
@@ -659,7 +666,7 @@ $("#form-custom").addEventListener("submit", (ev) => {
     const people = parsePeople(f.people.value);
     if (people.length < 2) {
       ev.preventDefault();
-      return toast("Hacen falta al menos 2 miembros");
+      return toast(t("Hacen falta al menos 2 miembros"));
     }
     demoOpts = { people, amount: Math.max(1, Number(f.amount.value) || 100), played: Number(f.played.value) || 0 };
   } else return;
@@ -668,7 +675,7 @@ $("#form-custom").addEventListener("submit", (ev) => {
     circle = demoCircle(demoOpts);
     selected = -1;
     rebuild();
-    toast(demoOpts ? "Círculo de demostración personalizado" : "Demo original");
+    toast(t(demoOpts ? "Círculo de demostración personalizado" : "Demo original"));
   }
 });
 

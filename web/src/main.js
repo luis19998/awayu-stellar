@@ -377,7 +377,10 @@ async function run(fn) {
   } catch (e) {
     console.error(e);
     sfx.error();
-    toast("No se pudo: " + friendly(e), 5000);
+    toast(t("No se pudo: {why}", { why: friendly(e) }), 5000);
+    // Si la red aceptó la transacción pero no confirmó a tiempo, el contrato
+    // puede haberla registrado igual: volvemos a leer su estado real.
+    if (isTestnet()) await refreshChain(true).catch(() => {});
   } finally {
     busy = false;
     render();

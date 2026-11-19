@@ -32,6 +32,14 @@ dialog .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 dialog label.check { display: flex; align-items: center; gap: 8px; }
 dialog menu { flex-wrap: wrap; }
 
+/* Selector de personajes */
+.fig-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; max-height: 52vh; overflow-y: auto; margin-top: 12px; }
+.fig { display: grid; gap: 6px; justify-items: center; padding: 10px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.04); color: var(--ink); font-size: 12px; cursor: pointer; }
+.fig i { width: 44px; height: 44px; border-radius: 12px; display: block; }
+.fig.on { border-color: var(--gold); background: rgba(255, 209, 102, 0.12); }
+.person .figbtn { width: 100%; margin-top: 6px; }
+.person .reg-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+
 /* Accesibilidad: foco visible con teclado y menos movimiento si se pide */
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .members li:focus-visible { outline-offset: -2px; }

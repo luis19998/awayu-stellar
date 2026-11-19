@@ -144,10 +144,31 @@
       </form>
     </dialog>
 
+    <dialog id="dlg-figure" class="wide-dialog">
+      <form method="dialog">
+        <h2 data-i18n>Elegí un personaje</h2>
+        <p class="muted" data-i18n>36 figuras talladas estilo Alasitas, modeladas en Blender.</p>
+        <div class="fig-grid" id="fig-grid"></div>
+        <menu><button value="close" class="primary" data-i18n>Cerrar</button></menu>
+      </form>
+    </dialog>
+
     <dialog id="dlg-create">
       <form method="dialog" id="form-create">
         <h2 data-i18n>Crear un pasanaku en testnet</h2>
         <p class="muted" data-i18n>Vos firmás el despliegue. El orden de cobro lo sortea la red.</p>
+        <div class="row2">
+          <label><span data-i18n>Nombre del círculo</span>
+            <input name="cname" maxlength="40" placeholder="Pasanaku de la feria" required />
+          </label>
+          <label><span data-i18n>Departamento</span>
+            <select name="region">
+              <option value="cbba">Cochabamba</option><option value="lpz">La Paz</option><option value="scz">Santa Cruz</option>
+              <option value="oru">Oruro</option><option value="pts">Potosí</option><option value="chq">Chuquisaca</option>
+              <option value="trj">Tarija</option><option value="ben">Beni</option><option value="pnd">Pando</option><option value="otro">Otro</option>
+            </select>
+          </label>
+        </div>
         <label><span data-i18n>Cuota por ronda (XLM de testnet)</span>
           <input name="amount" type="number" min="1" step="1" value="10" required />
         </label>

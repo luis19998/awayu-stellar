@@ -3,6 +3,15 @@ import "./features.css";
 import "./dashboard.css";
 import { initDashboard, relabel } from "./dashboard.js";
 import { setState } from "./state.js";
+import { structuredData } from "./seo.js";
+
+// Datos estructurados para buscadores (JSON-LD)
+try {
+  const ld = document.createElement("script");
+  ld.type = "application/ld+json";
+  ld.textContent = JSON.stringify(structuredData());
+  document.head.appendChild(ld);
+} catch {}
 import { StrKey } from "@stellar/stellar-sdk";
 import { createScene, VESSELS, TABLES } from "./scene.js";
 import { SCENARIOS } from "./scenarios.js";
@@ -19,6 +28,7 @@ import {
 import {
   loadDeployment, readCircle, explorerUrl, buildContributeXdr, buildPayoutXdr, buildCreateXdr,
   buildGuaranteeXdr, buildWithdrawXdr, buildAliasXdr, submit, ensureFunded, short, readActivity, txUrl,
+  buildRegisterXdr, buildJoinXdr, buildEndorseXdr,
   readBalance,
 } from "./chain.js";
 import { pollarEnabled, connectFreighter, connectPollar, sign, wallet } from "./wallet.js";
@@ -57,6 +67,7 @@ function saveSkin(patch) {
 // ---------- Render ----------
 
 function rebuild() {
+  applyFigures(circle);
   scene.setMembers(circle.members);
   circle.paid.forEach((mark, i) => scene.setPending(i, mark, circle.round));
   scene.setTurn(recipientOf(circle), false);
@@ -229,11 +240,26 @@ function renderPerson() {
     <div class="credit">${credit ? fmt(credit, circle.token) : t("aún sin historial suficiente")}</div>
     <p><small>${t("Es evidencia de pagos, verificable en la cadena; no es un crédito aprobado. Monto ilustrativo.")}</small></p>
     <button class="ghost cert" type="button">${t("Descargar certificado del aguayo")}</button>
+    <button class="ghost figbtn" type="button">${t("Elegir personaje")}</button>
+    ${isTestnet() && deployment?.registro && m.address === me() ? `<div class="reg-actions"><button class="ghost join" type="button">${t("Sumar a mi pasaporte")}</button><button class="ghost endorse" type="button">${t("Avalar este círculo")}</button></div>` : ""}
     <form class="alias" hidden><label>Tu nombre en el círculo
       <input name="alias" maxlength="24" required placeholder="Ej.: Doña Rosa" /></label>
       <button class="ghost">Guardar en la cadena</button></form>`;
   box.querySelector("h3").textContent = m.name;
   box.querySelector(".role").textContent = m.role;
+  box.querySelector(".figbtn").onclick = () => openFigurePicker(selected);
+  box.querySelector(".join")?.addEventListener("click", () =>
+    run(async () => {
+      await signAndSend(() => buildJoinXdr(deployment, me(), circle.contractId), "tu pasaporte");
+      toast(t("Listo: este círculo ya suma a tu pasaporte de reputación ✓"));
+    })
+  );
+  box.querySelector(".endorse")?.addEventListener("click", () =>
+    run(async () => {
+      await signAndSend(() => buildEndorseXdr(deployment, me(), circle.contractId), "tu aval");
+      toast(t("Aval registrado en la cadena ✓"));
+    })
+  );
   box.querySelector(".cert").onclick = () =>
     downloadCertificate({
       name: m.name,
@@ -597,6 +623,8 @@ $("#form-create").addEventListener("submit", (ev) => {
   if (members.length < 2) return void (err.textContent = "Hacen falta al menos 2 miembros");
   const amount = Number(f.get("amount"));
   const periodSeconds = Number(f.get("period"));
+  const cname = String(f.get("cname") || "").trim().slice(0, 40) || "Pasanaku";
+  const region = String(f.get("region") || "otro");
   dlg.close();
   run(async () => {
     deployment ??= await loadDeployment();
@@ -604,10 +632,67 @@ $("#form-create").addEventListener("submit", (ev) => {
     const res = await signAndSend(() => buildCreateXdr(deployment, me(), { members, amount, periodSeconds }), "el nuevo círculo");
     const id = String(res.value);
     saveCircle(id);
+    // Memoria colectiva: el círculo queda en el registro on-chain y el creador se suma a su pasaporte
+    if (deployment.registro) {
+      try {
+        await signAndSend(() => buildRegisterXdr(deployment, me(), id, cname, region), "el registro del círculo");
+        await signAndSend(() => buildJoinXdr(deployment, me(), id), "tu pasaporte");
+      } catch (e) {
+        toast(t("El círculo se creó, pero no se pudo registrar: {why}", { why: friendly(e) }), 5000);
+      }
+    }
     toast(t("¡Pasanaku creado! Compartí el enlace con los miembros"));
     await openTestnet(id);
   });
 });
+
+// ---------- Personajes ----------
+
+const FIG_KEY = "awayu.figures";
+function figureMap() {
+  try {
+    return JSON.parse(localStorage.getItem(FIG_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+/** Aplica los personajes elegidos (por dirección o nombre) antes de dibujar el círculo. */
+function applyFigures(c) {
+  const map = figureMap();
+  c.members.forEach((m) => {
+    const k = m.address?.startsWith("GDEMO") ? m.name : m.address;
+    if (map[k]) m.figure = map[k];
+  });
+}
+
+let figCatalog = null;
+async function openFigurePicker(i) {
+  if (i < 0) return;
+  figCatalog ??= await fetch("/models/personajes.json").then((r) => r.json()).catch(() => ({ figures: [] }));
+  const grid = $("#fig-grid");
+  const m = circle.members[i];
+  grid.innerHTML = "";
+  for (const f of figCatalog.figures) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "fig" + (m.figure === f.id ? " on" : "");
+    b.innerHTML = `<i style="background:linear-gradient(135deg,${f.colors[0]} 0 45%,${f.colors[1]} 45% 75%,${f.colors[2]} 75%)"></i><span></span>`;
+    b.querySelector("span").textContent = t(f.label);
+    b.onclick = () => {
+      const map = figureMap();
+      map[m.address?.startsWith("GDEMO") ? m.name : m.address] = f.id;
+      try {
+        localStorage.setItem(FIG_KEY, JSON.stringify(map));
+      } catch {}
+      m.figure = f.id;
+      scene.setFigure(i, f.id);
+      grid.querySelectorAll(".fig").forEach((x) => x.classList.toggle("on", x === b));
+    };
+    grid.appendChild(b);
+  }
+  applyStatic($("#dlg-figure"));
+  $("#dlg-figure").showModal();
+}
 
 function saveCircle(id) {
   try {

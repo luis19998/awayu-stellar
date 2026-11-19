@@ -54,6 +54,7 @@ function render() {
   $("#s-yield").textContent = "+" + fmt(idleYield(c), c.token);
   scene.setPotLevel(pot(c) / (c.amount * n));
   scene.updateLabels(c.members, c.members.map((m) => `${score(m.history)} pts`), rec);
+  scene.placeIlla(bestMember(c));
 
   const ul = $("#members");
   ul.innerHTML = "";
@@ -91,6 +92,17 @@ function render() {
   if (c.contractId) link.href = explorerUrl(c.contractId);
   $("#btn-share").hidden = !t;
   renderPerson();
+}
+
+/** Quien tiene mejor reputación (y al menos dos rondas) lleva la illa. */
+function bestMember(c) {
+  let best = -1;
+  c.members.forEach((m, i) => {
+    if (m.history.length < 2) return;
+    const s = score(m.history) * 100 + m.history.length;
+    if (best < 0 || s > score(c.members[best].history) * 100 + c.members[best].history.length) best = i;
+  });
+  return best;
 }
 
 function deadlineText(c) {

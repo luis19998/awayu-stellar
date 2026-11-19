@@ -7,6 +7,7 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { clothTexture, markTexture, PALETTE } from "./aguayo.js";
 
 const RING = 4.4;
@@ -18,7 +19,7 @@ export function createScene(container, { onPick } = {}) {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.domElement.style.touchAction = "pan-y";
   container.appendChild(renderer.domElement);
 
@@ -100,6 +101,19 @@ export function createScene(container, { onPick } = {}) {
   jarGroup.add(glow);
   scene.add(jarGroup);
 
+  // Modelos hechos en Blender y Fusion 360 (si fallan, queda la versión procedural)
+  const loader = new GLTFLoader();
+  const loadModel = (name) =>
+    new Promise((ok) => loader.load(`/models/${name}.glb`, (g) => ok(g.scene), undefined, () => ok(null)));
+  const shadowy = (o) => o.traverse((c) => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+  loadModel("cantaro").then((m) => {
+    if (!m) return;
+    shadowy(m);
+    jar.visible = false;
+    band.visible = false;
+    jarGroup.add(m);
+  });
+
   // Haz de luz del turno
   const beam = new THREE.Mesh(
     new THREE.CylinderGeometry(0.35, 1.1, 14, 32, 1, true),
@@ -129,6 +143,40 @@ export function createScene(container, { onPick } = {}) {
   // Miembros
   const members = []; // { group, layers: Mesh[], label, pos }
   const coinGeo = new THREE.CylinderGeometry(0.16, 0.16, 0.04, 24);
+  let coinProto = null;
+  loadModel("moneda").then((m) => {
+    if (!m) return;
+    m.scale.setScalar(0.17);
+    m.traverse((c) => {
+      if (c.isMesh) c.material = coinMat;
+    });
+    coinProto = m;
+  });
+
+  // Illa: amuleto de prosperidad sobre la pila de quien tiene mejor reputación
+  const illa = new THREE.Group();
+  illa.visible = false;
+  scene.add(illa);
+  let illaOwner = -1;
+  loadModel("illa").then((m) => {
+    if (!m) return;
+    m.scale.setScalar(0.55);
+    m.rotation.y = Math.PI / 2;
+    shadowy(m);
+    illa.add(m);
+    // Luz propia: la illa "brilla" sobre la pila de quien la gana
+    const glowLight = new THREE.PointLight("#ffe7b0", 1.4, 3, 1.5);
+    glowLight.position.set(0.6, 1.6, 0.9);
+    illa.add(glowLight);
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(0.34, 0.015, 8, 48),
+      new THREE.MeshBasicMaterial({ color: "#5fe0ea" })
+    );
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.y = 0.02;
+    illa.add(ring);
+    if (illaOwner >= 0) placeIlla(illaOwner);
+  });
   const coinMat = new THREE.MeshStandardMaterial({
     color: "#ffcf4a", metalness: 0.9, roughness: 0.25, emissive: "#a86b00", emissiveIntensity: 0.6,
   });
@@ -229,7 +277,7 @@ export function createScene(container, { onPick } = {}) {
       const m = members[i];
       if (!m) return;
       const top = topOf(i);
-      m.label.position.y = top + 0.75;
+      m.label.position.y = top + 0.75 + (i === illaOwner && illa.visible ? 0.7 : 0);
       m.label.userData.draw(mem.name, scores[i], i === recipient || i === selected);
     });
   }
@@ -281,7 +329,7 @@ export function createScene(container, { onPick } = {}) {
   }
 
   function coinArc(from, to, delay = 0, done) {
-    const coin = new THREE.Mesh(coinGeo, coinMat);
+    const coin = coinProto ? coinProto.clone() : new THREE.Mesh(coinGeo, coinMat);
     coin.visible = false;
     scene.add(coin);
     const mid = from.clone().lerp(to, 0.5);
@@ -386,7 +434,7 @@ export function createScene(container, { onPick } = {}) {
   function tween(ms, fn) {
     tweens.push({ t0: performance.now(), ms, fn });
   }
-  const clock = new THREE.Clock();
+  const t0 = performance.now();
   function resize() {
     const w = container.clientWidth;
     const h = container.clientHeight;
@@ -403,7 +451,7 @@ export function createScene(container, { onPick } = {}) {
   resize();
 
   renderer.setAnimationLoop(() => {
-    const t = clock.getElapsedTime();
+    const t = (performance.now() - t0) / 1000;
     const now = performance.now();
     for (let k = tweens.length - 1; k >= 0; k--) {
       const tw = tweens[k];
@@ -412,6 +460,10 @@ export function createScene(container, { onPick } = {}) {
       if (p >= 1) tweens.splice(k, 1);
     }
     halo.rotation.z = t * 0.8;
+    if (illa.visible) {
+      illa.rotation.y = t * 0.6;
+      illa.position.y = topOf(illaOwner) + 0.02 + Math.sin(t * 1.8) * 0.04;
+    }
     halo.scale.setScalar(1 + Math.sin(t * 2.4) * 0.06);
     cloth.rotation.z = t * 0.01;
     members.forEach((m) => {
@@ -421,7 +473,17 @@ export function createScene(container, { onPick } = {}) {
     composer.render();
   });
 
+  function placeIlla(i) {
+    illaOwner = i;
+    if (i < 0 || !members[i] || !illa.children.length) return void (illa.visible = false);
+    illa.visible = true;
+    const p = members[i].pos.clone();
+    p.y = topOf(i) + 0.02;
+    illa.position.copy(p);
+  }
+
   return {
+    placeIlla,
     setMembers, updateLabels, setTurn, addLayer, setPending, commitPending,
     flyContribution, flyPayout, setPotLevel, select, focus, controls,
   };

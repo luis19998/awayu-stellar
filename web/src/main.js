@@ -6,6 +6,8 @@ import { historyStripDataURL, applyPalette } from "./aguayo.js";
 import { THEMES, loadThemeId, saveThemeId } from "./themes.js";
 import { t, initLang, setLang, getLang, applyStatic } from "./i18n.js";
 import { simulate, simulationSvg } from "./simulator.js";
+import * as sfx from "./sound.js";
+import { downloadCertificate } from "./certificate.js";
 import {
   demoCircle, contribute, payout, pot, recipientOf, score, creditLine, idleYield, depositGuarantee, parsePeople,
   ON_TIME, LATE, MISSED,
@@ -191,11 +193,22 @@ function renderPerson() {
     <p>${t("Con este aguayo podría acceder a un microcrédito de")}</p>
     <div class="credit">${credit ? fmt(credit, circle.token) : t("aún sin historial suficiente")}</div>
     <p><small>${t("Es evidencia de pagos, verificable en la cadena; no es un crédito aprobado. Monto ilustrativo.")}</small></p>
+    <button class="ghost cert" type="button">${t("Descargar certificado del aguayo")}</button>
     <form class="alias" hidden><label>Tu nombre en el círculo
       <input name="alias" maxlength="24" required placeholder="Ej.: Doña Rosa" /></label>
       <button class="ghost">Guardar en la cadena</button></form>`;
   box.querySelector("h3").textContent = m.name;
   box.querySelector(".role").textContent = m.role;
+  box.querySelector(".cert").onclick = () =>
+    downloadCertificate({
+      name: m.name,
+      history: m.history,
+      score: score(m.history),
+      circleId: circle.contractId,
+      token: circle.token,
+      amount: circle.amount,
+      date: new Date().toISOString().slice(0, 10),
+    }).catch((e) => toast("No se pudo crear el certificado: " + e.message));
   const form = box.querySelector(".alias");
   if (isTestnet() && circle.version >= 2 && m.address === me()) {
     form.hidden = false;
@@ -274,11 +287,14 @@ function toast(msg, ms = 3200) {
 
 async function animateContribution(i, mark) {
   await new Promise((r) => scene.flyContribution(i, r));
+  sfx.coin();
   scene.setPending(i, mark, circle.round);
 }
 
 async function animatePayout(to, amount, marks, round) {
+  sfx.payout();
   await new Promise((r) => scene.flyPayout(to, amount / circle.amount, r));
+  sfx.weave();
   marks.forEach((m, i) => scene.commitPending(i, m ?? MISSED, round));
   toast(t("{name} recibió {amount}", { name: circle.members[to].name, amount: fmt(amount, circle.token) }));
   await wait(500);
@@ -345,6 +361,7 @@ async function run(fn) {
     await fn();
   } catch (e) {
     console.error(e);
+    sfx.error();
     toast("No se pudo: " + friendly(e), 5000);
   } finally {
     busy = false;
@@ -661,6 +678,23 @@ $("#btn-sim").onclick = () => {
   dlgSim.showModal();
 };
 formSim.addEventListener("input", renderSim);
+
+// ---------- Sonido ----------
+
+const btnSound = $("#btn-sound");
+const syncSound = () => {
+  btnSound.textContent = sfx.isMuted() ? "🔇" : "🔊";
+  btnSound.setAttribute("aria-label", sfx.isMuted() ? "Activar sonido" : "Silenciar");
+};
+syncSound();
+btnSound.onclick = () => {
+  sfx.initSound();
+  sfx.setMuted(!sfx.isMuted());
+  syncSound();
+  if (!sfx.isMuted()) sfx.coin();
+};
+// El audio del navegador solo arranca después de un gesto del usuario
+addEventListener("pointerdown", () => sfx.initSound(), { once: true });
 
 // ---------- Idioma ----------
 

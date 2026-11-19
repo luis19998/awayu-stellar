@@ -61,6 +61,7 @@ const EN = {
   "{name} recibió {amount}": "{name} received {amount}",
   "Modo demo": "Demo mode",
   "Datos reales del contrato en testnet": "Live contract data on testnet",
+  "Descargar certificado del aguayo": "Download aguayo certificate",
   // Simulador
   "Simulador": "Simulator",
   "Simulador de pasanaku": "Savings circle simulator",

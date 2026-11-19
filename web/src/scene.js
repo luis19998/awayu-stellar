@@ -33,7 +33,11 @@ export const TABLES = {
 const RING = 4.4;
 const LAYER_H = 0.3;
 
-export function createScene(container, { onPick } = {}) {
+export function createScene(container, { onPick, active: startActive = true } = {}) {
+  // Los modelos pesados se piden recién cuando la escena se muestra por primera vez
+  let wake;
+  const awake = new Promise((r) => (wake = r));
+  if (startActive) wake();
   // En pantallas chicas (celulares) bajamos resolución y sombras para cuidar batería
   const small = Math.min(innerWidth, innerHeight) < 760;
   const renderer = new THREE.WebGLRenderer({ antialias: !small, powerPreference: "high-performance" });
@@ -141,7 +145,7 @@ export function createScene(container, { onPick } = {}) {
   const cache = new Map();
   const loadModel = (name) => {
     if (!cache.has(name))
-      cache.set(name, new Promise((ok) => loader.load(`/models/${name}.glb`, (g) => ok(g.scene), undefined, () => ok(null))));
+      cache.set(name, awake.then(() => new Promise((ok) => loader.load(`/models/${name}.glb`, (g) => ok(g.scene), undefined, () => ok(null)))));
     return cache.get(name);
   };
   const shadowy = (o) => o.traverse((c) => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
@@ -578,12 +582,13 @@ export function createScene(container, { onPick } = {}) {
   resize();
 
   // Sin pestaña visible no dibujamos
-  let active = true;
+  let active = startActive;
   document.addEventListener("visibilitychange", () => renderer.setAnimationLoop(document.hidden || !active ? null : frame));
-  renderer.setAnimationLoop(frame);
+  if (active) renderer.setAnimationLoop(frame);
   /** Pausa la escena cuando otra sección del panel está a la vista. */
   function setActive(on) {
     active = on;
+    if (on) wake();
     renderer.setAnimationLoop(on && !document.hidden ? frame : null);
     if (on) resize();
   }

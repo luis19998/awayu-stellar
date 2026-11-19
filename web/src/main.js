@@ -1,13 +1,15 @@
 import "./style.css";
+import "./features.css";
 import { StrKey } from "@stellar/stellar-sdk";
 import { createScene } from "./scene.js";
 import { historyStripDataURL } from "./aguayo.js";
 import {
-  demoCircle, contribute, payout, pot, recipientOf, score, creditLine, idleYield, ON_TIME, LATE, MISSED,
+  demoCircle, contribute, payout, pot, recipientOf, score, creditLine, idleYield, depositGuarantee,
+  ON_TIME, LATE, MISSED,
 } from "./model.js";
 import {
   loadDeployment, readCircle, explorerUrl, buildContributeXdr, buildPayoutXdr, buildCreateXdr,
-  submit, ensureFunded, short,
+  buildGuaranteeXdr, buildWithdrawXdr, buildAliasXdr, submit, ensureFunded, short,
 } from "./chain.js";
 import { pollarEnabled, connectFreighter, connectPollar, sign, wallet } from "./wallet.js";
 
@@ -63,7 +65,8 @@ function render() {
     li.className = (i === selected ? "sel " : "") + (i === rec ? "turn-of" : "");
     const paid = c.paid.get(i);
     li.innerHTML = `<b></b><span class="sc">${score(m.history)} pts</span>
-      <span class="st ${paid ? "ok" : ""}">${paid === ON_TIME ? "Aportó" : paid === LATE ? "Aportó tarde" : "Falta aportar"} · ${m.role}</span><span></span>`;
+      <span class="st ${paid ? "ok" : ""}">${paid === ON_TIME ? "Aportó" : paid === LATE ? "Aportó tarde" : "Falta aportar"} · ${m.role}</span>
+      <span class="chips">${m.guarantee > 0 ? `<i class="chip shield" title="Garantía disponible">Garantía ${fmt(m.guarantee, c.token)}</i>` : ""}</span>`;
     li.querySelector("b").textContent = m.name;
     if (m.history.length) {
       const img = new Image();
@@ -86,6 +89,7 @@ function render() {
     bC.textContent = selected >= 0 ? `Aportar como ${c.members[selected].name}` : "Aportar (todos)";
   }
   $("#btn-payout").disabled = busy || !canPayout(c);
+  renderGuarantee(c, done);
   $(".late").style.display = t ? "none" : "";
   const link = $("#lnk-contract");
   link.hidden = !c.contractId;
@@ -114,6 +118,26 @@ function deadlineText(c) {
   return `Una ronda cada ${c.periodDays} días`;
 }
 
+/** Botón de garantía: dejarla (una cuota) o, al terminar el círculo, retirarla. */
+function renderGuarantee(c, done) {
+  const b = $("#btn-guarantee");
+  const t = isTestnet();
+  if (t && c.version < 2) {
+    b.hidden = true;
+    return;
+  }
+  b.hidden = false;
+  const who = t ? myIndex() : selected;
+  const m = c.members[who];
+  if (done) {
+    b.textContent = "Retirar garantía";
+    b.disabled = busy || !t || !m || !(m.guarantee > 0);
+  } else {
+    b.textContent = m ? (m.guarantee > 0 ? `${t ? "Tu" : "Su"} garantía está activa` : `Dejar garantía (${fmt(c.amount, c.token)})`) : "Elegí un miembro para dejar garantía";
+    b.disabled = busy || !m || m.guarantee > 0 || (t && !me());
+  }
+}
+
 function renderPerson() {
   const box = $("#person");
   if (selected < 0 || !circle.members[selected]) return void (box.hidden = true);
@@ -124,9 +148,27 @@ function renderPerson() {
     <p>${m.history.length} rondas tejidas · reputación ${score(m.history)}/100</p>
     <p>Con este aguayo podría acceder a un microcrédito de</p>
     <div class="credit">${credit ? fmt(credit, circle.token) : "aún sin historial suficiente"}</div>
-    <p><small>Historial en la cadena, portable y verificable por cualquier cooperativa. Monto ilustrativo.</small></p>`;
+    <p><small>Es evidencia de pagos, verificable en la cadena; no es un crédito aprobado. Monto ilustrativo.</small></p>
+    <form class="alias" hidden><label>Tu nombre en el círculo
+      <input name="alias" maxlength="24" required placeholder="Ej.: Doña Rosa" /></label>
+      <button class="ghost">Guardar en la cadena</button></form>`;
   box.querySelector("h3").textContent = m.name;
   box.querySelector(".role").textContent = m.role;
+  const form = box.querySelector(".alias");
+  if (isTestnet() && circle.version >= 2 && m.address === me()) {
+    form.hidden = false;
+    form.alias.value = m.alias || "";
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const alias = form.alias.value.trim();
+      if (!alias || new TextEncoder().encode(alias).length > 24) return toast("El nombre debe tener entre 1 y 24 caracteres");
+      run(async () => {
+        await signAndSend(() => buildAliasXdr(deployment, circle.contractId, me(), alias), "tu nombre");
+        toast("Nombre guardado en la cadena ✓");
+        await refreshChain(true);
+      });
+    };
+  }
 }
 
 function pick(i) {
@@ -172,9 +214,10 @@ async function demoContribute() {
 
 async function demoPayout() {
   const round = circle.round;
-  const marks = circle.members.map((_, i) => circle.paid.get(i));
   const res = payout(circle);
   if (!res) return;
+  // La marca final sale del historial: incluye las rondas cubiertas por garantía
+  const marks = circle.members.map((m) => m.history.at(-1));
   await animatePayout(res.to, res.amount, marks, round);
   scene.setTurn(recipientOf(circle));
 }
@@ -233,6 +276,23 @@ function friendly(e) {
 }
 
 $("#btn-contribute").onclick = () => run(isTestnet() ? chainContribute : demoContribute);
+
+$("#btn-guarantee").onclick = () =>
+  run(async () => {
+    const done = circle.round >= circle.order.length;
+    if (!isTestnet()) {
+      if (depositGuarantee(circle, selected)) toast(`${circle.members[selected].name} dejó una cuota de garantía`);
+      return;
+    }
+    if (done) {
+      await signAndSend(() => buildWithdrawXdr(deployment, circle.contractId, me()), "el retiro de tu garantía");
+      toast("Garantía devuelta a tu billetera ✓");
+    } else {
+      await signAndSend(() => buildGuaranteeXdr(deployment, circle.contractId, me()), "tu garantía");
+      toast("Garantía depositada: si un día no podés pagar, cubre tu cuota ✓");
+    }
+    await refreshChain(true);
+  });
 $("#btn-payout").onclick = () => run(isTestnet() ? chainPayout : demoPayout);
 
 // ---------- Modos y carga de círculos ----------

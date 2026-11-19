@@ -8,7 +8,27 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { clothTexture, markTexture, PALETTE } from "./aguayo.js";
+import { SCENARIOS, skyDome, hillsMesh, props, groundFor } from "./scenarios.js";
+
+/** Vasijas disponibles: archivo/nodo del modelo y altura de la boca (donde caen las monedas). */
+export const VESSELS = {
+  cantaro: { label: "Cántaro pintado", mouth: 1.85, glow: true },
+  qero: { label: "Q'ero con tocapus", node: "vasija_qero", mouth: 1.9, glow: true },
+  chanchito: { label: "Chanchito alcancía", node: "vasija_chanchito", mouth: 1.78, glow: false },
+  olla: { label: "Olla de barro", node: "vasija_olla", mouth: 1.72, glow: false },
+  cofre: { label: "Cofre de madera", node: "vasija_cofre", mouth: 1.8, glow: false },
+};
+/** Mesas: ninguna (aguayo sobre el suelo) o una de las talladas en Blender. */
+export const TABLES = {
+  suelo: { label: "Aguayo sobre el suelo", h: 0 },
+  madera: { label: "Mesa de madera", node: "mesa_madera_h0.55", h: 0.55 },
+  piedra: { label: "Mesa de piedra", node: "mesa_piedra_h0.7", h: 0.7 },
+  sal: { label: "Bloque de sal", node: "mesa_sal_h0.45", h: 0.45 },
+  tronco: { label: "Tronco cortado", node: "mesa_tronco_h0.6", h: 0.6 },
+};
 
 const RING = 4.4;
 const LAYER_H = 0.3;
@@ -28,6 +48,10 @@ export function createScene(container, { onPick } = {}) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color("#0b0820");
   scene.fog = new THREE.FogExp2("#0b0820", 0.022);
+  // Reflejos: un entorno de estudio suave para la cerámica, el oro y el agua
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environmentIntensity = 0.35;
 
   const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 800);
   camera.position.set(0, 6.2, 14);
@@ -45,7 +69,8 @@ export function createScene(container, { onPick } = {}) {
   controls.enablePan = false;
 
   // Luces: luna fría y fogón cálido al centro
-  scene.add(new THREE.HemisphereLight("#7d74c9", "#2a1410", 0.55));
+  const hemi = new THREE.HemisphereLight("#7d74c9", "#2a1410", 0.55);
+  scene.add(hemi);
   const moon = new THREE.DirectionalLight("#c9d4ff", 1.2);
   moon.position.set(-8, 14, 6);
   moon.castShadow = true;
@@ -56,16 +81,19 @@ export function createScene(container, { onPick } = {}) {
   hearth.position.set(0, 1.4, 0);
   scene.add(hearth);
 
-  scene.add(stars(), mountains());
+  // Paisaje (cielo, estrellas, cerros, suelo y detalles) que cambia con el escenario
+  const sky = skyDome(SCENARIOS.altiplano.sky);
+  const starField = stars();
+  scene.add(sky, starField);
+  const landscape = new THREE.Group();
+  scene.add(landscape);
 
-  // Suelo y aguayo
-  const ground = new THREE.Mesh(
-    new THREE.CircleGeometry(60, 64),
-    new THREE.MeshStandardMaterial({ color: "#1a1222", roughness: 1 })
-  );
-  ground.rotation.x = -Math.PI / 2;
-  ground.receiveShadow = true;
-  scene.add(ground);
+  // Todo lo que está sobre la mesa vive en "stage", que sube con la altura de la mesa
+  const stage = new THREE.Group();
+  scene.add(stage);
+  const tableSlot = new THREE.Group();
+  scene.add(tableSlot);
+
   const cloth = new THREE.Mesh(
     new THREE.CircleGeometry(6.2, 96),
     new THREE.MeshStandardMaterial({ map: clothTexture(), roughness: 0.95 })
@@ -73,7 +101,7 @@ export function createScene(container, { onPick } = {}) {
   cloth.rotation.x = -Math.PI / 2;
   cloth.position.y = 0.01;
   cloth.receiveShadow = true;
-  scene.add(cloth);
+  stage.add(cloth);
 
   // Vasija del pozo (perfil de un cántaro andino)
   const jarGroup = new THREE.Group();
@@ -103,20 +131,22 @@ export function createScene(container, { onPick } = {}) {
   glow.rotation.x = -Math.PI / 2;
   glow.position.y = 1.79;
   jarGroup.add(glow);
-  scene.add(jarGroup);
+  stage.add(jarGroup);
 
   // Modelos hechos en Blender y Fusion 360 (si fallan, queda la versión procedural)
   const loader = new GLTFLoader();
-  const loadModel = (name) =>
-    new Promise((ok) => loader.load(`/models/${name}.glb`, (g) => ok(g.scene), undefined, () => ok(null)));
+  const draco = new DRACOLoader();
+  draco.setDecoderPath("/draco/");
+  loader.setDRACOLoader(draco);
+  const cache = new Map();
+  const loadModel = (name) => {
+    if (!cache.has(name))
+      cache.set(name, new Promise((ok) => loader.load(`/models/${name}.glb`, (g) => ok(g.scene), undefined, () => ok(null))));
+    return cache.get(name);
+  };
   const shadowy = (o) => o.traverse((c) => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
-  loadModel("cantaro").then((m) => {
-    if (!m) return;
-    shadowy(m);
-    jar.visible = false;
-    band.visible = false;
-    jarGroup.add(m);
-  });
+  let vesselModel = null;
+  let vesselId = "cantaro";
 
   // Haz de luz del turno
   const beam = new THREE.Mesh(
@@ -135,12 +165,14 @@ export function createScene(container, { onPick } = {}) {
   halo.position.y = 0.05;
   const turn = new THREE.Group();
   turn.add(beam, halo);
-  scene.add(turn);
+  stage.add(turn);
 
   // Posprocesado con brillo
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
   const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.85, 0.5, 0.82);
+  let baseBloom = 0.85;
+  let baseHearth = 18;
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
@@ -160,7 +192,7 @@ export function createScene(container, { onPick } = {}) {
   // Illa: amuleto de prosperidad sobre la pila de quien tiene mejor reputación
   const illa = new THREE.Group();
   illa.visible = false;
-  scene.add(illa);
+  stage.add(illa);
   let illaOwner = -1;
   loadModel("illa").then((m) => {
     if (!m) return;
@@ -239,8 +271,9 @@ export function createScene(container, { onPick } = {}) {
   /** Libera la memoria de GPU de un objeto retirado (sin tocar geometrías compartidas). */
   function dispose(obj) {
     obj.traverse((o) => {
+      if (o.userData.figure) return; // geometría compartida del catálogo de personajes
       if (o.geometry && o.geometry !== layerGeo && o.geometry !== coinGeo) o.geometry.dispose();
-      const mats = Array.isArray(o.material) ? o.material : o.material ? [o.material] : [];
+      const mats = o.userData.figure ? [] : Array.isArray(o.material) ? o.material : o.material ? [o.material] : [];
       for (const mat of new Set(mats)) {
         mat.map?.dispose();
         mat.emissiveMap?.dispose();
@@ -249,17 +282,41 @@ export function createScene(container, { onPick } = {}) {
     });
   }
 
+  // Personajes (36 figuras de Alasitas hechas en Blender)
+  let figures = null; // Map nombre -> malla
+  const figuresReady = loadModel("personajes").then((root) => {
+    if (!root) return null;
+    figures = new Map();
+    root.traverse((o) => {
+      if (o.isMesh && o.name.startsWith("pj_")) figures.set(o.name, o);
+    });
+    return figures;
+  });
+  let lastList = [];
+  function figureFor(mem, i) {
+    if (!figures || !figures.size) return null;
+    const names = [...figures.keys()].sort();
+    const key = mem.figure && figures.has(mem.figure) ? mem.figure : names[hashIndex(mem.address || mem.name, names.length, i)];
+    const src = figures.get(key);
+    const f = new THREE.Mesh(src.geometry, src.material);
+    f.castShadow = true;
+    f.receiveShadow = true;
+    f.userData.figure = key;
+    return f;
+  }
+
   function setMembers(list) {
+    lastList = list;
     for (const m of members) {
-      scene.remove(m.group);
-      dispose(m.group);
+      stage.remove(m.group);
+      dispose(m.group, true);
     }
     members.length = 0;
     list.forEach((mem, i) => {
       const group = new THREE.Group();
       const pos = memberPos(i, list.length);
       group.position.copy(pos);
-      group.lookAt(0, 0, 0);
+      group.rotation.y = Math.atan2(-pos.x, -pos.z); // mira al centro sin inclinarse si la mesa sube
       const base = new THREE.Mesh(
         new THREE.CylinderGeometry(0.75, 0.85, 0.12, 32),
         new THREE.MeshStandardMaterial({ color: "#3b2547", roughness: 0.8 })
@@ -282,17 +339,35 @@ export function createScene(container, { onPick } = {}) {
       hit.position.y = 2;
       hit.userData.index = i;
       group.add(hit);
-      scene.add(group);
-      members.push({ group, layers, label: lab, pos, hit, pending: null });
+      // Personaje parado al costado de su pila, mirando hacia afuera
+      const fig = figureFor(mem, i);
+      if (fig) {
+        fig.position.set(0.95, 0, 0.05);
+        fig.rotation.y = Math.PI;
+        fig.scale.setScalar(1.3);
+        group.add(fig);
+      }
+      stage.add(group);
+      members.push({ group, layers, label: lab, pos, hit, pending: null, fig });
     });
   }
+  // Cuando llegan los personajes, se rearma la ronda con ellos
+  figuresReady.then(() => {
+    if (!lastList.length) return;
+    setMembers(lastList);
+    if (lastLabels) updateLabels(...lastLabels);
+    if (turnIndex >= 0) setTurn(turnIndex, false);
+    if (illaOwner >= 0) placeIlla(illaOwner);
+  });
 
   function topOf(i) {
     const m = members[i];
     return 0.12 + LAYER_H * m.layers.length + (m.pending ? LAYER_H : 0);
   }
 
+  let lastLabels = null;
   function updateLabels(list, scores, recipient) {
+    lastLabels = [list, scores, recipient];
     list.forEach((mem, i) => {
       const m = members[i];
       if (!m) return;
@@ -302,7 +377,9 @@ export function createScene(container, { onPick } = {}) {
     });
   }
 
+  let turnIndex = -1;
   function setTurn(i, animate = true) {
+    turnIndex = i ?? -1;
     if (i == null || !members[i]) {
       turn.visible = false;
       return;
@@ -355,7 +432,7 @@ export function createScene(container, { onPick } = {}) {
   function coinArc(from, to, delay = 0, done) {
     const coin = coinProto ? coinProto.clone() : new THREE.Mesh(coinGeo, coinMat);
     coin.visible = false;
-    scene.add(coin);
+    stage.add(coin);
     const mid = from.clone().lerp(to, 0.5);
     mid.y += 2.6;
     const curve = new THREE.QuadraticBezierCurve3(from, mid, to);
@@ -366,7 +443,7 @@ export function createScene(container, { onPick } = {}) {
         coin.rotation.x = k * 12;
         coin.rotation.z = k * 6;
         if (k >= 1) {
-          scene.remove(coin);
+          stage.remove(coin);
           done?.();
         }
       });
@@ -380,7 +457,7 @@ export function createScene(container, { onPick } = {}) {
     return p;
   }
 
-  const jarMouth = new THREE.Vector3(0, 1.85, 0);
+  const jarMouth = new THREE.Vector3(0, VESSELS.cantaro.mouth, 0);
 
   function flyContribution(i, done) {
     coinArc(worldTop(i), jarMouth, 0, () => {
@@ -400,14 +477,14 @@ export function createScene(container, { onPick } = {}) {
   function pulse() {
     tween(500, (k) => {
       glow.scale.setScalar(1 + Math.sin(k * Math.PI) * 0.35);
-      hearth.intensity = 18 + Math.sin(k * Math.PI) * 25;
+      hearth.intensity = baseHearth + Math.sin(k * Math.PI) * 25;
     });
   }
 
   function flash() {
     tween(1400, (k) => {
       beam.material.opacity = 0.13 + Math.sin(k * Math.PI) * 0.35;
-      bloom.strength = 0.85 + Math.sin(k * Math.PI) * 0.9;
+      bloom.strength = baseBloom + Math.sin(k * Math.PI) * 0.9;
     });
   }
 
@@ -422,7 +499,7 @@ export function createScene(container, { onPick } = {}) {
   const ringMat = new THREE.MeshBasicMaterial({ color: "#5fe0ea", transparent: true, opacity: 0.95 });
   let ringFg = new THREE.Mesh(new THREE.RingGeometry(1.32, 1.42, 96, 1, Math.PI / 2, 0.0001), ringMat);
   ringGroup.add(ringBg, ringFg);
-  scene.add(ringGroup);
+  stage.add(ringGroup);
   let ringValue = -1;
 
   function setDeadline(f) {
@@ -439,7 +516,7 @@ export function createScene(container, { onPick } = {}) {
 
   function setPotLevel(f) {
     glow.material.color.setHSL(0.11, 1, 0.35 + 0.35 * f);
-    hearth.intensity = 10 + 30 * f;
+    hearth.intensity = baseHearth * 0.6 + 30 * f * (baseHearth / 18);
   }
 
   function select(i) {
@@ -513,6 +590,12 @@ export function createScene(container, { onPick } = {}) {
       if (p >= 1) tweens.splice(k, 1);
     }
     halo.rotation.z = t * 0.8;
+    members.forEach((m, i) => {
+      if (!m.fig) return;
+      const hop = i === turnIndex ? Math.abs(Math.sin(t * 4)) * 0.18 : i === selected ? 0.06 : 0;
+      m.fig.position.y = hop;
+      m.fig.rotation.y = Math.PI + (i === turnIndex ? Math.sin(t * 2) * 0.35 : 0);
+    });
     if (illa.visible) {
       illa.rotation.y = t * 0.6;
       illa.position.y = topOf(illaOwner) + 0.02 + Math.sin(t * 1.8) * 0.04;
@@ -539,6 +622,92 @@ export function createScene(container, { onPick } = {}) {
     band.material.needsUpdate = true;
   }
 
+  // ---------- Personalización: escenario, vasija y mesa ----------
+  const skin = { scenario: null, vessel: null, table: null };
+
+  function setScenario(id) {
+    const sc = SCENARIOS[id] || SCENARIOS.altiplano;
+    skin.scenario = id;
+    sky.userData.setColors(sc.sky);
+    scene.background = new THREE.Color(sc.sky[2]);
+    scene.fog = new THREE.FogExp2(sc.fog[0], sc.fog[1]);
+    starField.visible = !!sc.night;
+    hemi.color.set(sc.hemi[0]);
+    hemi.groundColor.set(sc.hemi[1]);
+    hemi.intensity = sc.hemi[2];
+    moon.color.set(sc.sun[0]);
+    moon.intensity = sc.sun[1];
+    moon.position.set(...sc.sun[2]);
+    renderer.toneMappingExposure = sc.exposure;
+    bloom.strength = sc.bloom;
+    baseBloom = sc.bloom;
+    baseHearth = sc.hearth;
+    hearth.intensity = sc.hearth;
+    scene.environmentIntensity = sc.night ? 0.35 : 0.55;
+    while (landscape.children.length) {
+      const c = landscape.children.pop();
+      c.traverse?.((o) => {
+        o.geometry?.dispose();
+        o.material?.dispose?.();
+        o.dispose?.();
+      });
+    }
+    landscape.add(groundFor(sc, { small }), hillsMesh(sc.hills), props(sc));
+  }
+
+  async function setVessel(id) {
+    const v = VESSELS[id] || VESSELS.cantaro;
+    skin.vessel = id;
+    const root = await loadModel(v.node ? "vasijas" : "cantaro");
+    if (skin.vessel !== id) return;
+    if (vesselModel) jarGroup.remove(vesselModel);
+    vesselModel = null;
+    if (root) {
+      const src = v.node ? root.getObjectByName(v.node) : root;
+      if (src) {
+        vesselModel = src.clone();
+        vesselModel.position.set(0, 0, 0);
+        shadowy(vesselModel);
+        jarGroup.add(vesselModel);
+      }
+    }
+    jar.visible = band.visible = !vesselModel;
+    jarMouth.y = v.mouth;
+    glow.visible = v.glow;
+    glow.position.y = v.mouth - 0.06;
+  }
+
+  async function setTable(id) {
+    const tb = TABLES[id] || TABLES.suelo;
+    skin.table = id;
+    while (tableSlot.children.length) tableSlot.remove(tableSlot.children[0]);
+    stage.position.y = tb.h;
+    cloth.scale.setScalar(tb.h ? 0.82 : 1);
+    if (!tb.node) return;
+    const root = await loadModel("mesas");
+    if (skin.table !== id || !root) return;
+    const src = root.getObjectByName(tb.node);
+    if (!src) return;
+    const t = src.clone();
+    t.position.set(0, 0, 0);
+    shadowy(t);
+    tableSlot.add(t);
+  }
+
+  function setSkin({ scenario, vessel, table } = {}) {
+    if (scenario && scenario !== skin.scenario) setScenario(scenario);
+    if (vessel && vessel !== skin.vessel) setVessel(vessel);
+    if (table && table !== skin.table) setTable(table);
+  }
+
+  function setFigure(i, name) {
+    const mem = lastList[i];
+    if (!mem) return;
+    mem.figure = name;
+    setMembers(lastList);
+    if (lastLabels) updateLabels(...lastLabels);
+  }
+
   function placeIlla(i) {
     illaOwner = i;
     if (i < 0 || !members[i] || !illa.children.length) return void (illa.visible = false);
@@ -548,8 +717,13 @@ export function createScene(container, { onPick } = {}) {
     illa.position.copy(p);
   }
 
+  setScenario("altiplano");
+  setVessel("cantaro");
+  setTable("suelo");
+
   return {
-    placeIlla, retheme, setDeadline,
+    placeIlla, retheme, setDeadline, setSkin, setFigure, figuresReady,
+    figureNames: () => (figures ? [...figures.keys()].sort() : []),
     setMembers, updateLabels, setTurn, addLayer, setPending, commitPending,
     flyContribution, flyPayout, setPotLevel, select, focus, controls,
   };
@@ -569,39 +743,17 @@ function stars() {
   return new THREE.Points(g, new THREE.PointsMaterial({ color: "#fff8e7", size: 0.9, sizeAttenuation: true, fog: false }));
 }
 
-/** Anillo de cerros en el horizonte, con nieve en las cumbres (como el Tunari). */
-function mountains() {
-  const seg = 160;
-  const pos = [];
-  const col = [];
-  const rock = new THREE.Color("#241a38");
-  const snow = new THREE.Color("#c7c9e8");
-  const h = (a) =>
-    6 + 7 * Math.max(0, Math.sin(a * 3 + 1)) ** 2 + 3 * Math.sin(a * 11) ** 2 + 1.5 * Math.sin(a * 29 + 2);
-  for (let i = 0; i < seg; i++) {
-    const a0 = (i / seg) * Math.PI * 2;
-    const a1 = ((i + 1) / seg) * Math.PI * 2;
-    const R = 70;
-    const p0 = [Math.cos(a0) * R, 0, Math.sin(a0) * R];
-    const p1 = [Math.cos(a1) * R, 0, Math.sin(a1) * R];
-    const t0 = [Math.cos(a0) * R, h(a0), Math.sin(a0) * R];
-    const t1 = [Math.cos(a1) * R, h(a1), Math.sin(a1) * R];
-    pos.push(...p0, ...t0, ...p1, ...p1, ...t0, ...t1);
-    for (const p of [p0, t0, p1, p1, t0, t1]) {
-      const c = p[1] > 12 ? snow : rock;
-      col.push(c.r, c.g, c.b);
-    }
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-  g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
-  g.computeVertexNormals();
-  return new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, fog: false }));
-}
-
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, r);
 }
 const ease = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
 const backOut = (k) => 1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2);
+
+/** Índice estable de 0 a n-1 a partir de un texto (para asignar personajes). */
+export function hashIndex(text, n, fallback = 0) {
+  if (!text) return fallback % n;
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+  return (h >>> 0) % n;
+}

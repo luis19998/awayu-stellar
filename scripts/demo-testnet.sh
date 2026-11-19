@@ -43,6 +43,36 @@ espera_hasta $(( PERIOD * 3 + 15 )); cobra
 # Ronda 4 en curso
 aporta ana; aporta bruno
 
+# ---------- Registro: memoria colectiva on-chain ----------
+# Si se pasa REGISTRO (id existente) se reutiliza; si no, se despliega uno nuevo.
+REG="${REGISTRO:-}"
+if [ -z "$REG" ]; then
+  REG=$(stellar contract deploy --wasm target/wasm32v1-none/release/registro.wasm --source organizador $NET)
+fi
+echo "Registro: $REG"
+reg() { stellar contract invoke --id "$REG" --source "$1" $NET -- "${@:2}"; }
+reg organizador register --creator "$(stellar keys address organizador)" --circle "$ID" --name "Pasanaku del valle" --region cbba
+for n in "${NAMES[@]}"; do reg "$n" join --member "$(stellar keys address "$n")" --circle "$ID"; done
+reg ana endorse --from "$(stellar keys address ana)" --circle "$ID"
+reg bruno endorse --from "$(stellar keys address bruno)" --circle "$ID"
+
+# Más círculos en otros departamentos para que el mapa muestre la red
+EXTRA=()
+nuevo() { # nombre región miembros...
+  local nombre="$1" region="$2"; shift 2
+  local ms=""; for m in "$@"; do stellar keys address "$m" >/dev/null 2>&1 || stellar keys generate "$m" $NET --fund; ms="$ms\"$(stellar keys address "$m")\","; done
+  local cid; cid=$(stellar contract deploy --wasm "$WASM" --source organizador $NET --     --admin "$(stellar keys address organizador)" --token "$XLM" --amount 500000000 --period 604800 --members "[${ms%,}]")
+  reg organizador register --creator "$(stellar keys address organizador)" --circle "$cid" --name "$nombre" --region "$region"
+  for m in "$@"; do reg "$m" join --member "$(stellar keys address "$m")" --circle "$cid"; done
+  stellar contract invoke --id "$cid" --source "$1" $NET -- contribute --member "$(stellar keys address "$1")"
+  EXTRA+=("$cid")
+}
+nuevo "Feriantes de la 16 de Julio" lpz ana eva fabio
+nuevo "Comerciantes del Plan 3000" scz gaby hugo ines
+nuevo "Cooperativa del Cerro" pts juan karen bruno
+nuevo "Músicos del Carnaval" oru luis mara david
+nuevo "Productores de uva" trj nina omar
+
 {
   echo "{"
   echo "  \"network\": \"testnet\","
@@ -51,6 +81,9 @@ aporta ana; aporta bruno
   echo "  \"token\": \"$XLM\","
   echo "  \"tokenSymbol\": \"XLM\","
   echo "  \"version\": 3,"
+  echo "  \"registro\": \"$REG\","
+  printf '  "circulos": [%s],
+' "$(printf '"%s",' "$ID" "${EXTRA[@]}" | sed 's/,$//')"
   echo "  \"members\": {"
   for i in "${!NAMES[@]}"; do
     sep=","; (( i == ${#NAMES[@]} - 1 )) && sep=""
@@ -65,4 +98,5 @@ cat testnet.json
   echo "### Pasanaku desplegado en testnet"
   echo "- Contrato: [\`$ID\`](https://stellar.expert/explorer/testnet/contract/$ID)"
   echo "- Tres rondas jugadas; la cuarta queda abierta."
+  echo "- Registro: [\`$REG\`](https://stellar.expert/explorer/testnet/contract/$REG) con ${#EXTRA[@]} círculos más en otros departamentos."
 } >> "${GITHUB_STEP_SUMMARY:-/dev/null}"

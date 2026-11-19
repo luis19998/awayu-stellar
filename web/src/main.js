@@ -160,6 +160,11 @@ function renderGuarantee(c, done) {
     return;
   }
   b.hidden = false;
+  if (tn && !me()) {
+    b.textContent = t("Conectá tu billetera");
+    b.disabled = true;
+    return;
+  }
   const who = tn ? myIndex() : selected;
   const m = c.members[who];
   if (done) {

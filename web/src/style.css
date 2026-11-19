@@ -111,16 +111,16 @@ dialog .primary { background: var(--magenta); color: #fff; border: 0; padding: 1
 .err { color: #ff7a8a; font-size: 13px; min-height: 1em; margin: 10px 0 0; }
 
 @media (max-width: 760px) {
-  .wallet { top: 16px; right: 16px; }
+  .wallet { top: 14px; right: 12px; }
   .wallet > button { padding: 7px 12px; font-size: 13px; }
-  #stage { bottom: 46vh; }
-  .brand { top: 14px; left: 16px; }
-  .brand h1 { font-size: 30px; }
-  .brand p { font-size: 12px; }
+  #stage { bottom: 50vh; }
+  .brand { top: 12px; left: 12px; right: 136px; gap: 8px; }
+  .brand h1 { font-size: 26px; }
+  .brand p { font-size: 10px; }
   .logo { width: 36px; height: 36px; }
-  .modes { top: auto; bottom: calc(46vh + 10px); }
-  .panel { top: auto; left: 0; right: 0; bottom: 0; width: auto; height: 46vh; border-radius: 22px 22px 0 0; padding: 10px 16px 16px; }
+  .modes { top: auto; bottom: calc(50vh + 10px); }
+  .panel { top: auto; left: 0; right: 0; bottom: 0; width: auto; height: auto; max-height: calc(100dvh - 112px); border-radius: 22px 22px 0 0; padding: 10px 16px 56px; overflow: visible; }
   .grip { display: block; width: 44px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 4px; }
   .legend { display: none; }
-  .caption { left: 50%; font-size: 18px; bottom: calc(46vh + 56px); }
+  .caption { left: 50%; font-size: 18px; bottom: calc(50vh + 56px); }
 }

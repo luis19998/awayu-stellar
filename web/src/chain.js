@@ -243,5 +243,84 @@ export async function readBalance(dep, tokenId, address) {
   return Number(raw) / DECIMALS;
 }
 
+// ---------- Registro: memoria colectiva on-chain ----------
+
+/** Lista los círculos registrados (hasta 50) con miembros y puntaje promedio. */
+export async function readRegistry(dep) {
+  if (!dep?.registro) return [];
+  const server = serverFor(dep);
+  const fichas = await view(server, dep.registro, "page", nativeToScVal(0, { type: "u32" }), nativeToScVal(50, { type: "u32" }));
+  return Promise.all(
+    fichas.map(async (f) => {
+      const circle = String(f.circle);
+      const [members, endorsements] = await Promise.all([
+        view(server, circle, "members").catch(() => []),
+        view(server, dep.registro, "endorsements", new Address(circle).toScVal()).catch(() => 0),
+      ]);
+      const scores = members.map((m) => Number(m.score)).filter((x) => x > 0);
+      return {
+        contractId: circle,
+        name: String(f.name),
+        region: String(f.region),
+        created: Number(f.created),
+        creator: String(f.creator),
+        members: members.length,
+        score: scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0,
+        endorsements: Number(endorsements),
+      };
+    })
+  );
+}
+
+/**
+ * Pasaporte de reputación: junta el historial de una persona en todos los
+ * círculos donde se declaró miembro en el registro.
+ */
+export async function readPassport(dep, address) {
+  if (!dep?.registro || !address) return { circles: [], history: [], score: 0 };
+  const server = serverFor(dep);
+  const ids = (await view(server, dep.registro, "by_member", new Address(address).toScVal()).catch(() => [])).map(String);
+  const circles = await Promise.all(
+    ids.map(async (id) => {
+      const h = (await view(server, id, "history", new Address(address).toScVal()).catch(() => [])).map(Number);
+      return { contractId: id, history: h };
+    })
+  );
+  const history = circles.flatMap((c) => c.history);
+  const pts = { 1: 100, 2: 50, 4: 25 };
+  const score = history.length ? Math.round(history.reduce((a, m) => a + (pts[m] || 0), 0) / history.length) : 0;
+  return { circles, history, score };
+}
+
+export function buildRegisterXdr(dep, creator, circle, name, region) {
+  return prepare(
+    dep,
+    creator,
+    new Contract(dep.registro).call(
+      "register",
+      nativeToScVal(creator, { type: "address" }),
+      nativeToScVal(circle, { type: "address" }),
+      nativeToScVal(name, { type: "string" }),
+      nativeToScVal(region, { type: "symbol" })
+    )
+  );
+}
+
+export function buildJoinXdr(dep, member, circle) {
+  return prepare(
+    dep,
+    member,
+    new Contract(dep.registro).call("join", nativeToScVal(member, { type: "address" }), nativeToScVal(circle, { type: "address" }))
+  );
+}
+
+export function buildEndorseXdr(dep, member, circle) {
+  return prepare(
+    dep,
+    member,
+    new Contract(dep.registro).call("endorse", nativeToScVal(member, { type: "address" }), nativeToScVal(circle, { type: "address" }))
+  );
+}
+
 export const explorerUrl = (contractId) => `https://stellar.expert/explorer/testnet/contract/${contractId}`;
 export const txUrl = (hash) => `https://stellar.expert/explorer/testnet/tx/${hash}`;

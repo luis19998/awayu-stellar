@@ -54,7 +54,7 @@ function cleanContext(value) {
   }
 }
 
-function localAnswer(question) {
+export function localAnswer(question) {
   const found = FAQ.find(({ matches }) => matches.some((pattern) => pattern.test(question)));
   return found?.answer ?? "Puedo orientarte sobre Awayu, las garantías, Freighter, testnet, el puntaje y los aportes. Esta demo funciona en Stellar Testnet; revisá las reglas del círculo antes de participar.";
 }

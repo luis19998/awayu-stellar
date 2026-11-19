@@ -79,11 +79,11 @@ body:not([data-route="circulo"]) .brand { display: none; }
 .pane-h p { color: var(--muted); margin: 0 0 16px; max-width: 760px; }
 .stage-box { position: relative; border-radius: 24px; overflow: hidden; border: 1px solid var(--card-b); background: radial-gradient(circle at 50% 30%, rgba(91, 42, 134, 0.35), rgba(11, 8, 32, 0.6)); min-height: 420px; }
 .stage-box.tall { height: min(68vh, 640px); }
-.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 14px; }
 .card, .passport { background: var(--card); border: 1px solid var(--card-b); border-radius: 20px; padding: 18px; }
 .card h2, .passport h2 { margin: 0 0 12px; font-size: 17px; }
 .muted { color: var(--muted); font-size: 13px; }
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 14px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 10px; margin-top: 14px; }
 .card-c { text-align: left; background: var(--card); border: 1px solid var(--card-b); border-radius: 16px; padding: 14px; color: var(--ink); cursor: pointer; display: grid; gap: 4px; }
 .card-c:hover { border-color: var(--gold); }
 .card-c span { color: var(--muted); font-size: 12px; }
@@ -125,7 +125,7 @@ body:not([data-route="circulo"]) .brand { display: none; }
 .ask { display: flex; gap: 8px; }
 .ask input { flex: 1; font: 15px var(--display); background: var(--card); color: var(--ink); border: 1px solid var(--card-b); border-radius: 14px; padding: 12px 14px; }
 
-.eco { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.eco { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 12px; }
 .eco-c { position: relative; background: var(--card); border: 1px solid var(--card-b); border-radius: 18px; padding: 16px 16px 14px 40px; }
 .eco-c .dot { position: absolute; left: 16px; top: 21px; width: 12px; height: 12px; border-radius: 50%; background: #6c6380; box-shadow: 0 0 0 4px rgba(108, 99, 128, 0.2); }
 .eco-c.ok .dot { background: #3ee08f; box-shadow: 0 0 0 4px rgba(62, 224, 143, 0.2), 0 0 14px #3ee08f; }
@@ -157,3 +157,5 @@ body:not([data-route="circulo"]) .view .hero-in { padding-right: 260px; }
   body:not([data-route="circulo"]) .view .hero-in { padding-right: 0; }
   body:not([data-route="circulo"]) .view { padding-top: 64px; }
 }
+
+.pane-h h1:focus { outline: none; }

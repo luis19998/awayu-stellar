@@ -236,8 +236,24 @@ export function createScene(container, { onPick } = {}) {
     return sprite;
   }
 
+  /** Libera la memoria de GPU de un objeto retirado (sin tocar geometrías compartidas). */
+  function dispose(obj) {
+    obj.traverse((o) => {
+      if (o.geometry && o.geometry !== layerGeo && o.geometry !== coinGeo) o.geometry.dispose();
+      const mats = Array.isArray(o.material) ? o.material : o.material ? [o.material] : [];
+      for (const mat of new Set(mats)) {
+        mat.map?.dispose();
+        mat.emissiveMap?.dispose();
+        mat.dispose();
+      }
+    });
+  }
+
   function setMembers(list) {
-    for (const m of members) scene.remove(m.group);
+    for (const m of members) {
+      scene.remove(m.group);
+      dispose(m.group);
+    }
     members.length = 0;
     list.forEach((mem, i) => {
       const group = new THREE.Group();
@@ -311,7 +327,10 @@ export function createScene(container, { onPick } = {}) {
   /** Marca provisional (aporte de la ronda en curso) encima de la pila. */
   function setPending(i, mark, round) {
     const m = members[i];
-    if (m.pending) m.group.remove(m.pending);
+    if (m.pending) {
+      m.group.remove(m.pending);
+      dispose(m.pending);
+    }
     m.pending = null;
     if (!mark) return;
     const l = makeLayer(mark, round);
@@ -327,6 +346,7 @@ export function createScene(container, { onPick } = {}) {
     const m = members[i];
     if (m.pending) {
       m.group.remove(m.pending);
+      dispose(m.pending);
       m.pending = null;
     }
     addLayer(i, mark, round);

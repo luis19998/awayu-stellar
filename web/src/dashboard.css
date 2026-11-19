@@ -74,6 +74,19 @@ body:not([data-route="circulo"]) .brand { display: none; }
 .credits { color: var(--muted); font-size: 11px; line-height: 1.6; }
 .credits a { color: var(--muted); }
 
+/* Las cuatro tradiciones */
+.trad-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 12px; }
+.trad { --c: var(--gold); display: grid; gap: 6px; padding: 18px; border-radius: 20px; text-decoration: none; color: var(--ink);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--c) 22%, transparent), rgba(255, 255, 255, 0.03) 60%); border: 1px solid color-mix(in srgb, var(--c) 45%, transparent);
+  animation: rise 0.6s var(--d) both; transition: transform 0.2s, box-shadow 0.2s; }
+.trad:hover { transform: translateY(-4px); box-shadow: 0 16px 40px color-mix(in srgb, var(--c) 30%, transparent); }
+.trad .ic { font-size: 30px; color: var(--c); }
+.trad b { font-size: 20px; }
+.trad span:not(.ic) { color: var(--muted); font-size: 14px; }
+.trad i { font-style: normal; color: var(--c); font-weight: 700; font-size: 13px; }
+.mode-tag { display: inline-block; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); font-size: 13px; color: var(--gold); }
+.mode-box { background: var(--card); border: 1px solid var(--card-b); border-radius: 22px; padding: 18px; min-height: 420px; }
+
 /* Secciones */
 .pane-h h1 { font-size: clamp(26px, 3.4vw, 40px); margin: 0 0 6px; letter-spacing: -0.02em; }
 .pane-h p { color: var(--muted); margin: 0 0 16px; max-width: 760px; }

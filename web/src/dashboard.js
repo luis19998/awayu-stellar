@@ -11,7 +11,10 @@ const fmtN = (n, d = 0) => Number(n || 0).toLocaleString(getLang() === "en" ? "e
 
 export const ROUTES = [
   { id: "inicio", icon: "◆", label: "Inicio" },
-  { id: "circulo", icon: "◎", label: "Círculo 3D" },
+  { id: "circulo", icon: "◎", label: "Pasanaku 3D" },
+  { id: "ayni", icon: "❖", label: "Ayni · ayuda mutua" },
+  { id: "minka", icon: "✚", label: "Minka · proyectos" },
+  { id: "alasitas", icon: "⌂", label: "Alasitas · metas" },
   { id: "mapa", icon: "⬢", label: "Mapa de Bolivia" },
   { id: "billetera", icon: "◉", label: "Billetera y pasaporte" },
   { id: "riesgo", icon: "◐", label: "Probabilidades" },
@@ -113,7 +116,53 @@ function show(id, force = false) {
 
 // ---------------- Vistas ----------------
 
+// Las cuatro tradiciones: cada modo tiene su vista y, si el contrato está en
+// testnet y hay billetera, firma de verdad; si no, funciona en demo.
+const MODES = {
+  ayni: { title: "Ayni: fondo de ayuda mutua", lead: "Hoy te ayudo, mañana me ayudás. Un fondo común para emergencias: se pide, la comunidad vota y se devuelve sin intereses." },
+  minka: { title: "Minka: proyectos comunitarios por hitos", lead: "Trabajo colectivo con la plata segura: se aporta para un proyecto y cada hito se libera solo cuando los validadores aprueban el avance." },
+  alasitas: { title: "Alasitas: metas de ahorro", lead: "Como en la feria: elegí la miniatura de lo que deseás y ahorrá hasta lograrlo, solo o en grupo, con racha semanal." },
+};
+
+async function renderMode(v, tk, name) {
+  const info = MODES[name];
+  v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t(info.title)}</h1><p>${t(info.lead)}</p>
+    <p class="mode-tag" id="mode-tag"></p></header><div class="mode-box" id="mode-box"></div></section>`;
+  const chain = await import("./chain.js");
+  const dep = state.deployment || (await chain.loadDeployment().catch(() => null));
+  const contract = dep?.[name];
+  const live = Boolean(contract && state.address);
+  if (!alive(tk)) return;
+  $("#mode-tag").textContent = live
+    ? t("En vivo en Stellar testnet: firmás con tu billetera.")
+    : contract
+      ? t("Contrato desplegado en testnet. Conectá tu billetera para usarlo; mientras tanto, demo.")
+      : t("Modo demo: todo funciona en tu navegador.");
+  const sign = async (xdr) => {
+    const [{ sign: walletSign }] = await Promise.all([import("./wallet.js")]);
+    return chain.submit(dep, await walletSign(xdr));
+  };
+  let m;
+  try {
+    m = await import(`./views/${name}.js`);
+  } catch {
+    if (alive(tk)) $("#mode-box").innerHTML = `<p class="muted">${t("Este modo llega en la próxima versión.")}</p>`;
+    return;
+  }
+  if (!alive(tk)) return;
+  adopt(tk, m.mount($("#mode-box"), {
+    lang: getLang(),
+    mode: live ? "testnet" : "demo",
+    deployment: dep ? { ...dep, contractId: contract || dep.contractId } : null,
+    address: state.address,
+    sign,
+  }));
+}
+
 const VIEWS = {
+  ayni: (v, tk) => renderMode(v, tk, "ayni"),
+  minka: (v, tk) => renderMode(v, tk, "minka"),
+  alasitas: (v, tk) => renderMode(v, tk, "alasitas"),
   dev: async (v, tk) => {
     v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t("Para desarrolladores")}</h1>
       <p>${t("Cada transacción que firmás aparece en vivo con su contrato, función y argumentos. Abajo: cómo integrar Awayu en tu app y los contratos desplegados.")}</p></header>
@@ -152,8 +201,8 @@ async function renderHome(v, tk = token) {
     <canvas class="loom" aria-hidden="true"></canvas>
     <div class="hero-in">
       <p class="eyebrow">${t("Hackatón Stellar Bolivia 2026 · Soroban · Pollar · Vaquita")}</p>
-      <h1>${t("El pasanaku que teje tu historial")}</h1>
-      <p class="lead">${t("Ahorro rotativo en dólares digitales sobre Stellar. El turno lo sortea la red, la garantía cubre a quien falla y cada pago teje un aguayo: tu historial de cumplimiento, portable y verificable.")}</p>
+      <h1>${t("Finanzas comunitarias andinas en Stellar")}</h1>
+      <p class="lead">${t("Pasanaku, ayni, minka y alasitas: cuatro formas bolivianas de ahorrar y ayudarse, ahora en dólares digitales y contratos Soroban. Cada cumplimiento teje un aguayo: tu historial portable y verificable.")}</p>
       <div class="cta">
         <a class="btn primary" href="#/circulo">${t("Entrar al círculo 3D")}</a>
         <a class="btn" href="#/mapa">${t("Ver la red en Bolivia")}</a>
@@ -163,6 +212,18 @@ async function renderHome(v, tk = token) {
   </section>
   <section class="kpis" id="kpis">
     ${["Círculos registrados", "Miembros", "Reputación promedio", "Avales comunitarios", "Ledger de Stellar"].map((k, i) => `<div class="kpi" style="--d:${i * 80}ms"><span>${t(k)}</span><b data-k="${i}">–</b></div>`).join("")}
+  </section>
+  <section class="traditions">
+    <h2>${t("Cuatro tradiciones bolivianas, un solo tejido")}</h2>
+    <div class="trad-grid">
+      ${[
+        ["circulo", "◎", "Pasanaku", "Ahorro rotativo: todos aportan y, por turno sorteado, alguien recibe el pozo.", "#d81b60"],
+        ["ayni", "❖", "Ayni", "Ayuda mutua: un fondo común para emergencias, con votación de la comunidad.", "#13a3b0"],
+        ["minka", "✚", "Minka", "Proyectos comunitarios: la plata se libera por hitos aprobados.", "#1f9d55"],
+        ["alasitas", "⌂", "Alasitas", "Metas de ahorro con miniaturas: casa, estudio, negocio, viaje.", "#f9c22e"],
+      ].map(([r, ic, n, d, c], i) => `<a class="trad" href="#/${r}" style="--c:${c};--d:${i * 90}ms"><span class="ic">${ic}</span><b>${n}</b><span>${t(d)}</span><i>${t("Abrir")} →</i></a>`).join("")}
+    </div>
+    <p class="muted">${t("Cada aporte, voto, hito o meta cumplida suma marcas al mismo aguayo: tu pasaporte de reputación portable en Stellar.")}</p>
   </section>
   <section class="how">
     <h2>${t("Cómo funciona")}</h2>

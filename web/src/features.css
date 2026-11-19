@@ -31,3 +31,10 @@ dialog legend { color: var(--gold); font-size: 13px; padding: 0 6px; }
 dialog .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 dialog label.check { display: flex; align-items: center; gap: 8px; }
 dialog menu { flex-wrap: wrap; }
+
+/* Accesibilidad: foco visible con teclado y menos movimiento si se pide */
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.members li:focus-visible { outline-offset: -2px; }
+@media (prefers-reduced-motion: reduce) {
+  .toast, .caption { transition: none; }
+}

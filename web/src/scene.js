@@ -36,7 +36,9 @@ export function createScene(container, { onPick } = {}) {
   controls.minDistance = 6;
   controls.maxDistance = 30;
   controls.maxPolarAngle = Math.PI * 0.47;
-  controls.autoRotate = true;
+  // Respeta "reducir movimiento" del sistema: sin giro automático
+  const calm = matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  controls.autoRotate = !calm;
   controls.autoRotateSpeed = 0.35;
   controls.enablePan = false;
 

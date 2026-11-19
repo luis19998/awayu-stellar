@@ -80,6 +80,16 @@ function render() {
       li.appendChild(img);
     }
     li.onclick = () => pick(i);
+    li.tabIndex = 0;
+    li.setAttribute("role", "button");
+    li.setAttribute("aria-pressed", String(i === selected));
+    li.setAttribute("aria-label", `${m.name}, ${score(m.history)} puntos`);
+    li.onkeydown = (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        pick(i);
+      }
+    };
     ul.appendChild(li);
   });
 

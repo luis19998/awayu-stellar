@@ -568,7 +568,6 @@ $("#form-create").addEventListener("submit", (ev) => {
     const id = String(res.value);
     saveCircle(id);
     toast("¡Pasanaku creado! Compartí el enlace con los miembros");
-    busy = false;
     await openTestnet(id);
   });
 });

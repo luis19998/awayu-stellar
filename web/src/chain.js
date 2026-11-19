@@ -199,5 +199,31 @@ export async function ensureFunded(dep, address) {
   }
 }
 
+/**
+ * Pagos del pozo y rondas cubiertas, leídos de los eventos del contrato.
+ * El RPC solo guarda unos días de eventos: lo más viejo puede no aparecer.
+ */
+export async function readActivity(dep, contractId) {
+  const server = serverFor(dep);
+  const latest = await server.getLatestLedger();
+  const startLedger = Math.max(1, latest.sequence - 17280 * 6);
+  const res = await server.getEvents({
+    startLedger,
+    filters: [{ type: "contract", contractIds: [contractId] }],
+    limit: 200,
+  });
+  const out = [];
+  for (const e of res.events || []) {
+    const topic = e.topic.map((t) => scValToNative(t));
+    const kind = String(topic[0]);
+    const who = topic[1] ? String(topic[1]) : null;
+    const val = scValToNative(e.value);
+    if (kind === "pozo") out.push({ kind, who, round: Number(val[0]), amount: Number(val[1]) / DECIMALS, tx: e.txHash, at: e.ledgerClosedAt });
+    else if (kind === "cubre") out.push({ kind, who, round: Number(val[0]), amount: Number(val[1]) / DECIMALS, tx: e.txHash, at: e.ledgerClosedAt });
+    else if (kind === "garantia") out.push({ kind, who, amount: Number(val) / DECIMALS, tx: e.txHash, at: e.ledgerClosedAt });
+  }
+  return out;
+}
+
 export const explorerUrl = (contractId) => `https://stellar.expert/explorer/testnet/contract/${contractId}`;
 export const txUrl = (hash) => `https://stellar.expert/explorer/testnet/tx/${hash}`;

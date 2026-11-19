@@ -24,6 +24,11 @@ const STRIPES = [
   ["azul", "amarillo", "magenta"],
 ];
 
+/** Cambia la paleta de todos los tejidos que se dibujen desde ahora. */
+export function applyPalette(palette) {
+  Object.assign(PALETTE, palette);
+}
+
 function desaturate(hex, k) {
   const c = new THREE.Color(hex);
   const hsl = {};

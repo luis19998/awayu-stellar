@@ -473,6 +473,19 @@ export function createScene(container, { onPick } = {}) {
     composer.render();
   });
 
+  /** Vuelve a tejer el aguayo del suelo y la franja de la vasija con la paleta actual. */
+  function retheme() {
+    cloth.material.map?.dispose();
+    cloth.material.map = clothTexture();
+    cloth.material.needsUpdate = true;
+    const t = markTexture(1, 0);
+    t.wrapS = THREE.RepeatWrapping;
+    t.repeat.set(4, 1);
+    band.material.map?.dispose();
+    band.material.map = t;
+    band.material.needsUpdate = true;
+  }
+
   function placeIlla(i) {
     illaOwner = i;
     if (i < 0 || !members[i] || !illa.children.length) return void (illa.visible = false);
@@ -483,7 +496,7 @@ export function createScene(container, { onPick } = {}) {
   }
 
   return {
-    placeIlla,
+    placeIlla, retheme,
     setMembers, updateLabels, setTurn, addLayer, setPending, commitPending,
     flyContribution, flyPayout, setPotLevel, select, focus, controls,
   };

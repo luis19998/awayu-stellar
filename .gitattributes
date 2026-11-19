@@ -5,3 +5,4 @@
 *.f3d binary
 *.stl binary
 *.step -text
+*.blend binary

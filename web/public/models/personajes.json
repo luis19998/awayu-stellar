@@ -1,0 +1,438 @@
+{
+ "draco": true,
+ "count": 36,
+ "figures": [
+  {
+   "id": "pj_00_chola_pacena_0",
+   "archetype": "chola_pacena",
+   "label": "Cholita paceña",
+   "variant": 0,
+   "colors": [
+    "#d81b60",
+    "#283c9c",
+    "#f9c22e"
+   ],
+   "skin": "#a8704a"
+  },
+  {
+   "id": "pj_01_chola_pacena_1",
+   "archetype": "chola_pacena",
+   "label": "Cholita paceña",
+   "variant": 1,
+   "colors": [
+    "#1f9d55",
+    "#a3122a",
+    "#f3e6c8"
+   ],
+   "skin": "#8d5a3b"
+  },
+  {
+   "id": "pj_02_chola_pacena_2",
+   "archetype": "chola_pacena",
+   "label": "Cholita paceña",
+   "variant": 2,
+   "colors": [
+    "#13a3b0",
+    "#5b2a86",
+    "#f57c1f"
+   ],
+   "skin": "#6e4429"
+  },
+  {
+   "id": "pj_03_chola_valle_0",
+   "archetype": "chola_valle",
+   "label": "Cholita del valle",
+   "variant": 0,
+   "colors": [
+    "#d81b60",
+    "#283c9c",
+    "#f9c22e"
+   ],
+   "skin": "#8d5a3b"
+  },
+  {
+   "id": "pj_04_chola_valle_1",
+   "archetype": "chola_valle",
+   "label": "Cholita del valle",
+   "variant": 1,
+   "colors": [
+    "#1f9d55",
+    "#a3122a",
+    "#f3e6c8"
+   ],
+   "skin": "#6e4429"
+  },
+  {
+   "id": "pj_05_chola_valle_2",
+   "archetype": "chola_valle",
+   "label": "Cholita del valle",
+   "variant": 2,
+   "colors": [
+    "#13a3b0",
+    "#5b2a86",
+    "#f57c1f"
+   ],
+   "skin": "#a8704a"
+  },
+  {
+   "id": "pj_06_campesino_0",
+   "archetype": "campesino",
+   "label": "Productor del altiplano",
+   "variant": 0,
+   "colors": [
+    "#d81b60",
+    "#283c9c",
+    "#f9c22e"
+   ],
+   "skin": "#6e4429"
+  },
+  {
+   "id": "pj_07_campesino_1",
+   "archetype": "campesino",
+   "label": "Productor del altiplano",
+   "variant": 1,
+   "colors": [
+    "#1f9d55",
+    "#a3122a",
+    "#f3e6c8"
+   ],
+   "skin": "#a8704a"
+  },
+  {
+   "id": "pj_08_campesino_2",
+   "archetype": "campesino",
+   "label": "Productor del altiplano",
+   "variant": 2,
+   "colors": [
+    "#13a3b0",
+    "#5b2a86",
+    "#f57c1f"
+   ],
+   "skin": "#8d5a3b"
+  },
+  {
+   "id": "pj_09_minero_0",
+   "archetype": "minero",
+   "label": "Minero de Potosí",
+   "variant": 0,
+   "colors": [
+    "#d81b60",
+    "#283c9c",
+    "#f9c22e"
+   ],
+   "skin": "#a8704a"
+  },
+  {
+   "id": "pj_10_minero_1",
+   "archetype": "minero",
+   "label": "Minero de Potosí",
+   "variant": 1,
+   "colors": [
+    "#1f9d55",
+    "#a3122a",
+    "#f3e6c8"
+   ],
+   "skin": "#8d5a3b"
+  },
+  {
+   "id": "pj_11_minero_2",
+   "archetype": "minero",
+   "label": "Minero de Potosí",
+   "variant": 2,
+   "colors": [
+    "#13a3b0",
+    "#5b2a86",
+    "#f57c1f"
+   ],
+   "skin": "#6e4429"
+  },
+  {
+   "id": "pj_12_estudiante_0",
+   "archetype": "estudiante",
+   "label": "Estudiante",
+   "variant": 0,
+   "colors": [
+    "#d81b60",
+    "#283c9c",
+    "#f9c22e"
+   ],
+   "skin": "#8d5a3b"
+  },
+  {
+   "id": "pj_13_estudiante_1",
+   "archetype": "estudiante",
+   "label": "Estudiante",
+   "variant": 1,
+   "colors": [
+    "#1f9d55",
+    "#a3122a",
+    "#f3e6c8"
+   ],
+   "skin": "#6e4429"
+  },
+  {
+   "id": "pj_14_estudiante_2",
+   "archetype": "estudiante",
+   "label": "Estudiante",
+   "variant": 2,
+   "colors": [
+    "#13a3b0",
+    "#5b2a86",
+    "#f57c1f"
+   ],
+   "skin": "#a8704a"
+  },
+  {
+   "id": "pj_15_comerciante_0",
+   "archetype": "comerciante",
+   "label": "Comerciante de La Cancha",
+   "variant": 0,
+   "colors": [
+    "#d81b60",
+    "#283c9c",
+    "#f9c22e"
+   ],
+   "skin": "#6e4429"
+  },
+  {
+   "id": "pj_16_comerciante_1",
+   "archetype": "comerciante",
+   "label": "Comerciante de La Cancha",
+   "variant": 1,
+   "colors": [
+    "#1f9d55",
+    "#a3122a",
+    "#f3e6c8"
+   ],
+   "skin": "#a8704a"
+  },
+  {
+   "id": "pj_17_comerciante_2",
+   "archetype": "comerciante",
+   "label": "Comerciante de La Cancha",
+   "variant": 2,
+   "colors": [
+    "#13a3b0",
+    "#5b2a86",
+    "#f57c1f"
+   ],
+   "skin": "#8d5a3b"
+  },
+  {
+   "id": "pj_18_musico_0",
+   "archetype": "musico",
+   "label": "Músico de charango",
+   "variant": 0,
+   "colors": [
+    "#d81b60",
+    "#283c9c",
+    "#f9c22e"
+   ],
+   "skin": "#a8704a"
+  },
+  {
+   "id": "pj_19_musico_1",
+   "archetype": "musico",
+   "label": "Músico de charango",
+   "variant": 1,
+   "colors": [
+    "#1f9d55",
+    "#a3122a",
+    "#f3e6c8"
+   ],
+   "skin": "#8d5a3b"
+  },
+  {
+   "id": "pj_20_musico_2",
+   "archetype": "musico",
+   "label": "Músico de charango",
+   "variant": 2,
+   "colors": [
+    "#13a3b0",
+    "#5b2a86",
+    "#f57c1f"
+   ],
+   "skin": "#6e4429"
+  },
+  {
+   "id": "pj_21_agricultora_0",
+   "archetype": "agricultora",
+   "label": "Agricultora de los Yungas",
+   "variant": 0,
+   "colors": [
+    "#d81b60",
+    "#283c9c",
+    "#f9c22e"
+   ],
+   "skin": "#8d5a3b"
+  },
+  {
+   "id": "pj_22_agricultora_1",
+   "archetype": "agricultora",
+   "label": "Agricultora de los Yungas",
+   "variant": 1,
+   "colors": [
+    "#1f9d55",
+    "#a3122a",
+    "#f3e6c8"
+   ],
+   "skin": "#6e4429"
+  },
+  {
+   "id": "pj_23_agricultora_2",
+   "archetype": "agricultora",
+   "label": "Agricultora de los Yungas",
+   "variant": 2,
+   "colors": [
+    "#13a3b0",
+    "#5b2a86",
+    "#f57c1f"
+   ],
+   "skin": "#a8704a"
+  },
+  {
+   "id": "pj_24_mototaxista_0",
+   "archetype": "mototaxista",
+   "label": "Mototaxista",
+   "variant": 0,
+   "colors": [
+    "#d81b60",
+    "#283c9c",
+    "#f9c22e"
+   ],
+   "skin": "#6e4429"
+  },
+  {
+   "id": "pj_25_mototaxista_1",
+   "archetype": "mototaxista",
+   "label": "Mototaxista",
+   "variant": 1,
+   "colors": [
+    "#1f9d55",
+    "#a3122a",
+    "#f3e6c8"
+   ],
+   "skin": "#a8704a"
+  },
+  {
+   "id": "pj_26_mototaxista_2",
+   "archetype": "mototaxista",
+   "label": "Mototaxista",
+   "variant": 2,
+   "colors": [
+    "#13a3b0",
+    "#5b2a86",
+    "#f57c1f"
+   ],
+   "skin": "#8d5a3b"
+  },
+  {
+   "id": "pj_27_profesora_0",
+   "archetype": "profesora",
+   "label": "Profesora rural",
+   "variant": 0,
+   "colors": [
+    "#d81b60",
+    "#283c9c",
+    "#f9c22e"
+   ],
+   "skin": "#a8704a"
+  },
+  {
+   "id": "pj_28_profesora_1",
+   "archetype": "profesora",
+   "label": "Profesora rural",
+   "variant": 1,
+   "colors": [
+    "#1f9d55",
+    "#a3122a",
+    "#f3e6c8"
+   ],
+   "skin": "#8d5a3b"
+  },
+  {
+   "id": "pj_29_profesora_2",
+   "archetype": "profesora",
+   "label": "Profesora rural",
+   "variant": 2,
+   "colors": [
+    "#13a3b0",
+    "#5b2a86",
+    "#f57c1f"
+   ],
+   "skin": "#6e4429"
+  },
+  {
+   "id": "pj_30_abuelo_0",
+   "archetype": "abuelo",
+   "label": "Abuelo tejedor",
+   "variant": 0,
+   "colors": [
+    "#d81b60",
+    "#283c9c",
+    "#f9c22e"
+   ],
+   "skin": "#8d5a3b"
+  },
+  {
+   "id": "pj_31_abuelo_1",
+   "archetype": "abuelo",
+   "label": "Abuelo tejedor",
+   "variant": 1,
+   "colors": [
+    "#1f9d55",
+    "#a3122a",
+    "#f3e6c8"
+   ],
+   "skin": "#6e4429"
+  },
+  {
+   "id": "pj_32_abuelo_2",
+   "archetype": "abuelo",
+   "label": "Abuelo tejedor",
+   "variant": 2,
+   "colors": [
+    "#13a3b0",
+    "#5b2a86",
+    "#f57c1f"
+   ],
+   "skin": "#a8704a"
+  },
+  {
+   "id": "pj_33_tejedora_0",
+   "archetype": "tejedora",
+   "label": "Tejedora de Tarabuco",
+   "variant": 0,
+   "colors": [
+    "#d81b60",
+    "#283c9c",
+    "#f9c22e"
+   ],
+   "skin": "#6e4429"
+  },
+  {
+   "id": "pj_34_tejedora_1",
+   "archetype": "tejedora",
+   "label": "Tejedora de Tarabuco",
+   "variant": 1,
+   "colors": [
+    "#1f9d55",
+    "#a3122a",
+    "#f3e6c8"
+   ],
+   "skin": "#a8704a"
+  },
+  {
+   "id": "pj_35_tejedora_2",
+   "archetype": "tejedora",
+   "label": "Tejedora de Tarabuco",
+   "variant": 2,
+   "colors": [
+    "#13a3b0",
+    "#5b2a86",
+    "#f57c1f"
+   ],
+   "skin": "#8d5a3b"
+  }
+ ]
+}

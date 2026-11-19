@@ -60,9 +60,15 @@
 
       <section class="person" id="person" hidden></section>
 
+      <section class="timeline" id="timeline">
+        <h2>Historial del círculo</h2>
+        <ol id="timeline-list"></ol>
+      </section>
+
       <footer class="foot">
         <button id="btn-story" class="ghost">▶ Contar la historia</button>
         <button id="btn-create" class="ghost">＋ Crear un pasanaku</button>
+        <button id="btn-custom" class="ghost">Personalizar</button>
         <button id="btn-share" class="ghost" hidden>Compartir enlace</button>
         <a id="lnk-contract" target="_blank" rel="noopener" hidden>Ver contrato ↗</a>
       </footer>
@@ -76,6 +82,35 @@
         <button data-w="email">Correo (Pollar)</button>
       </div>
     </div>
+
+    <dialog id="dlg-custom">
+      <form method="dialog" id="form-custom">
+        <h2>Personalizar</h2>
+        <label>Estilo del aguayo
+          <select name="theme" id="sel-theme"></select>
+        </label>
+        <fieldset>
+          <legend>Círculo de demostración</legend>
+          <label>Miembros (uno por línea: nombre, y si querés, oficio · lugar)
+            <textarea name="people" rows="6" placeholder="Doña Rosa, Comerciante · La Cancha&#10;Don Teo, Productor de papa · Tiraque"></textarea>
+          </label>
+          <div class="row2">
+            <label>Cuota (USDC)
+              <input name="amount" type="number" min="1" step="1" value="100" />
+            </label>
+            <label>Rondas ya jugadas
+              <input name="played" type="number" min="0" max="20" step="1" value="3" />
+            </label>
+          </div>
+        </fieldset>
+        <label class="check"><input type="checkbox" name="rotate" checked /> Girar la cámara sola</label>
+        <menu>
+          <button value="reset" class="ghost">Volver a la demo original</button>
+          <button value="cancel" formnovalidate class="ghost">Cancelar</button>
+          <button value="ok" class="primary">Aplicar</button>
+        </menu>
+      </form>
+    </dialog>
 
     <dialog id="dlg-create">
       <form method="dialog" id="form-create">

@@ -2,14 +2,15 @@ import "./style.css";
 import "./features.css";
 import { StrKey } from "@stellar/stellar-sdk";
 import { createScene } from "./scene.js";
-import { historyStripDataURL } from "./aguayo.js";
+import { historyStripDataURL, applyPalette } from "./aguayo.js";
+import { THEMES, loadThemeId, saveThemeId } from "./themes.js";
 import {
-  demoCircle, contribute, payout, pot, recipientOf, score, creditLine, idleYield, depositGuarantee,
+  demoCircle, contribute, payout, pot, recipientOf, score, creditLine, idleYield, depositGuarantee, parsePeople,
   ON_TIME, LATE, MISSED,
 } from "./model.js";
 import {
   loadDeployment, readCircle, explorerUrl, buildContributeXdr, buildPayoutXdr, buildCreateXdr,
-  buildGuaranteeXdr, buildWithdrawXdr, buildAliasXdr, submit, ensureFunded, short,
+  buildGuaranteeXdr, buildWithdrawXdr, buildAliasXdr, submit, ensureFunded, short, readActivity, txUrl,
 } from "./chain.js";
 import { pollarEnabled, connectFreighter, connectPollar, sign, wallet } from "./wallet.js";
 
@@ -17,7 +18,11 @@ const $ = (s) => document.querySelector(s);
 const fmt = (n, t) => `${n.toLocaleString("es-BO", { maximumFractionDigits: 2 })} ${t}`;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-let circle = demoCircle();
+let themeId = loadThemeId();
+applyPalette(THEMES[themeId].palette);
+let demoOpts = loadDemoOpts();
+let circle = demoCircle(demoOpts);
+let activity = [];
 let selected = -1;
 let busy = false;
 let deployment = null;
@@ -96,6 +101,7 @@ function render() {
   if (c.contractId) link.href = explorerUrl(c.contractId);
   $("#btn-share").hidden = !t;
   renderPerson();
+  renderTimeline();
 }
 
 /** Quien tiene mejor reputación (y al menos dos rondas) lleva la illa. */
@@ -168,6 +174,47 @@ function renderPerson() {
         await refreshChain(true);
       });
     };
+  }
+}
+
+/** Historial: pagos del pozo (demo: del modelo; testnet: eventos del contrato). */
+function renderTimeline() {
+  const ol = $("#timeline-list");
+  const c = circle;
+  const rows = [];
+  if (isTestnet()) {
+    for (const e of activity) {
+      const name = c.members.find((m) => m.address === e.who)?.name || (e.who ? short(e.who) : "");
+      const text = e.kind === "pozo" ? `Ronda ${e.round + 1}: ${name} recibió ${fmt(e.amount, c.token)}`
+        : e.kind === "cubre" ? `Ronda ${e.round + 1}: la garantía de ${name} cubrió su cuota`
+        : `${name} dejó ${fmt(e.amount, c.token)} de garantía`;
+      rows.push({ text, href: e.tx ? txUrl(e.tx) : null, kind: e.kind });
+    }
+  } else {
+    for (const p of c.payouts) {
+      rows.push({ text: `Ronda ${p.round + 1}: ${c.members[p.to].name} recibió ${fmt(p.amount, c.token)}`, kind: "pozo" });
+      c.members.forEach((m) => {
+        if (m.history[p.round] === 4) rows.push({ text: `Ronda ${p.round + 1}: la garantía de ${m.name} cubrió su cuota`, kind: "cubre" });
+      });
+    }
+  }
+  ol.innerHTML = "";
+  if (!rows.length) {
+    ol.innerHTML = `<li class="empty">Todavía no se pagó ningún pozo.</li>`;
+    return;
+  }
+  for (const r of rows.reverse()) {
+    const li = document.createElement("li");
+    li.className = r.kind;
+    if (r.href) {
+      const a = document.createElement("a");
+      a.href = r.href;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.textContent = r.text + " ↗";
+      li.appendChild(a);
+    } else li.textContent = r.text;
+    ol.appendChild(li);
   }
 }
 
@@ -303,6 +350,7 @@ async function openTestnet(contractId) {
   const id = contractId || deployment.contractId;
   toast("Leyendo el contrato en Stellar testnet…");
   circle = await readCircle(deployment, id, me() ? { [me()]: "Vos" } : {});
+  activity = await readActivity(deployment, id).catch(() => []);
   setModeButton("testnet");
   selected = -1;
   rebuild();
@@ -318,6 +366,7 @@ async function refreshChain(full = false) {
   const before = circle;
   const next = await readCircle(deployment, circle.contractId, me() ? { [me()]: "Vos" } : {});
   circle = next;
+  activity = await readActivity(deployment, circle.contractId).catch(() => activity);
   const changed = full || next.round !== before.round || next.members.length !== before.members.length;
   if (changed) {
     rebuild();
@@ -339,7 +388,7 @@ document.querySelectorAll(".modes button").forEach((b) => {
   b.onclick = () => {
     if (b.classList.contains("on") || busy) return;
     if (b.dataset.mode === "testnet") return run(() => openTestnet());
-    circle = demoCircle();
+    circle = demoCircle(demoOpts);
     setModeButton("demo");
     selected = -1;
     rebuild();
@@ -453,6 +502,72 @@ $("#btn-share").onclick = async () => {
     prompt("Copiá este enlace:", url.toString());
   }
 };
+
+// ---------- Personalizar: estilo del aguayo y círculo de demostración ----------
+
+function loadDemoOpts() {
+  try {
+    return JSON.parse(localStorage.getItem("awayu.demo") || "null");
+  } catch {
+    return null;
+  }
+}
+
+function saveDemoOpts(o) {
+  try {
+    if (o) localStorage.setItem("awayu.demo", JSON.stringify(o));
+    else localStorage.removeItem("awayu.demo");
+  } catch {}
+}
+
+const dlgCustom = $("#dlg-custom");
+const selTheme = $("#sel-theme");
+for (const [id, t] of Object.entries(THEMES)) selTheme.add(new Option(t.label, id));
+
+$("#btn-custom").onclick = () => {
+  const f = $("#form-custom");
+  selTheme.value = themeId;
+  const src = demoOpts?.people || circle.members.map((m) => ({ name: m.name, role: m.role }));
+  f.people.value = src.map((p) => (p.role && p.role !== "Miembro" ? `${p.name}, ${p.role}` : p.name)).join("\n");
+  f.amount.value = demoOpts?.amount || 100;
+  f.played.value = demoOpts?.played ?? 3;
+  f.rotate.checked = scene.controls.autoRotate;
+  dlgCustom.showModal();
+};
+
+selTheme.onchange = () => setTheme(selTheme.value);
+
+function setTheme(id) {
+  if (!THEMES[id]) return;
+  themeId = id;
+  saveThemeId(id);
+  applyPalette(THEMES[id].palette);
+  scene.retheme();
+  rebuild();
+}
+
+$("#form-custom").addEventListener("submit", (ev) => {
+  const v = ev.submitter?.value;
+  const f = ev.target;
+  scene.controls.autoRotate = f.rotate.checked;
+  if (v === "reset") {
+    demoOpts = null;
+  } else if (v === "ok") {
+    const people = parsePeople(f.people.value);
+    if (people.length < 2) {
+      ev.preventDefault();
+      return toast("Hacen falta al menos 2 miembros");
+    }
+    demoOpts = { people, amount: Math.max(1, Number(f.amount.value) || 100), played: Number(f.played.value) || 0 };
+  } else return;
+  saveDemoOpts(demoOpts);
+  if (!isTestnet()) {
+    circle = demoCircle(demoOpts);
+    selected = -1;
+    rebuild();
+    toast(demoOpts ? "Círculo de demostración personalizado" : "Demo original");
+  }
+});
 
 // ---------- Recorrido guiado para el pitch ----------
 

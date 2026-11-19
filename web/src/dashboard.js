@@ -23,6 +23,14 @@ export const ROUTES = [
 
 let current = null;
 let mounted = null; // { destroy }
+let token = 0; // cambia con cada navegación: lo que llega tarde de otra sección se descarta
+const alive = (tk) => tk === token;
+/** Guarda la vista montada solo si su sección sigue a la vista; si no, la destruye. */
+function adopt(tk, instance) {
+  if (alive(tk)) mounted = instance;
+  else instance?.destroy?.();
+  return instance;
+}
 let hooks = {};
 
 /** hooks: { onCircleActive(bool), openCircle(contractId), connectWallet() } */
@@ -57,7 +65,12 @@ function show(id, force = false) {
   if (!ROUTES.some((r) => r.id === id)) id = "inicio";
   if (id === current && !force) return;
   current = id;
-  document.querySelectorAll("#nav a").forEach((a) => a.classList.toggle("on", a.dataset.route === id));
+  token += 1;
+  document.querySelectorAll("#nav a").forEach((a) => {
+    a.classList.toggle("on", a.dataset.route === id);
+    if (a.dataset.route === id) a.setAttribute("aria-current", "page");
+    else a.removeAttribute("aria-current");
+  });
   mounted?.destroy?.();
   mounted = null;
   const isCircle = id === "circulo";
@@ -72,7 +85,15 @@ function show(id, force = false) {
   void view.offsetWidth;
   view.classList.add("enter");
   const render = VIEWS[id];
-  render?.(view);
+  const tk = token;
+  Promise.resolve(render?.(view, tk)).then(() => {
+    // Lectores de pantalla: el foco va al título de la sección nueva
+    const h = alive(tk) && view.querySelector("h1");
+    if (h && document.activeElement?.closest?.("#nav")) {
+      h.tabIndex = -1;
+      h.focus({ preventScroll: true });
+    }
+  });
 }
 
 // ---------------- Vistas ----------------
@@ -91,12 +112,13 @@ const VIEWS = {
   juegos: renderGames,
   amawta: renderAmawta,
   ecosistema: renderEcosystem,
-  pulso: async (v) => {
+  pulso: async (v, tk) => {
     v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t("Pulso de Stellar")}</h1>
       <p>${t("Cada anillo es un ledger de la testnet de Stellar cerrándose en vivo, cada ~5 segundos.")}</p></header>
       <div class="stage-box tall" id="pulse-box"></div></section>`;
     const m = await import("./views/pulso.js");
-    mounted = m.mount($("#pulse-box"), { lang: getLang() });
+    if (!alive(tk)) return;
+    adopt(tk, m.mount($("#pulse-box"), { lang: getLang() }));
   },
 };
 
@@ -133,15 +155,18 @@ async function renderHome(v) {
   </section>
   <footer class="credits" id="credits"></footer>`;
   $("#home-wallet").onclick = () => hooks.connectWallet?.();
+  const tk = token;
   fetch("/img/creditos.json").then((r) => r.json()).then((credits) => {
-    const el = $("#credits");
+    const el = alive(tk) && $("#credits");
     if (el) el.innerHTML = `${t("Fotos")}: ${Object.values(credits).map((c) => `<a href="${esc(c.source)}" target="_blank" rel="noopener">${esc(c.title.replace(/^File:/, ""))}</a> (${esc(c.author)}, ${esc(c.license)})`).join(" · ")}`;
   }).catch(() => {});
   fillKpis();
 }
 
 async function fillKpis() {
+  const tk = token;
   const set = (k, val) => {
+    if (!alive(tk)) return;
     const el = document.querySelector(`#kpis b[data-k="${k}"]`);
     if (!el) return;
     countUp(el, val);
@@ -173,18 +198,21 @@ function countUp(el, to) {
   requestAnimationFrame(step);
 }
 
-async function renderMap(v) {
+async function renderMap(v, tk) {
   v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t("La red de pasanakus en Bolivia")}</h1>
     <p>${t("Leído del contrato registro: la memoria colectiva on-chain de Awayu. Tocá un pin para abrir ese círculo.")}</p></header>
     <div class="stage-box tall" id="map-box"></div><div id="map-list" class="cards"></div></section>`;
   const [{ mount }, chain] = await Promise.all([import("./views/mapa3d.js"), import("./chain.js")]);
   let circles = [];
-  mounted = mount($("#map-box"), { circles, lang: getLang(), onSelect: (c) => hooks.openCircle?.(c.contractId) });
+  if (!alive(tk)) return;
+  const map = adopt(tk, mount($("#map-box"), { circles, lang: getLang(), onSelect: (c) => hooks.openCircle?.(c.contractId) }));
   try {
     const dep = state.deployment || (await chain.loadDeployment());
     circles = await chain.readRegistry(dep);
-    mounted?.update?.(circles);
+    if (!alive(tk)) return;
+    map?.update?.(circles);
   } catch {}
+  if (!alive(tk)) return;
   $("#map-list").innerHTML = circles
     .map((c) => `<button class="card-c" data-c="${esc(c.contractId)}"><b>${esc(c.name)}</b><span>${esc(regionName(c.region))} · ${c.members} ${t("miembros")} · ${c.score} pts · ${c.endorsements} ${t("avales")}</span></button>`)
     .join("") || `<p class="muted">${t("Todavía no hay círculos registrados.")}</p>`;
@@ -198,7 +226,7 @@ const REGIONS = { lpz: "La Paz", cbba: "Cochabamba", scz: "Santa Cruz", oru: "Or
 export const regionName = (r) => REGIONS[r] || r;
 export const REGION_IDS = Object.keys(REGIONS);
 
-async function renderWallet(v) {
+async function renderWallet(v, tk) {
   const addr = state.address;
   v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t("Tu billetera y tu pasaporte")}</h1>
     <p>${addr ? t("Datos en vivo de Stellar testnet (Horizon) y tu historial en todos los círculos del registro.") : t("Modo demo: conectá tu billetera para ver tus datos reales.")}</p>
@@ -218,7 +246,8 @@ async function renderWallet(v) {
     passport = pp;
     data = { ...data, address: addr, balances: acct?.balances, payments: pays, circles: pp.circles.map((c, i) => ({ name: `${t("Círculo")} ${i + 1}`, contribution: 10 + c.history.length * 5 })), reputation: pp.score };
   }
-  mounted = mount($("#wallet-box"), data);
+  if (!alive(tk)) return;
+  adopt(tk, mount($("#wallet-box"), data));
   const { historyStripDataURL } = await import("./aguayo.js");
   const strip = passport.history.length ? `<img class="strip" alt="" src="${historyStripDataURL(passport.history, 520, 34)}">` : "";
   $("#passport").innerHTML = `<h2>${t("Pasaporte de reputación")}</h2>
@@ -275,10 +304,15 @@ async function renderGames(v) {
     <div class="tabs">${games.map(([id, l], i) => `<button data-g="${id}" class="${i ? "" : "on"}">${t(l)}</button>`).join("")}</div>
     <p class="best">${t("Mejor puntaje")}: <b id="best">0</b></p></header>
     <div class="game-box" id="game-box"></div></section>`;
+  const tk = token;
+  let gameSeq = 0;
   const load = async (id) => {
+    const seq = ++gameSeq;
     mounted?.destroy?.();
+    mounted = null;
     $("#game-box").innerHTML = "";
     const m = await import(`./games/${id}.js`);
+    if (!alive(tk) || seq !== gameSeq) return;
     mounted = m.mount($("#game-box"), {
       lang: getLang(),
       onScore: (s) => {

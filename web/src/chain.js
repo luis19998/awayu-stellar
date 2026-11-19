@@ -225,5 +225,11 @@ export async function readActivity(dep, contractId) {
   return out;
 }
 
+/** Saldo de una cuenta en el token del círculo (consulta simulada, sin firmar). */
+export async function readBalance(dep, tokenId, address) {
+  const raw = await view(serverFor(dep), tokenId || dep.token, "balance", new Address(address).toScVal());
+  return Number(raw) / DECIMALS;
+}
+
 export const explorerUrl = (contractId) => `https://stellar.expert/explorer/testnet/contract/${contractId}`;
 export const txUrl = (hash) => `https://stellar.expert/explorer/testnet/tx/${hash}`;

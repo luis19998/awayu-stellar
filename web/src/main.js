@@ -12,6 +12,7 @@ import {
 import {
   loadDeployment, readCircle, explorerUrl, buildContributeXdr, buildPayoutXdr, buildCreateXdr,
   buildGuaranteeXdr, buildWithdrawXdr, buildAliasXdr, submit, ensureFunded, short, readActivity, txUrl,
+  readBalance,
 } from "./chain.js";
 import { pollarEnabled, connectFreighter, connectPollar, sign, wallet } from "./wallet.js";
 
@@ -62,6 +63,7 @@ function render() {
   $("#s-deadline").textContent = deadlineText(c);
   $("#s-yield").textContent = "+" + fmt(idleYield(c), c.token);
   scene.setPotLevel(pot(c) / (c.amount * n));
+  scene.setDeadline(roundProgress(c));
   scene.updateLabels(c.members, c.members.map((m) => `${score(m.history)} pts`), rec);
   scene.placeIlla(bestMember(c));
 
@@ -114,6 +116,16 @@ function render() {
   $("#btn-share").hidden = !tn;
   renderPerson();
   renderTimeline();
+}
+
+/** Qué parte de la ronda ya pasó (0 a 1); en demo, según cuántos aportaron. */
+function roundProgress(c) {
+  if (c.round >= c.order.length) return 1;
+  if (isTestnet() && c.deadline && c.periodSeconds) {
+    const left = c.deadline - Date.now() / 1000;
+    return Math.min(1, Math.max(0, 1 - left / c.periodSeconds));
+  }
+  return c.paid.size / c.order.length;
 }
 
 /** Quien tiene mejor reputación (y al menos dos rondas) lleva la illa. */
@@ -305,6 +317,7 @@ async function chainContribute() {
   await animateContribution(i, ON_TIME);
   toast("Aporte registrado en la cadena ✓");
   await refreshChain();
+  await updateBalance();
 }
 
 async function chainPayout() {
@@ -315,6 +328,7 @@ async function chainPayout() {
   const to = circle.members.findIndex((m) => m.address === String(res?.value));
   await animatePayout(to < 0 ? recipientOf(circle) : to, amount, marks, round);
   await refreshChain(true);
+  await updateBalance();
 }
 
 async function run(fn) {
@@ -419,6 +433,7 @@ document.querySelectorAll(".modes button").forEach((b) => {
 setInterval(() => {
   if (!isTestnet() || busy) return;
   $("#s-deadline").textContent = deadlineText(circle);
+  scene.setDeadline(roundProgress(circle));
   refreshChain().catch(() => {});
 }, 20000);
 
@@ -444,6 +459,21 @@ async function onConnected(w) {
   else toast("Billetera conectada");
   if (isTestnet()) await refreshChain(true);
   render();
+  await updateBalance();
+}
+
+/** Muestra el saldo de la billetera en el token del círculo (XLM en testnet). */
+async function updateBalance() {
+  const el = $("#wallet-balance");
+  if (!me() || !deployment) return void (el.hidden = true);
+  try {
+    const tokenId = isTestnet() ? circle.tokenId : deployment.token;
+    const bal = await readBalance(deployment, tokenId, me());
+    el.textContent = fmt(bal, isTestnet() ? circle.token : "XLM");
+    el.hidden = false;
+  } catch {
+    el.hidden = true;
+  }
 }
 
 menu.querySelectorAll("button").forEach((b) => {

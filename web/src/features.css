@@ -42,3 +42,6 @@ dialog menu { flex-wrap: wrap; }
 /* Selector de idioma junto a la billetera */
 .wallet { display: flex; gap: 8px; align-items: flex-start; }
 .wallet .lang { border: 1px solid var(--line); background: var(--glass); color: var(--ink); padding: 9px 12px; border-radius: 999px; font-weight: 700; font-size: 13px; backdrop-filter: blur(10px); }
+
+/* Saldo de la billetera */
+.wallet .balance { align-self: center; font: 600 13px var(--mono); color: var(--gold); background: var(--glass); border: 1px solid var(--line); padding: 7px 10px; border-radius: 999px; }

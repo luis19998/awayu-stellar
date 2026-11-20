@@ -18,7 +18,7 @@ import { SCENARIOS, skyDome, hillsMesh, props, groundFor } from "./scenarios.js"
 export const VESSELS = {
   cantaro: { label: "Cántaro pintado", mouth: 1.85, glow: true },
   qero: { label: "Q'ero con tocapus", node: "vasija_qero", mouth: 1.9, glow: true },
-  chanchito: { label: "Chanchito alcancía", node: "vasija_chanchito", mouth: 1.78, glow: false },
+  chanchito: { label: "Alcancía", node: "vasija_chanchito", mouth: 1.78, glow: false },
   olla: { label: "Olla de barro", node: "vasija_olla", mouth: 1.72, glow: false },
   cofre: { label: "Cofre de madera", node: "vasija_cofre", mouth: 1.8, glow: false },
 };

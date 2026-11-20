@@ -4,12 +4,15 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { PALETTE, drawPallay } from "../aguayo.js";
+import { pickLang } from "../i18n.js";
 
 const COLORS = Object.values(PALETTE);
+const LANG_CODES = new Set(["es", "en", "pt", "qu", "ay", "gn"]);
 const TEXT = {
-  es: { title: "Tu billetera", demo: "Demo · datos de ejemplo", connected: "Billetera conectada", empty: "Conectá tu billetera para tejer tu planeta" },
+  es: { title: "Tu billetera", demo: "Demo · datos de ejemplo", connected: "Billetera conectada", empty: "Conecta tu billetera para tejer tu planeta" },
   en: { title: "Your wallet", demo: "Demo · sample data", connected: "Wallet connected", empty: "Connect your wallet to weave your planet" },
 };
+for (const code of ["pt", "qu", "ay", "gn"]) TEXT[code] = { ...TEXT.es };
 
 export function scaleBalance(value) {
   const amount = Math.max(0, Number(value) || 0);
@@ -23,7 +26,7 @@ export function scaleContribution(value) {
 export function normalizeWalletData(data = {}) {
   return {
     address: data.address || "",
-    lang: data.lang === "en" ? "en" : "es",
+    lang: LANG_CODES.has(data.lang) ? data.lang : "es",
     balances: Array.isArray(data.balances) ? data.balances : [],
     payments: Array.isArray(data.payments) ? data.payments : [],
     circles: Array.isArray(data.circles) ? data.circles : [],
@@ -67,7 +70,7 @@ function disposeTree(root) {
 
 export function mount(container, initial = {}) {
   let data = normalizeWalletData(initial);
-  let copy = TEXT[data.lang];
+  let copy = pickLang(TEXT, data.lang);
   container.replaceChildren();
   container.style.position ||= "relative";
   container.style.overflow = "hidden";
@@ -167,7 +170,7 @@ export function mount(container, initial = {}) {
       const tail = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.34, 8), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.65, toneMapped: false })); tail.rotation.x = Math.PI / 2; tail.position.z = -0.2; comet.add(tail);
       comet.position.set(incoming ? -4.5 - i * 0.03 : 4.5 + i * 0.03, (i % 3 - 1) * 0.28, -0.4); comet.userData.incoming = incoming; comet.userData.phase = i * 0.55; comets.add(comet);
     });
-    copy = TEXT[data.lang];
+    copy = pickLang(TEXT, data.lang);
     caption.textContent = data.address
       ? `${copy.connected}${data.address.length > 15 ? ` · ${data.address.slice(0, 6)}…${data.address.slice(-5)}` : ` · ${data.address}`}`
       : copy.demo;

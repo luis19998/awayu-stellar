@@ -59,7 +59,7 @@ export function fundMinkaDemo(state, address, amount, now = Date.now()) {
   if (!(value > 0) || !Number.isFinite(value) || next.raised + value > next.goal) fail("INVALID_AMOUNT");
   let backer = next.backers.find((item) => item.address === address);
   if (!backer) {
-    backer = { address, name: "Vos", amount: 0, refunded: false };
+    backer = { address, name: "Tú", amount: 0, refunded: false };
     next.backers.push(backer);
   }
   backer.amount += value;

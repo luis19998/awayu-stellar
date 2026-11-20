@@ -2,6 +2,7 @@ export const MESSAGES = {
   es: { title: "El sorteo justo", intro: "Cada participante tiene la misma probabilidad de recibir cada turno. No hay apuestas ni premios en dinero.", count: "Participantes", seed: "Semilla", draw: "Sortear un turno", repeat: "Repetir 1000 sorteos", position: "Turno sorteado", probability: "Probabilidad por posición", histogram: "Resultados de 1000 sorteos", empty: "Todavía no hay simulaciones." },
   en: { title: "The fair draw", intro: "Every participant has the same chance of each turn. There are no bets or cash prizes.", count: "Participants", seed: "Seed", draw: "Draw a turn", repeat: "Run 1000 draws", position: "Drawn turn", probability: "Chance per position", histogram: "Results from 1000 draws", empty: "No simulations yet." },
 };
+for (const code of ["pt", "qu", "ay", "gn"]) MESSAGES[code] = { ...MESSAGES.es };
 const CLASS = "aw-game-ruleta";
 function randomFor(seed) {
   let s = Number(seed) >>> 0 || 1;

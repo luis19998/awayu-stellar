@@ -47,11 +47,11 @@ export function createAyniDemo() {
     },
     request(memberId, value, reason) {
       const member = byMember(memberId); const amountValue = Number(value);
-      if (state.requests.some((r) => r.member === state.members.indexOf(member) && !r.resolved)) throw new Error("Ya tenés un pedido abierto.");
+      if (state.requests.some((r) => r.member === state.members.indexOf(member) && !r.resolved)) throw new Error("Ya tienes un pedido abierto.");
       if (!Number.isFinite(amountValue) || amountValue <= 0 || amountValue > state.maxRequest) throw new Error("El monto supera el máximo permitido o no es válido.");
       const reserved = state.requests.filter((r) => !r.resolved).reduce((sum, r) => sum + r.amount, 0);
       if (amountValue > state.fund - reserved) throw new Error("El fondo todavía no tiene ese monto disponible.");
-      if (!String(reason || "").trim()) throw new Error("Contanos brevemente para qué necesitás la ayuda.");
+      if (!String(reason || "").trim()) throw new Error("Cuéntanos brevemente para qué necesitas la ayuda.");
       const id = state.requests.length; state.requests.unshift({ id, member: state.members.indexOf(member), amount: amountValue, reason: String(reason).trim(), yes: 0, no: 0, resolved: false, approved: false });
       state.history.unshift({ kind: "request", member: state.members.indexOf(member), amount: amountValue, label: `${member.name} pidió ayuda` }); return id;
     },

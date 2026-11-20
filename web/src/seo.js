@@ -13,7 +13,7 @@ export function structuredData() {
     applicationCategory: "FinanceApplication",
     operatingSystem: "Web",
     url: SITE_URL,
-    description: "Organizá un pasanaku, registrá aportes y consultá el historial de tu círculo en Stellar.",
+    description: "Organiza un pasanaku, registra aportes y consulta el historial de tu círculo en Stellar.",
     publisher: { "@type": "Organization", name: organization.name, url: SITE_URL },
     offers: { "@type": "Offer", price: "0", priceCurrency: "BOB" },
   };

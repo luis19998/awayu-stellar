@@ -18,7 +18,7 @@ export async function connectFreighter() {
   const access = await f.requestAccess();
   if (access.error) throw new Error(access.error.message || String(access.error));
   const net = await f.getNetwork();
-  if (net?.network && net.network !== "TESTNET") throw new Error("Cambiá Freighter a la red Testnet");
+  if (net?.network && net.network !== "TESTNET") throw new Error("Cambia Freighter a la red Testnet");
   current = { kind: "freighter", address: access.address };
   return current;
 }
@@ -74,7 +74,7 @@ export async function connectPollar(provider) {
  * la envíe, o { hash } si la billetera ya la envió.
  */
 export async function sign(xdr) {
-  if (!current) throw new Error("Conectá una billetera primero");
+  if (!current) throw new Error("Conecta una billetera primero");
   if (current.kind === "freighter") {
     const f = await import("@stellar/freighter-api");
     const r = await f.signTransaction(xdr, { networkPassphrase: Networks.TESTNET, address: current.address });

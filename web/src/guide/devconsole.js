@@ -9,7 +9,7 @@ const SNIPPETS = [
     id: "contribute",
     title: { es: "Preparar un aporte", en: "Prepare a contribution" },
     lang: "js",
-    code: `import { Contract, nativeToScVal } from "@stellar/stellar-sdk";\n\nconst operation = new Contract(CONTRACT_ID).call(\n  "contribute", nativeToScVal(MEMBER_ADDRESS, { type: "address" })\n);\n// Agregá operation a una transacción, preparala con Soroban RPC,\n// pedí la firma de la persona y luego enviá la transacción.`,
+    code: `import { Contract, nativeToScVal } from "@stellar/stellar-sdk";\n\nconst operation = new Contract(CONTRACT_ID).call(\n  "contribute", nativeToScVal(MEMBER_ADDRESS, { type: "address" })\n);\n// Agrega operation a una transacción, preparala con Soroban RPC,\n// pide la firma de la persona y luego envía la transacción.`,
   },
   {
     id: "cli",
@@ -24,6 +24,7 @@ const SNIPPETS = [
     code: `pub fn round_info(env: Env) -> RoundInfo {\n    let cfg = config(&env);\n    let round = current_round(&env);\n    let paid = paid_map(&env, round);\n    let mut covered = 0u32;\n    if round < cfg.members.len() {\n        for member in cfg.members.iter() {\n            if !paid.contains_key(member.clone())\n                && guarantee_of(&env, &member) >= cfg.amount\n            {\n                covered += 1;\n            }\n        }\n    }\n    RoundInfo {\n        round,\n        recipient: cfg.members.get(round),\n        deadline: deadline(&cfg, round),\n        paid: paid.len(),\n        pot: cfg.amount * paid.len() as i128,\n        covered,\n    }\n}`,
   },
 ];
+for (const snippet of SNIPPETS) snippet.title = { ...snippet.title, pt: snippet.title.es, qu: snippet.title.es, ay: snippet.title.es, gn: snippet.title.es };
 
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
 
@@ -62,7 +63,8 @@ function addStyles() {
   document.head.append(style);
 }
 
-const langText = (lang, es, en) => lang === "en" ? en : es;
+import { pickLang } from "../i18n.js";
+const langText = (lang, es, en) => pickLang({ es, en, pt: es, qu: es, ay: es, gn: es }, lang);
 
 export function mount(container, { lang = "es" } = {}) {
   if (!container || typeof document === "undefined") return { destroy() {} };
@@ -73,7 +75,7 @@ export function mount(container, { lang = "es" } = {}) {
   const panel = document.createElement("div"); panel.className = "aw-guide-console-panel"; panel.setAttribute("role", "tabpanel");
   root.append(title, tabs, panel); container.replaceChildren(root);
   let active = "live"; let deployment = null; let destroyed = false; const calls = [];
-  const labels = { live: langText(lang, "En vivo", "Live"), integrate: langText(lang, "Integrá Awayu", "Integrate Awayu"), contracts: langText(lang, "Contratos", "Contracts") };
+  const labels = { live: langText(lang, "En vivo", "Live"), integrate: langText(lang, "Integra Awayu", "Integrate Awayu"), contracts: langText(lang, "Contratos", "Contracts") };
   const tabButtons = new Map();
   for (const [id, label] of Object.entries(labels)) {
     const button = document.createElement("button"); button.type = "button"; button.id = `aw-guide-tab-${id}`; button.setAttribute("role", "tab"); button.setAttribute("aria-controls", "aw-guide-panel"); button.textContent = label; button.addEventListener("click", () => { active = id; render(); }); tabs.append(button); tabButtons.set(id, button);
@@ -95,7 +97,7 @@ export function mount(container, { lang = "es" } = {}) {
     const intro = document.createElement("p"); intro.className = "aw-guide-console-note"; intro.textContent = langText(lang, "Ejemplos de lectura e invocación. Las escrituras requieren firma de una persona.", "Examples for reading and invoking. Writes require a person's signature."); panel.append(intro);
     SNIPPETS.forEach((snippet) => {
       const card = document.createElement("article"); card.className = "aw-guide-console-snippet";
-      const heading = document.createElement("h3"); heading.textContent = snippet.title[lang === "en" ? "en" : "es"];
+      const heading = document.createElement("h3"); heading.textContent = pickLang(snippet.title, lang);
       const pre = document.createElement("pre"); pre.className = "aw-guide-console-code"; pre.textContent = snippet.code;
       const copy = document.createElement("button"); copy.type = "button"; copy.textContent = langText(lang, "Copiar", "Copy"); copy.addEventListener("click", async () => { try { await navigator.clipboard.writeText(snippet.code); copy.textContent = langText(lang, "Copiado", "Copied"); setTimeout(() => { if (!destroyed) copy.textContent = langText(lang, "Copiar", "Copy"); }, 1400); } catch { copy.textContent = langText(lang, "No se pudo copiar", "Could not copy"); } });
       card.append(heading, pre, copy); panel.append(card);

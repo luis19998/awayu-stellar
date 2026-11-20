@@ -2,12 +2,12 @@
 // #/billetera, #/riesgo, #/juegos, #/amawta, #/ecosistema, #/pulso).
 // La vista del círculo 3D vive en main.js; el resto se monta acá bajo demanda.
 import { state, subscribe } from "./state.js";
-import { t, getLang } from "./i18n.js";
+import { t, getLang, pickLang } from "./i18n.js";
 import { score } from "./model.js";
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (x) => String(x ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-const fmtN = (n, d = 0) => Number(n || 0).toLocaleString(getLang() === "en" ? "en-US" : "es-BO", { maximumFractionDigits: d });
+const fmtN = (n, d = 0) => Number(n || 0).toLocaleString(({ es: "es-BO", en: "en-US", pt: "pt-BR", qu: "es-BO", ay: "es-BO", gn: "es-BO" })[getLang()] || "es-BO", { maximumFractionDigits: d });
 
 export const ROUTES = [
   { id: "inicio", icon: "◆", label: "Inicio" },
@@ -136,9 +136,9 @@ function show(id, force = false) {
 // Las cuatro tradiciones: cada modo tiene su vista y, si el contrato está en
 // testnet y hay billetera, firma de verdad; si no, funciona en demo.
 const MODES = {
-  ayni: { title: "Ayni: fondo de ayuda mutua", lead: "Hoy te ayudo, mañana me ayudás. Un fondo común para emergencias: se pide, la comunidad vota y se devuelve sin intereses." },
-  minka: { title: "Minka: proyectos comunitarios por hitos", lead: "Trabajo colectivo con la plata segura: se aporta para un proyecto y cada hito se libera solo cuando los validadores aprueban el avance." },
-  alasitas: { title: "Alasitas: metas de ahorro", lead: "Como en la feria: elegí la miniatura de lo que deseás y ahorrá hasta lograrlo, solo o en grupo, con racha semanal." },
+  ayni: { title: "Ayni: fondo de ayuda mutua", lead: "Hoy te ayudo, mañana me ayudas. Un fondo común para emergencias: se pide, la comunidad vota y se devuelve sin intereses." },
+  minka: { title: "Minka: proyectos comunitarios por hitos", lead: "Trabajo colectivo con la dinero segura: se aporta para un proyecto y cada hito se libera solo cuando los validadores aprueban el avance." },
+  alasitas: { title: "Alasitas: metas de ahorro", lead: "Como en la feria: elige la miniatura de lo que deseas y ahorra hasta lograrlo, solo o en grupo, con racha semanal." },
 };
 
 // Qué eligió ver la persona en cada modo (demo o testnet) durante la visita
@@ -162,8 +162,8 @@ async function renderMode(v, tk, name) {
   const live = pick === "testnet";
   $("#mode-tag").textContent = live
     ? state.address
-      ? t("En vivo en Stellar testnet: firmás con tu billetera.")
-      : t("Datos reales de Stellar testnet. Conectá tu billetera para firmar.")
+      ? t("En vivo en Stellar testnet: firmas con tu billetera.")
+      : t("Datos reales de Stellar testnet. Conecta tu billetera para firmar.")
     : contract
       ? t("Modo demo: todo funciona en tu navegador. El contrato ya está en testnet.")
       : t("Modo demo: todo funciona en tu navegador.");
@@ -204,7 +204,7 @@ async function addHowto(view, id) {
   const { ROUTE_TOPICS, HELP_TOPICS, openHelp } = await import("./guide/help.js");
   const ids = (ROUTE_TOPICS[id] || []).filter((x) => HELP_TOPICS[x]);
   if (!ids.length || !head.isConnected) return;
-  const en = getLang() === "en";
+  const lang = getLang();
   const box = document.createElement("div");
   box.className = "howto";
   box.innerHTML = `<span>${t("¿Cómo se hace?")}</span><div class="howto-row"></div>`;
@@ -213,7 +213,7 @@ async function addHowto(view, id) {
     b.type = "button";
     b.className = "howto-chip";
     b.dataset.topic = topicId;
-    b.textContent = `▶ ${HELP_TOPICS[topicId].title[en ? "en" : "es"]}`;
+    b.textContent = `▶ ${pickLang(HELP_TOPICS[topicId].title, lang)}`;
     b.onclick = () => openHelp(topicId, { lang: getLang(), anchor: b });
     box.querySelector(".howto-row").append(b);
   }
@@ -226,7 +226,7 @@ const VIEWS = {
   alasitas: (v, tk) => renderMode(v, tk, "alasitas"),
   dev: async (v, tk) => {
     v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t("Para desarrolladores")}</h1>
-      <p>${t("Cada transacción que firmás aparece en vivo con su contrato, función y argumentos. Abajo: cómo integrar Awayu en tu app y los contratos desplegados.")}</p></header>
+      <p>${t("Cada transacción que firmas aparece en vivo con su contrato, función y argumentos. Abajo: cómo integrar Awayu en tu app y los contratos desplegados.")}</p></header>
       <div class="game-box" id="dev-box"></div></section>`;
     const m = await import("./guide/devconsole.js");
     if (!alive(tk)) return;
@@ -280,7 +280,7 @@ async function renderHome(v, tk = token) {
       ${[
         ["circulo", "◎", "Pasanaku", "Ahorro rotativo: todos aportan y, por turno sorteado, alguien recibe el pozo.", "#d81b60"],
         ["ayni", "❖", "Ayni", "Ayuda mutua: un fondo común para emergencias, con votación de la comunidad.", "#13a3b0"],
-        ["minka", "✚", "Minka", "Proyectos comunitarios: la plata se libera por hitos aprobados.", "#1f9d55"],
+        ["minka", "✚", "Minka", "Proyectos comunitarios: la dinero se libera por hitos aprobados.", "#1f9d55"],
         ["alasitas", "⌂", "Alasitas", "Metas de ahorro con miniaturas: casa, estudio, negocio, viaje.", "#f9c22e"],
       ].map(([r, ic, n, d, c], i) => `<a class="trad" href="#/${r}" style="--c:${c};--d:${i * 90}ms"><span class="ic">${ic}</span><b>${n}</b><span>${t(d)}</span><i>${t("Abrir")} →</i></a>`).join("")}
     </div>
@@ -290,10 +290,10 @@ async function renderHome(v, tk = token) {
     <h2>${t("Cómo funciona")}</h2>
     <div class="steps">
       ${[
-        ["1", "Armás tu círculo", "Elegís cuota, duración de la ronda y miembros. Se despliega un contrato Soroban y se registra en la memoria colectiva on-chain.", "/img/alasitas.webp"],
+        ["1", "Armas tu círculo", "Eliges cuota, duración de la ronda y miembros. Se despliega un contrato Soroban y se registra en la memoria colectiva on-chain.", "/img/alasitas.webp"],
         ["2", "La red sortea el turno", "El orden de cobro sale del PRNG de Stellar: nadie elige quién cobra primero.", "/img/cochabamba.webp"],
         ["3", "Cada pago teje tu aguayo", "A tiempo, tarde, faltó o cubierto por garantía: cada ronda deja una capa de tejido verificable.", "/img/aguayo.webp"],
-        ["4", "Tu historial viaja con vos", "El pasaporte junta tu cumplimiento en todos los círculos: evidencia para cooperativas, sin prometer créditos.", "/img/uyuni.webp"],
+        ["4", "Tu historial viaja con tú", "El pasaporte junta tu cumplimiento en todos los círculos: evidencia para cooperativas, sin prometer créditos.", "/img/uyuni.webp"],
       ].map(([n, h, p, img], i) => `<article class="step" style="--d:${i * 90}ms"><div class="ph" style="background-image:url('${img}')"><b>${n}</b></div><h3>${t(h)}</h3><p>${t(p)}</p></article>`).join("")}
     </div>
   </section>
@@ -350,7 +350,7 @@ function countUp(el, to) {
 
 async function renderMap(v, tk) {
   v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t("La red de pasanakus en Bolivia")}</h1>
-    <p>${t("Leído del contrato registro: la memoria colectiva on-chain de Awayu. Tocá un pin para abrir ese círculo.")}</p></header>
+    <p>${t("Leído del contrato registro: la memoria colectiva on-chain de Awayu. Toca un pin para abrir ese círculo.")}</p></header>
     <div class="stage-box tall" id="map-box"></div><div id="map-list" class="cards"></div></section>`;
   const [{ mount }, chain] = await Promise.all([import("./views/mapa3d.js"), import("./chain.js")]);
   let circles = [];
@@ -379,7 +379,7 @@ export const REGION_IDS = Object.keys(REGIONS);
 async function renderWallet(v, tk) {
   const addr = state.address;
   v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t("Tu billetera y tu pasaporte")}</h1>
-    <p>${addr ? t("Datos en vivo de Stellar testnet (Horizon) y tu historial en todos los círculos del registro.") : t("Modo demo: conectá tu billetera para ver tus datos reales.")}</p>
+    <p>${addr ? t("Datos en vivo de Stellar testnet (Horizon) y tu historial en todos los círculos del registro.") : t("Modo demo: conecta tu billetera para ver tus datos reales.")}</p>
     ${addr ? "" : `<button class="btn primary" id="w-connect">${t("Conectar billetera")}</button>`}</header>
     <div class="grid2"><div class="stage-box tall" id="wallet-box"></div><div id="passport" class="passport"></div></div></section>`;
   $("#w-connect")?.addEventListener("click", () => hooks.connectWallet?.());
@@ -411,7 +411,7 @@ function renderRisk() {
   const box = $("#risk");
   if (!box) return;
   const c = state.circle;
-  if (!c) return void (box.innerHTML = `<p class="muted">${t("Abrí un círculo primero.")}</p>`);
+  if (!c) return void (box.innerHTML = `<p class="muted">${t("Abre un círculo primero.")}</p>`);
   import("./risk.js").then(({ memberReliability, simulateCircle, riskLevel, turnProbabilities }) => {
     const sim = simulateCircle(c, { runs: 4000, seed: 7 });
     const p = sim.completionProbability || 0;
@@ -445,7 +445,7 @@ function renderRisk() {
 
 async function renderGames(v) {
   const games = [
-    ["tejido", "Tejé tu aguayo"],
+    ["tejido", "Teje tu aguayo"],
     ["quiz", "Pasanaku y Stellar"],
     ["ruleta", "El sorteo justo"],
   ];
@@ -509,7 +509,7 @@ function renderAmawta(v) {
     <p>${t("El sabio de Awayu (amawta en quechua): responde sobre pasanakus, garantías y Stellar con el contexto de tu círculo. No da consejos de inversión.")}</p></header>
     <div class="msgs" id="msgs"><div class="msg ai">${t("¡Hola! Soy Amawta. Preguntame sobre tu círculo, la garantía o cómo usar Stellar.")}</div></div>
     <div class="sugg">${sugg.map((s) => `<button>${esc(t(s))}</button>`).join("")}</div>
-    <form id="ask" class="ask"><input name="q" maxlength="500" autocomplete="off" placeholder="${esc(t("Escribí tu pregunta…"))}" /><button class="btn primary">${t("Preguntar")}</button></form></section>`;
+    <form id="ask" class="ask"><input name="q" maxlength="500" autocomplete="off" placeholder="${esc(t("Escribe tu pregunta…"))}" /><button class="btn primary">${t("Preguntar")}</button></form></section>`;
   const msgs = $("#msgs");
   const add = (cls, text) => {
     const d = document.createElement("div");

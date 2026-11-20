@@ -1,9 +1,11 @@
 import { createAyniDemo, buildContributeXdr, buildRequestXdr, buildVoteXdr, buildResolveXdr, buildRepayXdr, readFund, readRequests } from "../modes/ayni.js";
+import { pickLang } from "../i18n.js";
 
 const COPY = {
-  es: { title: "Ayni · fondo de ayuda mutua", sub: "Hoy te ayudo, mañana me ayudás.", pot: "Fondo común", contribute: "Aportar", ask: "Pedir ayuda", vote: "Votar", yes: "A favor", no: "En contra", reason: "¿Para qué necesitás ayuda?", amount: "Monto", send: "Enviar pedido", empty: "Todavía no hay pedidos.", open: "En votación", approved: "Aprobado", rejected: "Rechazado", by: "pidió ayuda", votes: "votos a favor", history: "Lo que va pasando", people: "vecinas y vecinos", demo: "Demo local", askHint: "Contanos brevemente qué pasó", repay: "Devolver ayuda", close: "Cerrar resultado", error: "No se pudo completar", success: "Listo, quedó registrado en esta demo." },
+  es: { title: "Ayni · fondo de ayuda mutua", sub: "Hoy te ayudo, mañana me ayudas.", pot: "Fondo común", contribute: "Aportar", ask: "Pedir ayuda", vote: "Votar", yes: "A favor", no: "En contra", reason: "¿Para qué necesitas ayuda?", amount: "Monto", send: "Enviar pedido", empty: "Todavía no hay pedidos.", open: "En votación", approved: "Aprobado", rejected: "Rechazado", by: "pidió ayuda", votes: "votos a favor", history: "Lo que va pasando", people: "vecinas y vecinos", demo: "Demo local", askHint: "Cuéntanos brevemente qué pasó", repay: "Devolver ayuda", close: "Cerrar resultado", error: "No se pudo completar", success: "Listo, quedó registrado en esta demo." },
   en: { title: "Ayni · mutual aid fund", sub: "I help you today, you help me tomorrow.", pot: "Shared fund", contribute: "Contribute", ask: "Ask for help", vote: "Vote", yes: "In favor", no: "Against", reason: "What do you need help with?", amount: "Amount", send: "Send request", empty: "No requests yet.", open: "Voting", approved: "Approved", rejected: "Declined", by: "asked for help", votes: "votes in favor", history: "What’s happening", people: "neighbors", demo: "Local demo", askHint: "Briefly tell us what happened", repay: "Repay help", close: "Close result", error: "Could not complete", success: "Done, saved in this demo." },
 };
+for (const code of ["pt", "qu", "ay", "gn"]) COPY[code] = { ...COPY.es };
 
 const STYLES = `
 .ayni-root{box-sizing:border-box;position:relative;min-height:620px;padding:26px;overflow:hidden;border-radius:24px;color:#fff;background:radial-gradient(ellipse at 50% 20%,#3c2548 0%,#17142b 58%,#10101d 100%);font:14px/1.45 system-ui,sans-serif}
@@ -18,9 +20,10 @@ function node(tag, cls, text) { const el = document.createElement(tag); if (cls)
 
 export function mount(container, opts = {}) {
   let { lang = "es", mode = "demo", deployment = {}, address = "", sign } = opts;
-  let copy = COPY[lang === "en" ? "en" : "es"];
+  let copy = pickLang(COPY, lang);
+  const localText = (es, en) => pickLang({ es, en }, lang);
   const demo = mode === "demo" ? createAyniDemo() : null;
-  let state = demo?.state || { fund: 0, members: (deployment.members || []).map((address, i) => ({ address, name: deployment.memberNames?.[address] || `${lang === "en" ? "Neighbor" : "Vecina/o"} ${i + 1}` })), requests: [], history: [], token: deployment.tokenSymbol || "XLM", monthly: Number(deployment.monthly || 0) / 1e7, quorumBps: Number(deployment.quorumBps || 5000), maxRequest: Number(deployment.maxRequest || 0) / 1e7 };
+  let state = demo?.state || { fund: 0, members: (deployment.members || []).map((address, i) => ({ address, name: deployment.memberNames?.[address] || `${localText("Vecina/o", "Neighbor")} ${i + 1}` })), requests: [], history: [], token: deployment.tokenSymbol || "XLM", monthly: Number(deployment.monthly || 0) / 1e7, quorumBps: Number(deployment.quorumBps || 5000), maxRequest: Number(deployment.maxRequest || 0) / 1e7 };
   const contractId = deployment.ayniContractId || deployment.contractId;
   const root = node("section", "ayni-root"); root.setAttribute("aria-label", copy.title);
   const style = node("style"); style.textContent = STYLES;
@@ -47,12 +50,13 @@ export function mount(container, opts = {}) {
 
   function memberName(indexOrAddress) {
     const m = typeof indexOrAddress === "number" ? state.members[indexOrAddress] : state.members.find((x) => x.address === indexOrAddress);
-    return m?.name || (typeof indexOrAddress === "string" ? `${indexOrAddress.slice(0, 5)}…` : (lang === "en" ? "Neighbor" : "Vecina/o"));
+    return m?.name || (typeof indexOrAddress === "string" ? `${indexOrAddress.slice(0, 5)}…` : localText("Vecina/o", "Neighbor"));
   }
   function render() {
     if (destroyed) return;
-    fundValue.textContent = `${Number(state.fund || 0).toLocaleString(lang === "en" ? "en-US" : "es-BO", { maximumFractionDigits: 2 })} ${state.token || "XLM"}`;
-    membersLine.textContent = `${state.members.length} ${copy.people} · ${lang === "en" ? "Monthly contribution" : "Aporte mensual"}: ${state.monthly} ${state.token}`;
+    const numberLocale = ({ es: "es-BO", en: "en-US", pt: "pt-BR", qu: "es-BO", ay: "es-BO", gn: "es-BO" })[lang] || "es-BO";
+    fundValue.textContent = `${Number(state.fund || 0).toLocaleString(numberLocale, { maximumFractionDigits: 2 })} ${state.token || "XLM"}`;
+    membersLine.textContent = `${state.members.length} ${copy.people} · ${localText("Aporte mensual", "Monthly contribution")}: ${state.monthly} ${state.token}`;
     cards.replaceChildren();
     const sorted = [...state.requests].reverse();
     if (!sorted.length) cards.append(node("p", "ayni-muted", copy.empty));
@@ -64,7 +68,7 @@ export function mount(container, opts = {}) {
       const eligible = Math.max(1, state.members.length - 1); const needed = Math.ceil(eligible * Number(state.quorumBps || 5000) / 10_000);
       const meter = node("div", "ayni-meter"); meter.setAttribute("role", "progressbar"); meter.setAttribute("aria-label", `${request.yes} ${copy.votes}`); meter.setAttribute("aria-valuemin", "0"); meter.setAttribute("aria-valuemax", String(needed)); meter.setAttribute("aria-valuenow", String(request.yes));
       const fill = node("span"); fill.style.width = `${Math.min(100, request.yes / needed * 100)}%`; meter.append(fill);
-      const votes = node("div", "ayni-votes", `${request.yes}/${needed} ${copy.votes}${request.no ? ` · ${request.no} ${lang === "en" ? "against" : "en contra"}` : ""}`);
+      const votes = node("div", "ayni-votes", `${request.yes}/${needed} ${copy.votes}${request.no ? ` · ${request.no} ${localText("en contra", "against")}` : ""}`);
       card.append(top, desc, amountLine, meter, votes);
       if (!request.resolved) {
         const buttons = node("div", "ayni-actions");
@@ -89,8 +93,8 @@ export function mount(container, opts = {}) {
     return found >= 0 ? found : 0;
   }
   async function chainAction(builder, ...args) {
-    if (!contractId) throw new Error(lang === "en" ? "Ayni contract address is missing from deployment settings." : "Falta la dirección del contrato Ayni en la configuración.");
-    if (!address || typeof sign !== "function") throw new Error(lang === "en" ? "Connect a wallet to continue." : "Conectá una billetera para continuar.");
+    if (!contractId) throw new Error(localText("Falta la dirección del contrato Ayni en la configuración.", "Ayni contract address is missing from deployment settings."));
+    if (!address || typeof sign !== "function") throw new Error(localText("Conecta una billetera para continuar.", "Connect a wallet to continue."));
     const xdr = await builder(deployment, contractId, address, ...args);
     await sign(xdr);
   }
@@ -110,7 +114,7 @@ export function mount(container, opts = {}) {
     const h = node("h2", "", copy.ask); const reasonLabel = node("label", "", copy.reason); const reason = document.createElement("textarea"); reason.required = true; reason.maxLength = 180; reason.placeholder = copy.askHint;
     const amountLabel = node("label", "", `${copy.amount} · ${state.token || "XLM"}`); const value = document.createElement("input"); value.required = true; value.type = "number"; value.min = "0.0000001"; value.step = "any"; value.max = String(state.maxRequest || 999999);
     const error = node("div", "ayni-error"); const row = node("div", "ayni-actions"); const submit = node("button", "ayni-btn", copy.send); submit.type = "submit";
-    const cancel = node("button", "ayni-btn secondary", lang === "en" ? "Cancel" : "Volver"); cancel.type = "button"; cancel.addEventListener("click", () => modalHost.replaceChildren());
+    const cancel = node("button", "ayni-btn secondary", localText("Volver", "Cancel")); cancel.type = "button"; cancel.addEventListener("click", () => modalHost.replaceChildren());
     row.append(submit, cancel); form.append(h, reasonLabel, reason, amountLabel, value, error, row); overlay.append(form); modalHost.append(overlay); reason.focus();
     overlay.addEventListener("click", (event) => { if (event.target === overlay) modalHost.replaceChildren(); });
     form.addEventListener("submit", (event) => { event.preventDefault(); void act(async () => {
@@ -137,15 +141,15 @@ export function mount(container, opts = {}) {
   repayBtn.addEventListener("click", () => {
     if (mode === "demo") {
       const debt = demo.state.members[currentMember()]?.debt || 0;
-      if (debt <= 0) { showToast(lang === "en" ? "No help to repay yet." : "Todavía no tenés ayuda pendiente por devolver."); return; }
+      if (debt <= 0) { showToast(localText("Todavía no tienes ayuda pendiente por devolver.", "No help to repay yet.")); return; }
       void act(() => demo.repay(currentMember(), debt)).then(refresh);
     } else {
-      const raw = globalThis.prompt(lang === "en" ? "Amount to repay" : "Monto que querés devolver"); if (raw) void act(() => chainAction(buildRepayXdr, Number(raw))).then(refresh);
+      const raw = globalThis.prompt(localText("Monto que quieres devolver", "Amount to repay")); if (raw) void act(() => chainAction(buildRepayXdr, Number(raw))).then(refresh);
     }
   });
   render(); if (mode !== "demo") void refresh();
   return {
-    update(next = {}) { if (next.lang) { lang = next.lang; copy = COPY[lang === "en" ? "en" : "es"]; } if ("address" in next) address = next.address; if ("deployment" in next) deployment = next.deployment; if ("sign" in next) sign = next.sign; render(); },
+    update(next = {}) { if (next.lang) { lang = next.lang; copy = pickLang(COPY, lang); } if ("address" in next) address = next.address; if ("deployment" in next) deployment = next.deployment; if ("sign" in next) sign = next.sign; render(); },
     destroy() { destroyed = true; clearTimeout(toastTimer); modalHost.replaceChildren(); root.remove(); },
   };
 }

@@ -141,7 +141,7 @@ function render() {
   const bC = $("#btn-contribute");
   if (tn) {
     bC.disabled = busy || done || !me() || mine < 0 || c.paid.has(mine);
-    bC.textContent = t(!me() ? "Conectá tu billetera" : mine < 0 ? "No sos miembro" : c.paid.has(mine) ? "Ya aportaste" : "Aportar y firmar");
+    bC.textContent = t(!me() ? "Conecta tu billetera" : mine < 0 ? "No eres miembro" : c.paid.has(mine) ? "Ya aportaste" : "Aportar y firmar");
   } else {
     bC.disabled = busy || done || (selected >= 0 && c.paid.has(selected));
     bC.textContent = selected >= 0 ? t("Aportar como {name}", { name: c.members[selected].name }) : t("Aportar (todos)");
@@ -200,7 +200,7 @@ function renderGuarantee(c, done) {
   }
   b.hidden = false;
   if (tn && !me()) {
-    b.textContent = t("Conectá tu billetera");
+    b.textContent = t("Conecta tu billetera");
     b.disabled = true;
     return;
   }
@@ -214,7 +214,7 @@ function renderGuarantee(c, done) {
       ? m.guarantee > 0
         ? t(tn ? "Tu garantía está activa" : "Su garantía está activa")
         : t("Dejar garantía ({amount})", { amount: fmt(c.amount, c.token) })
-      : t("Elegí un miembro para dejar garantía");
+      : t("Elige un miembro para dejar garantía");
     b.disabled = busy || !m || m.guarantee > 0 || (tn && !me());
   }
 }
@@ -379,7 +379,7 @@ async function demoPayout() {
 async function signAndSend(buildXdr, what) {
   toast(t("Preparando {what}…", { what: t(what) }));
   const xdr = await buildXdr();
-  toast(t("Firmá en tu billetera…"), 60000);
+  toast(t("Firma en tu billetera…"), 60000);
   const signed = await sign(xdr);
   toast(t("Enviando a Stellar testnet…"), 60000);
   return submit(deployment, signed);
@@ -429,7 +429,7 @@ function friendly(e) {
   if (/User declined|rejected|denied/i.test(m)) return t("cancelaste la firma");
   if (/Error\(Contract, #8\)/.test(m)) return t("la ronda sigue abierta");
   if (/Error\(Contract, #6\)/.test(m)) return t("ya aportaste en esta ronda");
-  if (/Error\(Contract, #5\)/.test(m)) return t("no sos miembro del círculo");
+  if (/Error\(Contract, #5\)/.test(m)) return t("no eres miembro del círculo");
   return m.length > 140 ? m.slice(0, 140) + "…" : m;
 }
 
@@ -447,7 +447,7 @@ $("#btn-guarantee").onclick = () =>
       toast(t("Garantía devuelta a tu billetera ✓"));
     } else {
       await signAndSend(() => buildGuaranteeXdr(deployment, circle.contractId, me()), "tu garantía");
-      toast(t("Garantía depositada: si un día no podés pagar, cubre tu cuota ✓"));
+      toast(t("Garantía depositada: si un día no puedes pagar, cubre tu cuota ✓"));
     }
     await refreshChain(true);
   });
@@ -460,7 +460,7 @@ async function openTestnet(contractId) {
   if (!deployment) throw new Error("Falta testnet.json");
   const id = contractId || deployment.contractId;
   toast(t("Leyendo el contrato en Stellar testnet…"));
-  circle = await readCircle(deployment, id, me() ? { [me()]: "Vos" } : {});
+  circle = await readCircle(deployment, id, me() ? { [me()]: "Tú" } : {});
   activity = await readActivity(deployment, id, circle.start).catch(() => []);
   setModeButton("testnet");
   selected = -1;
@@ -475,7 +475,7 @@ async function openTestnet(contractId) {
 async function refreshChain(full = false) {
   if (!isTestnet()) return;
   const before = circle;
-  const next = await readCircle(deployment, circle.contractId, me() ? { [me()]: "Vos" } : {});
+  const next = await readCircle(deployment, circle.contractId, me() ? { [me()]: "Tú" } : {});
   circle = next;
   activity = await readActivity(deployment, circle.contractId, circle.start).catch(() => activity);
   const changed = full || next.round !== before.round || next.members.length !== before.members.length;
@@ -576,7 +576,7 @@ menu.querySelectorAll("button").forEach((b) => {
         } catch (e) {
           if (e.message === "FREIGHTER_MISSING") {
             window.open("https://www.freighter.app/", "_blank", "noopener");
-            throw new Error("instalá Freighter (se abrió su página) y elegí la red Testnet");
+            throw new Error("instala Freighter (se abrió su página) y elige la red Testnet");
           }
           throw e;
         }
@@ -595,7 +595,7 @@ const dlg = $("#dlg-create");
 $("#btn-create").onclick = () => {
   if (!me()) {
     menu.hidden = false;
-    return toast(t("Primero conectá tu billetera"));
+    return toast(t("Primero conecta tu billetera"));
   }
   $("#create-err").textContent = "";
   applyStatic(dlg);
@@ -632,7 +632,7 @@ $("#form-create").addEventListener("submit", (ev) => {
         toast(t("El círculo se creó, pero no se pudo registrar: {why}", { why: friendly(e) }), 5000);
       }
     }
-    toast(t("¡Pasanaku creado! Compartí el enlace con los miembros"));
+    toast(t("¡Pasanaku creado! Comparte el enlace con los miembros"));
     await openTestnet(id);
   });
 });
@@ -699,7 +699,7 @@ $("#btn-share").onclick = async () => {
     await navigator.clipboard.writeText(url.toString());
     toast(t("Enlace copiado: cualquiera puede ver el círculo; los miembros aportan con su billetera"));
   } catch {
-    prompt("Copiá este enlace:", url.toString());
+    prompt("Copia este enlace:", url.toString());
   }
 };
 
@@ -841,12 +841,10 @@ addEventListener("pointerdown", () => sfx.initSound(), { once: true });
 
 // ---------- Idioma ----------
 
-const btnLang = $("#btn-lang");
-const syncLangButton = () => (btnLang.textContent = getLang() === "es" ? "EN" : "ES");
-syncLangButton();
-btnLang.onclick = () => {
-  setLang(getLang() === "es" ? "en" : "es");
-  syncLangButton();
+const selLang = $("#sel-lang");
+selLang.value = getLang();
+selLang.onchange = () => {
+  setLang(selLang.value);
   render();
   relabel();
   renderHowto();

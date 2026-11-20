@@ -130,29 +130,47 @@ for x in (0.42, -0.42):
         l = bpy.context.active_object; l.scale = (0.14, 0.14, 0.22); parts.append(apply(l))
     bpy.ops.mesh.primitive_cone_add(vertices=16, radius1=0.17, depth=0.3, location=(x * 0.7, -0.45, 1.6), rotation=(-0.5, 0, 0))
     parts.append(apply(bpy.context.active_object))
-bpy.ops.mesh.primitive_torus_add(major_radius=0.12, minor_radius=0.035, location=(0, 0.85, 1.05), rotation=(0, math.pi / 2, 0))
-parts.append(apply(bpy.context.active_object))
+# colita en espiral
+for k in range(10):
+    t = k / 9
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=10, ring_count=6, location=(math.cos(t * 5) * 0.07, 0.84 + t * 0.12, 1.05 + math.sin(t * 5) * 0.07))
+    tl = bpy.context.active_object; tl.scale = (0.035, 0.035, 0.035); parts.append(apply(tl))
 pig = join(parts, "vasija_chanchito")
-rm = pig.modifiers.new("fundir", "REMESH"); rm.mode = "VOXEL"; rm.voxel_size = 0.03
+rm = pig.modifiers.new("fundir", "REMESH"); rm.mode = "VOXEL"; rm.voxel_size = 0.022
 sel([pig]); bpy.ops.object.modifier_apply(modifier=rm.name)
 sm = pig.modifiers.new("pulir", "SMOOTH"); sm.factor = 0.6; sm.iterations = 4
 bpy.ops.object.modifier_apply(modifier=sm.name)
-dec = pig.modifiers.new("simplificar", "DECIMATE"); dec.ratio = min(1, 9000 / len(pig.data.polygons))
-bpy.ops.object.modifier_apply(modifier=dec.name)
 bpy.ops.object.shade_smooth()
-PINK, FLOWER, LEAF, DARKC = lin("#e58a8a"), lin("#f9c22e"), lin("#1f9d55"), lin("#2a1d1a")
+PINK, DARKC = lin("#e9958a"), lin("#2a1d1a")
+PET = [lin(h) for h in ("#f9c22e", "#d81b60", "#13a3b0", "#ffffff")]
+LEAF, CENTER, WHITE = lin("#1f9d55"), lin("#f57c1f"), lin("#fff6ea")
+# Flores pintadas a mano en los costados y el lomo: (centro, radio, color de pétalos)
+FLOWERS = []
+for side in (1, -1):
+    for (y, z, r, c) in ((-0.25, 1.0, 0.2, 0), (0.25, 0.85, 0.16, 1), (0.05, 1.3, 0.13, 2), (0.45, 1.2, 0.11, 3)):
+        FLOWERS.append((Vector((side * 0.98, y, z)), r, PET[c]))
+FLOWERS.append((Vector((0, 0.2, 1.72)), 0.16, PET[1]))
 def pig_col(p, n):
-    if p.y < -1.08 and abs(p.x) < 0.07 and abs(p.z - 0.95) < 0.06:
-        return DARKC  # nariz
-    if p.z > 1.68 and abs(p.x) < 0.2 and abs(p.y) < 0.06:
+    if p.y < -1.08 and abs(abs(p.x) - 0.07) < 0.04 and abs(p.z - 0.95) < 0.05:
+        return DARKC  # fosas de la nariz
+    if p.y < -0.62 and abs(abs(p.x) - 0.3) < 0.07 and abs(p.z - 1.28) < 0.07:
+        return DARKC if abs(abs(p.x) - 0.31) < 0.035 and abs(p.z - 1.29) < 0.035 else WHITE  # ojos
+    if p.z > 1.66 and abs(p.x) < 0.22 and abs(p.y + 0.12) < 0.05:
         return DARKC  # ranura de la alcancía
-    f = noise.noise(Vector((p.x * 4, p.y * 4, p.z * 4)))
-    if f > 0.38 and 0.6 < p.z < 1.4:
-        return FLOWER
-    if 0.28 < f <= 0.38 and 0.6 < p.z < 1.4:
-        return LEAF
-    if p.y < -0.8 and 0.95 < p.z < 1.05:
-        return lin("#c75c6a")
+    for c, r, col in FLOWERS:
+        d = p - c
+        d2 = Vector((d.y, d.z)) if abs(c.x) > 0.5 else Vector((d.x, d.y))
+        dist = d2.length
+        if dist < r * 0.28:
+            return CENTER
+        if dist < r:
+            ang = math.atan2(d2.y, d2.x)
+            if dist < r * (0.45 + 0.55 * abs(math.cos(ang * 2.5))):  # cinco pétalos
+                return col
+        if r < dist < r * 1.5 and abs(math.sin(math.atan2(d2.y, d2.x) * 2 + 0.7)) > 0.93:
+            return LEAF
+    if abs(p.z - 0.55) < 0.03 or abs(p.z - 1.55) < 0.025:
+        return lin("#f9c22e")  # filetes pintados
     return PINK
 paint(pig, pig_col)
 pig.data.materials.append(ceramica)

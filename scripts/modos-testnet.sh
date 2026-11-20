@@ -73,7 +73,7 @@ fi
 nombres() { local s=""; for n in "$@"; do s="$s\"$(addr "$n")\":\"${n^}\","; done; echo "{${s%,}}"; }
 cat > modos.json <<EOF
 {
-  "ayni": { "contractId": "$AYNI", "members": $(lista "${AYNI_M[@]}"), "memberNames": $(nombres "${AYNI_M[@]}"),
+  "ayni": { "contractId": "$AYNI", "members": $(lista "${AYNI_M[@]}"), "memberNames": $(nombres "${AYNI_M[@]}" eva),
             "monthly": "$MONTHLY", "quorumBps": $QUORUM, "maxRequest": "$MAXREQ" },
   "minka": { "contractId": "$MINKA", "validators": $(lista ana bruno carla), "deadline": $DEADLINE },
   "alasitas": { "contractId": "$ALAS", "goals": [${G1:-null}, ${G2:-null}], "owners": $(lista ana bruno) },

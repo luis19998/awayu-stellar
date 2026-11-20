@@ -19,9 +19,9 @@ Cinco contratos Soroban en testnet, todos con actividad real:
 |---|---|---|
 | `pasanaku` v3 | Ahorro rotativo con garantías, alias y TTL | [`CCNZYP…FSRS`](https://stellar.expert/explorer/testnet/contract/CCNZYPMRSWINOELDI2HGMJ5O3IVA5JW4MVQGJFT2PG3ZNDWUT6DFFSRS) |
 | `registro` | Memoria colectiva: círculos, miembros, regiones y avales | [`CCGJXJ…J267`](https://stellar.expert/explorer/testnet/contract/CCGJXJMCVCJP5NCB2YMTZT7KFDVDDC3UGAAY2DAJCMDHYCRKWXQLJ267) |
-| `ayni` | Fondo de ayuda mutua: pedidos, votos con quórum y devolución sin intereses | [`CBF34P…BYNX`](https://stellar.expert/explorer/testnet/contract/CBF34PAM3OH27GO2HQDMASLBIZIT4Z2YESJQOQWFS2ABLMKECK3KBYNX) |
-| `minka` | Proyectos comunitarios con fondos liberados por hitos aprobados | [`CAB7GA…4GVC`](https://stellar.expert/explorer/testnet/contract/CAB7GA2RADZFOQJXPUBN3QTHVJKBAVC6CTY4HOOGWQ767ZZLVK2K4GVC) |
-| `alasitas` | Metas de ahorro individuales o grupales con racha y bloqueo por fecha | [`CAOFDO…4HUE`](https://stellar.expert/explorer/testnet/contract/CAOFDOC5A6C5RH62KDOS6TXRLAJY6BTYZ472D3LZ7JCDZQJVE44H4HUE) |
+| `ayni` v2 | Fondo de ayuda mutua: cualquiera se une pagando su primera cuota; pedidos, votos con quórum y devolución sin intereses | [`CCMKZN…DFLP`](https://stellar.expert/explorer/testnet/contract/CCMKZNGBCZSQTFO5KUWAN6ZBY2NC3O4KENZEX6GXSVHNBZBJ63OWDFLP) |
+| `minka` | Proyectos comunitarios con fondos liberados por hitos aprobados | [`CDXXMK…2TX2`](https://stellar.expert/explorer/testnet/contract/CDXXMK2VXN36UPOIQGUOSU24D53X6BBMBY4N6A32Q5CWBH4HC4ZE2TX2) |
+| `alasitas` | Metas de ahorro individuales o grupales con racha y bloqueo por fecha | [`CBOQEB…UROR`](https://stellar.expert/explorer/testnet/contract/CBOQEBBK6VHZSYSUAHUAZDDWW5DOPBCIQCWR325Y2FQZMFIXY4H7UROR) |
 
 Integraciones: Pollar (login, Earn con Blend/DeFindex, swaps y rampas), Trustless Work (escrow de garantías), n8n (tres flujos) y Gemini. Ver `docs/INTEGRACIONES.md`, `docs/REGISTRO.md`, `docs/SERVICIOS.md` y `docs/HOSTING.md`.
 

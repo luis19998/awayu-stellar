@@ -1,4 +1,4 @@
-import { createAyniDemo, buildContributeXdr, buildRequestXdr, buildVoteXdr, buildResolveXdr, buildRepayXdr, readFund, readRequests } from "../modes/ayni.js";
+import { createAyniDemo, buildContributeXdr, buildRequestXdr, buildVoteXdr, buildResolveXdr, buildRepayXdr, buildJoinXdr, readFund, readRequests, readMembers } from "../modes/ayni.js";
 import { pickLang } from "../i18n.js";
 
 const COPY = {
@@ -6,6 +6,16 @@ const COPY = {
   en: { title: "Ayni · mutual aid fund", sub: "I help you today, you help me tomorrow.", pot: "Shared fund", contribute: "Contribute", ask: "Ask for help", vote: "Vote", yes: "In favor", no: "Against", reason: "What do you need help with?", amount: "Amount", send: "Send request", empty: "No requests yet.", open: "Voting", approved: "Approved", rejected: "Declined", by: "asked for help", votes: "votes in favor", history: "What’s happening", people: "neighbors", demo: "Local demo", askHint: "Briefly tell us what happened", repay: "Repay help", close: "Close result", error: "Could not complete", success: "Done, saved in this demo." },
 };
 for (const code of ["pt", "qu", "ay", "gn"]) COPY[code] = { ...COPY.es };
+COPY.pt = { title: "Ayni · fundo de ajuda mútua", sub: "Hoje eu te ajudo, amanhã você me ajuda.", pot: "Fundo comum", contribute: "Contribuir", ask: "Pedir ajuda", vote: "Votar", yes: "A favor", no: "Contra", reason: "Para que você precisa de ajuda?", amount: "Valor", send: "Enviar pedido", empty: "Ainda não há pedidos.", open: "Em votação", approved: "Aprovado", rejected: "Recusado", by: "pediu ajuda", votes: "votos a favor", history: "O que está acontecendo", people: "vizinhas e vizinhos", demo: "Demo local", askHint: "Conte brevemente o que aconteceu", repay: "Devolver ajuda", close: "Encerrar resultado", error: "Não foi possível concluir", success: "Pronto, ficou registrado." };
+// Unirse al fondo (Ayni v2), en los seis idiomas
+const JOIN = {
+  es: { join: "Unirme al fondo", hint: "Aporta tu primera cuota y participa: podrás pedir ayuda y votar los pedidos nuevos.", needJoin: "Primero únete al fondo.", connect: "Conecta tu billetera para unirte al fondo.", joined: "¡Ya eres parte del fondo!" },
+  en: { join: "Join the fund", hint: "Pay your first share and take part: you can ask for help and vote on new requests.", needJoin: "Join the fund first.", connect: "Connect your wallet to join the fund.", joined: "You're now part of the fund!" },
+  pt: { join: "Entrar no fundo", hint: "Pague sua primeira cota e participe: você poderá pedir ajuda e votar nos novos pedidos.", needJoin: "Primeiro entre no fundo.", connect: "Conecte sua carteira para entrar no fundo.", joined: "Agora você faz parte do fundo!" },
+  qu: { join: "Qullqi huñuman yaykuy", hint: "Ñawpaq qullqiykita churay: yanapata mañakuyta, musuq mañakuykunata akllaytapas atinki.", needJoin: "Ñawpaqta qullqi huñuman yaykuy.", connect: "Qullqi wayaqaykita tinkiy yaykunaykipaq.", joined: "¡Ñan qullqi huñupi kanki!" },
+  ay: { join: "Qullqi tantachawir mantaña", hint: "Nayrir qullqima churma: yanapa mayiñamsa, machaq mayiwinak ajlliñamsa.", needJoin: "Nayraqat qullqi tantachawir mantma.", connect: "Qullqi wayaqam chikt'ayam mantañataki.", joined: "¡Jichhax qullqi tantachawin utjtawa!" },
+  gn: { join: "Eike viru atýpe", hint: "Emoĩ nde viru peteĩha ha eike: ikatúta rejerure pytyvõ ha eiporavo umi jerure pyahu.", needJoin: "Eike raẽ viru atýpe.", connect: "Embojoaju nde viru ryru reike hag̃ua.", joined: "¡Reime ko'ágã viru atýpe!" },
+};
 
 const STYLES = `
 .ayni-root{box-sizing:border-box;position:relative;min-height:620px;padding:26px;overflow:hidden;border-radius:24px;color:#fff;background:radial-gradient(ellipse at 50% 20%,#3c2548 0%,#17142b 58%,#10101d 100%);font:14px/1.45 system-ui,sans-serif}
@@ -39,7 +49,10 @@ export function mount(container, opts = {}) {
   const actions = node("div", "ayni-actions"); const contributeBtn = node("button", "ayni-btn", copy.contribute); contributeBtn.type = "button";
   const askBtn = node("button", "ayni-btn secondary", copy.ask); askBtn.type = "button";
   const repayBtn = node("button", "ayni-btn secondary", copy.repay); repayBtn.type = "button";
-  actions.append(contributeBtn, askBtn, repayBtn); control.append(membersLine, actions); stage.append(pot, control);
+  const joinBtn = node("button", "ayni-btn", ""); joinBtn.type = "button"; joinBtn.hidden = true;
+  const joinHint = node("p", "ayni-small", ""); joinHint.hidden = true;
+  let isMember = mode === "demo";
+  actions.append(joinBtn, contributeBtn, askBtn, repayBtn); control.append(membersLine, joinHint, actions); stage.append(pot, control);
   const section = document.createElement("section"); const sectionTitle = node("h2", "", copy.ask); sectionTitle.style.cssText = "font-size:18px;margin:12px 0";
   const cards = node("div", "ayni-grid"); section.append(sectionTitle, cards);
   const historySection = document.createElement("section"); const historyTitle = node("h2", "", copy.history); historyTitle.style.cssText = "font-size:17px;margin:22px 0 0";
@@ -56,6 +69,13 @@ export function mount(container, opts = {}) {
     if (destroyed) return;
     const numberLocale = ({ es: "es-BO", en: "en-US", pt: "pt-BR", qu: "es-BO", ay: "es-BO", gn: "es-BO" })[lang] || "es-BO";
     fundValue.textContent = `${Number(state.fund || 0).toLocaleString(numberLocale, { maximumFractionDigits: 2 })} ${state.token || "XLM"}`;
+    const jt = pickLang(JOIN, lang);
+    const canJoin = mode !== "demo" && Boolean(contractId);
+    joinBtn.hidden = !canJoin || isMember || !address;
+    joinBtn.textContent = `${jt.join} · ${state.monthly} ${state.token}`;
+    joinHint.hidden = !canJoin || isMember;
+    joinHint.textContent = address ? jt.hint : jt.connect;
+    for (const b of [contributeBtn, askBtn, repayBtn]) b.hidden = canJoin && !isMember;
     membersLine.textContent = `${state.members.length} ${copy.people} · ${localText("Aporte mensual", "Monthly contribution")}: ${state.monthly} ${state.token}`;
     cards.replaceChildren();
     const sorted = [...state.requests].reverse();
@@ -70,7 +90,7 @@ export function mount(container, opts = {}) {
       const fill = node("span"); fill.style.width = `${Math.min(100, request.yes / needed * 100)}%`; meter.append(fill);
       const votes = node("div", "ayni-votes", `${request.yes}/${needed} ${copy.votes}${request.no ? ` · ${request.no} ${localText("en contra", "against")}` : ""}`);
       card.append(top, desc, amountLine, meter, votes);
-      if (!request.resolved) {
+      if (!request.resolved && (mode === "demo" || isMember)) {
         const buttons = node("div", "ayni-actions");
         for (const [approve, label] of [[true, copy.yes], [false, copy.no]]) {
           const button = node("button", approve ? "ayni-btn" : "ayni-btn secondary", label); button.type = "button";
@@ -127,7 +147,12 @@ export function mount(container, opts = {}) {
     if (mode === "demo") { state = demo.state; render(); return; }
     if (!contractId) { render(); return; }
     try {
-      const [fund, requests] = await Promise.all([readFund(deployment, contractId), readRequests(deployment, contractId, 0, 50)]);
+      const [fund, requests, onChainMembers] = await Promise.all([readFund(deployment, contractId), readRequests(deployment, contractId, 0, 50), readMembers(deployment, contractId).catch(() => null)]);
+      if (onChainMembers) {
+        const known = new Map(state.members.map((m) => [m.address, m]));
+        state = { ...state, members: onChainMembers.map((a, i) => known.get(a) || { address: a, name: a === address ? localText("Tú", "You") : `${a.slice(0, 4)}…${a.slice(-4)}` }) };
+        isMember = Boolean(address) && onChainMembers.includes(address);
+      }
       const parsed = requests.map((r) => ({ ...r, member: String(r.member), amount: Number(r.amount) / 1e7, yes: Number(r.yes), no: Number(r.no), resolved: Boolean(r.resolved), approved: Boolean(r.approved), id: Number(r.id), reason: String(r.reason) }));
       state = { ...state, fund, requests: parsed, history: parsed.slice().reverse().map((r) => ({ member: r.member, amount: r.amount, label: `${memberName(r.member)} ${copy.by} · ${r.resolved ? (r.approved ? copy.approved : copy.rejected) : copy.open}` })) };
     } catch (error) { live.textContent = `${copy.error}: ${error?.message || error}`; }
@@ -138,6 +163,11 @@ export function mount(container, opts = {}) {
     await refresh();
   }));
   askBtn.addEventListener("click", openRequestForm);
+  joinBtn.addEventListener("click", () => act(async () => {
+    await chainAction(buildJoinXdr);
+    showToast(pickLang(JOIN, lang).joined);
+    await refresh();
+  }));
   repayBtn.addEventListener("click", () => {
     if (mode === "demo") {
       const debt = demo.state.members[currentMember()]?.debt || 0;
@@ -149,7 +179,7 @@ export function mount(container, opts = {}) {
   });
   render(); if (mode !== "demo") void refresh();
   return {
-    update(next = {}) { if (next.lang) { lang = next.lang; copy = pickLang(COPY, lang); } if ("address" in next) address = next.address; if ("deployment" in next) deployment = next.deployment; if ("sign" in next) sign = next.sign; render(); },
+    update(next = {}) { if (next.lang) { lang = next.lang; copy = pickLang(COPY, lang); } if ("address" in next) address = next.address; if ("deployment" in next) deployment = next.deployment; if ("sign" in next) sign = next.sign; render(); if (mode !== "demo" && ("address" in next || "deployment" in next)) void refresh(); },
     destroy() { destroyed = true; clearTimeout(toastTimer); modalHost.replaceChildren(); root.remove(); },
   };
 }

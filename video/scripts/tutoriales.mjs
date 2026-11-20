@@ -280,10 +280,24 @@ Object.assign(TOPICS, {
     await r.sleep(2600);
   },
 });
+Object.assign(TOPICS, {
+  "ayni-join": async (r) => {
+    await r.click("#mode-switch [data-m=testnet]");
+    await r.page.waitForSelector(".ayni-card", { timeout: 20000 }).catch(() => {});
+    await r.sleep(1200);
+    await r.move(".ayni-small", 800);
+    await r.sleep(1600);
+    await r.click("#btn-wallet");
+    await r.sleep(800);
+    await r.move("#wallet-menu [data-w=freighter]", 700);
+    await r.sleep(1800);
+  },
+});
 // En la grabación, un lector de QR simulado "lee" una invitación de ejemplo
 const FAKE_SCAN = `globalThis.BarcodeDetector = class { constructor() { this.n = 0; } async detect() { return ++this.n > 60 ? [{ rawValue: location.origin + "/?c=CCNZYPMRSWINOELDI2HGMJ5O3IVA5JW4MVQGJFT2PG3ZNDWUT6DFFSRS#/circulo" }] : []; } };`;
 const OUTNAME = { billetera: "wallet", aportar: "contribute", pozo: "payout", garantia: "guarantee", crear: "create", personalizar: "customize", simulador: "simulator", mapa: "map", pasaporte: "passport" };
 const PRE = {
+  "ayni-join": ["ayni", 3000],
   "qr-invite": ["circulo", 5000],
   "qr-receive": ["billetera", 3000],
   "qr-scan": ["billetera", 3000],

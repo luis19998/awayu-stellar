@@ -107,3 +107,6 @@ export const readFund = (dep, contractId) => view(dep, contractId, "fund").then(
 export const readRequests = (dep, contractId, start = 0, limit = 50) => view(dep, contractId, "requests", nativeToScVal(start, { type: "u32" }), nativeToScVal(limit, { type: "u32" }));
 export const readMember = (dep, contractId, member) => view(dep, contractId, "member", addr(member));
 export const readVersion = (dep, contractId) => view(dep, contractId, "version").then(Number);
+// Ayni v2: cualquiera se une pagando su primera cuota
+export const buildJoinXdr = (dep, contractId, member) => prepare(dep, member, new Contract(contractId).call("join", addr(member)));
+export const readMembers = (dep, contractId) => view(dep, contractId, "members").then((list) => (list || []).map(String));

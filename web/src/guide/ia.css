@@ -1,0 +1,11 @@
+.ia-dialog { max-width: min(92vw, 560px); border: 1px solid #9584b9; border-radius: 18px; padding: 1.4rem; color: #241a38; background: #fffaf3; box-shadow: 0 20px 80px #100a25aa; }
+.ia-dialog::backdrop { background: #100a25aa; }
+.ia-dialog menu { display: flex; justify-content: flex-end; gap: .6rem; padding: 0; }
+.ia-dialog button:disabled { opacity: .5; }
+.proactive-card { position: fixed; z-index: 58; right: 84px; bottom: 26px; width: min(320px, calc(100vw - 100px)); padding: 14px; border-radius: 16px; background: #fffaf3; color: #241a38; box-shadow: 0 8px 32px #100a2540; }
+body[data-route="circulo"] .proactive-card { right: 452px; }
+.proactive-card p { margin: 0 0 10px; }
+.proactive-card button { margin-right: 6px; }
+.proactive-card .dismiss { float: right; }
+@media(max-width:760px) { .proactive-card, body[data-route="circulo"] .proactive-card { right: 14px; bottom: 146px; width: min(320px, calc(100vw - 28px)); } }
+@media(prefers-reduced-motion:reduce) { .proactive-card { animation: none; scroll-behavior: auto; } }

@@ -4,9 +4,10 @@
 import "./style.css";
 import "./features.css";
 import "./dashboard.css";
-import { initLang } from "./i18n.js";
+import { initLang, getLang } from "./i18n.js";
 import { initDashboard } from "./dashboard.js";
 import { structuredData } from "./seo.js";
+import { state } from "./state.js";
 
 initLang();
 
@@ -78,6 +79,8 @@ initDashboard({
   connectWallet: () => app().then((a) => a.connectWallet()),
   ensureApp: () => app(),
 });
+
+import("./guide/proactive.js").then(({ mountProactive }) => mountProactive({ state, getLang }));
 
 // Si se entra por un enlace de círculo (?c=…), se carga ya; si no, con la
 // primera interacción (o a los 8 s), para que la portada aparezca al instante.

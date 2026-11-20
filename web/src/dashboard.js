@@ -20,6 +20,7 @@ export const ROUTES = [
   { id: "riesgo", icon: "◐", label: "Probabilidades" },
   { id: "juegos", icon: "✦", label: "Juegos" },
   { id: "amawta", icon: "✺", label: "Amawta (IA)" },
+  { id: "legal", icon: "§", label: "Legal y privacidad" },
   { id: "ecosistema", icon: "⬡", label: "Ecosistema" },
   { id: "pulso", icon: "◌", label: "Pulso de Stellar" },
   { id: "dev", icon: "⌘", label: "Desarrolladores" },
@@ -245,6 +246,7 @@ const VIEWS = {
   },
   juegos: renderGames,
   amawta: renderAmawta,
+  legal: async (v, tk) => { const m = await import("./views/legal.js"); if (alive(tk)) adopt(tk, m.mount(v, { lang: getLang() })); },
   ecosistema: renderEcosystem,
   pulso: async (v, tk) => {
     v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t("Pulso de Stellar")}</h1>
@@ -300,7 +302,7 @@ async function renderHome(v, tk = token) {
   <section class="eco-strip">
     ${["Stellar", "Soroban", "Pollar", "Vaquita", "Blend", "DeFindex", "Trustless Work", "Freighter", "Horizon", "n8n", "Gemini"].map((x) => `<span>${x}</span>`).join("")}
   </section>
-  <footer class="credits" id="credits"></footer>`;
+  <footer class="credits" id="credits"><a href="#/legal">§ ${t("Legal y privacidad")}</a></footer>`;
   $("#home-wallet").onclick = () => hooks.connectWallet?.();
   const { mountLoom, tilt } = await import("./motion/loom.js");
   const loom = mountLoom(v.querySelector(".loom"));
@@ -507,9 +509,10 @@ function renderAmawta(v) {
   ];
   v.innerHTML = `<section class="pane chat"><header class="pane-h"><h1>Amawta</h1>
     <p>${t("El sabio de Awayu (amawta en quechua): responde sobre pasanakus, garantías y Stellar con el contexto de tu círculo. No da consejos de inversión.")}</p></header>
+    <label class="voice-auto" hidden><input type="checkbox" id="voice-auto" /> ${t("Leer respuestas en voz alta")}</label>
     <div class="msgs" id="msgs"><div class="msg ai">${t("¡Hola! Soy Amawta. Preguntame sobre tu círculo, la garantía o cómo usar Stellar.")}</div></div>
     <div class="sugg">${sugg.map((s) => `<button>${esc(t(s))}</button>`).join("")}</div>
-    <form id="ask" class="ask"><input name="q" maxlength="500" autocomplete="off" placeholder="${esc(t("Escribí tu pregunta…"))}" /><button class="btn primary">${t("Preguntar")}</button></form></section>`;
+    <form id="ask" class="ask"><input name="q" maxlength="500" autocomplete="off" placeholder="${esc(t("Escribí tu pregunta…"))}" /><button type="button" id="ask-voice" hidden aria-label="${t("Preguntar hablando")}">🎤</button><button class="btn primary">${t("Preguntar")}</button></form></section>`;
   const msgs = $("#msgs");
   const add = (cls, text) => {
     const d = document.createElement("div");
@@ -541,6 +544,8 @@ function renderAmawta(v) {
     const tag = document.createElement("small");
     tag.textContent = res.source === "gemini" ? "Gemini" : t("respuesta local");
     wait.appendChild(tag);
+    const spoken = wait.firstChild?.textContent || "";
+    if (voiceApi?.canSpeak()) { const b = document.createElement("button"); b.type = "button"; b.className = "msg-speak"; b.textContent = "🔊 " + voiceApi.voiceText("speak", getLang()); b.onclick = () => voiceApi.speak(spoken, getLang()); wait.appendChild(b); if (autoVoice.checked) voiceApi.speak(spoken, getLang()); }
   };
   v.querySelector(".sugg").onclick = (e) => e.target.matches("button") && ask(e.target.textContent);
   $("#ask").onsubmit = (e) => {
@@ -549,8 +554,13 @@ function renderAmawta(v) {
     e.target.q.value = "";
     ask(q);
   };
+  let voiceApi = null;
+  const autoVoice = v.querySelector("#voice-auto"); const listenButton = v.querySelector("#ask-voice");
+  import("./guide/voice.js").then((m) => { voiceApi = m; v.querySelector(".voice-auto").lastChild.textContent = " " + m.voiceText("auto", getLang()); listenButton.setAttribute("aria-label", m.voiceText("listen", getLang())); if (m.canSpeak()) { v.querySelector(".voice-auto").hidden = false; autoVoice.checked = localStorage.getItem("awayu.voice.auto") === "1"; autoVoice.onchange = () => localStorage.setItem("awayu.voice.auto", autoVoice.checked ? "1" : "0"); } if (m.canListen()) listenButton.hidden = false; });
+  listenButton.onclick = async () => { try { const q = await voiceApi.listen(getLang()); v.querySelector('[name="q"]').value = q; v.querySelector("#ask").requestSubmit(); } catch (err) { add("ai", err.message); } };
+  const pending = sessionStorage.getItem("awayu.amawta.ask");
+  if (pending) { sessionStorage.removeItem("awayu.amawta.ask"); queueMicrotask(() => { v.querySelector('[name="q"]').value = pending; v.querySelector("#ask").requestSubmit(); }); }
 }
-
 async function renderEcosystem(v) {
   const dep = state.deployment || (await (await import("./chain.js")).loadDeployment().catch(() => null));
   const items = [

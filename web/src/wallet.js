@@ -75,6 +75,8 @@ export async function connectPollar(provider) {
  */
 export async function sign(xdr) {
   if (!current) throw new Error("Conectá una billetera primero");
+  const [{ ensureConsent }, { getLang }] = await Promise.all([import("./legal/consent.js"), import("./i18n.js")]);
+  if (!(await ensureConsent(getLang()))) throw new Error("Debes aceptar los términos y el aviso de riesgos antes de firmar.");
   if (current.kind === "freighter") {
     const f = await import("@stellar/freighter-api");
     const r = await f.signTransaction(xdr, { networkPassphrase: Networks.TESTNET, address: current.address });

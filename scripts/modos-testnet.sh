@@ -38,6 +38,8 @@ if [ -n "$R1" ]; then
 fi
 R2=$(ay david request --member "$(addr david)" --amount 100000000 --reason "Reparar el techo después de la granizada" || echo "")
 [ -n "$R2" ] && paso ay ana vote --voter "$(addr ana)" --request_id "$R2" --approve true
+# Eva no es fundadora: se une al fondo pagando su primera cuota (Ayni v2)
+paso ay eva join --member "$(addr eva)"
 
 # ---------- Minka ----------
 DEADLINE=$(( $(date +%s) + 30 * 86400 ))

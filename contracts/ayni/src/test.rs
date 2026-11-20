@@ -77,3 +77,39 @@ fn devuelve_sin_intereses_y_suma_reputacion() {
     assert_eq!(s.token.balance(a), 19 * UNIT);
     let _ = d;
 }
+
+#[test]
+fn cualquiera_se_une_pagando_la_primera_cuota() {
+    let s = setup();
+    let nueva = Address::generate(&s.env);
+    token::StellarAssetClient::new(&s.env, &s.token.address).mint(&nueva, &(3 * UNIT));
+    assert!(!s.ayni.is_member(&nueva));
+    s.ayni.join(&nueva);
+    assert!(s.ayni.is_member(&nueva));
+    assert_eq!(s.ayni.members().len(), 5);
+    assert_eq!(s.ayni.fund(), UNIT);
+    assert_eq!(s.token.balance(&nueva), 2 * UNIT);
+    assert_eq!(s.ayni.member(&nueva).contributed, UNIT);
+    assert_eq!(s.ayni.try_join(&nueva).unwrap_err().unwrap(), code(Error::AlreadyMember));
+    // ya aportó este mes al unirse
+    assert_eq!(s.ayni.try_contribute(&nueva).unwrap_err().unwrap(), code(Error::AlreadyContributed));
+    assert_eq!(s.ayni.version(), 2);
+}
+
+#[test]
+fn quien_entra_despues_no_vota_ni_cambia_el_quorum_de_pedidos_abiertos() {
+    let s = setup(); let [a, b, c, _d] = &s.members;
+    for m in &s.members { s.ayni.contribute(m); }
+    let viejo = s.ayni.request(a, &(UNIT), &String::from_str(&s.env, "techo"));
+    let tarde = Address::generate(&s.env);
+    token::StellarAssetClient::new(&s.env, &s.token.address).mint(&tarde, &(3 * UNIT));
+    s.ayni.join(&tarde);
+    assert_eq!(s.ayni.try_vote(&tarde, &viejo, &true).unwrap_err().unwrap(), code(Error::CannotVote));
+    // con 3 votantes elegibles y quórum del 50 %, dos votos alcanzan, igual que antes de la nueva persona
+    s.ayni.vote(b, &viejo, &true); s.ayni.vote(c, &viejo, &true);
+    assert!(s.ayni.resolve(&viejo));
+    // en un pedido nuevo, la persona nueva sí vota
+    let nuevo = s.ayni.request(b, &(UNIT), &String::from_str(&s.env, "semillas"));
+    s.ayni.vote(&tarde, &nuevo, &true);
+    assert_eq!(s.ayni.requests(&nuevo, &1).get(0).unwrap().yes, 1);
+}

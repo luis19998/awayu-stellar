@@ -13,6 +13,7 @@ pub enum Error {
     AlreadyInitialized = 1, NotMember = 2, InvalidConfig = 3, AlreadyContributed = 4,
     InvalidAmount = 5, InsufficientFund = 6, OpenRequestExists = 7, MissingRequest = 8,
     ClosedRequest = 9, CannotVote = 10, AlreadyVoted = 11, NothingToRepay = 12,
+    AlreadyMember = 13, Full = 14,
 }
 
 #[contracttype]
@@ -31,6 +32,8 @@ pub struct RequestInfo {
 enum Key {
     Admin, Token, Members, Monthly, Quorum, MaxRequest, Fund, Reserved, Count,
     Member(Address), LastContribution(Address), OpenRequest(Address), Request(u32), Voted(u32, Address), Debt(Address),
+    /// Cantidad de pedidos que existían cuando la persona se unió (los fundadores, 0)
+    JoinedAt(Address),
 }
 
 fn bump(env: &Env) { env.storage().instance().extend_ttl(BUMP_THRESHOLD, BUMP_TO); }
@@ -51,6 +54,7 @@ fn save_request(env: &Env, item: &RequestInfo) { let key = Key::Request(item.id)
 fn member_info(env: &Env, member: &Address) -> MemberInfo {
     get(env, &Key::Member(member.clone()), MemberInfo { contributed: 0, received: 0, repaid: 0, reputation: 0 })
 }
+fn joined_at(env: &Env, member: &Address) -> u32 { get(env, &Key::JoinedAt(member.clone()), 0u32) }
 fn save_member(env: &Env, member: &Address, info: &MemberInfo) { let key = Key::Member(member.clone()); env.storage().persistent().set(&key, info); touch(env, &key); }
 
 #[contract]
@@ -74,6 +78,30 @@ impl Ayni {
         bump(&env);
         #[allow(deprecated)]
         env.events().publish((symbol_short!("inicio"), admin), (members.len(), monthly, quorum_bps, max_request));
+    }
+
+    /// Cualquier persona puede sumarse al fondo pagando su primera cuota mensual.
+    /// Solo vota en los pedidos creados después de unirse, y no cuenta para el
+    /// quórum de los anteriores: nadie puede entrar a inclinar una votación abierta.
+    pub fn join(env: Env, member: Address) {
+        member.require_auth();
+        let mut list = members(&env);
+        if list.contains(&member) { panic_with_error!(&env, Error::AlreadyMember); }
+        if list.len() >= 100 { panic_with_error!(&env, Error::Full); }
+        let monthly: i128 = env.storage().instance().get(&Key::Monthly).unwrap();
+        let token_id: Address = env.storage().instance().get(&Key::Token).unwrap();
+        token::Client::new(&env, &token_id).transfer(&member, &env.current_contract_address(), &monthly);
+        let total: i128 = env.storage().instance().get(&Key::Fund).unwrap_or(0);
+        env.storage().instance().set(&Key::Fund, &(total + monthly));
+        list.push_back(member.clone());
+        env.storage().instance().set(&Key::Members, &list);
+        let count: u32 = env.storage().instance().get(&Key::Count).unwrap_or(0);
+        let jk = Key::JoinedAt(member.clone()); env.storage().persistent().set(&jk, &count); touch(&env, &jk);
+        let lk = Key::LastContribution(member.clone()); env.storage().persistent().set(&lk, &env.ledger().timestamp()); touch(&env, &lk);
+        save_member(&env, &member, &MemberInfo { contributed: monthly, received: 0, repaid: 0, reputation: 0 });
+        bump(&env);
+        #[allow(deprecated)]
+        env.events().publish((symbol_short!("union"), member), monthly);
     }
 
     pub fn contribute(env: Env, member: Address) {
@@ -114,7 +142,7 @@ impl Ayni {
         voter.require_auth(); require_member(&env, &voter);
         let mut item = request(&env, request_id);
         if item.resolved { panic_with_error!(&env, Error::ClosedRequest); }
-        if item.member == voter { panic_with_error!(&env, Error::CannotVote); }
+        if item.member == voter || joined_at(&env, &voter) > request_id { panic_with_error!(&env, Error::CannotVote); }
         let key = Key::Voted(request_id, voter.clone());
         if env.storage().persistent().has(&key) { panic_with_error!(&env, Error::AlreadyVoted); }
         env.storage().persistent().set(&key, &true); touch(&env, &key);
@@ -128,7 +156,9 @@ impl Ayni {
     pub fn resolve(env: Env, request_id: u32) -> bool {
         let mut item = request(&env, request_id);
         if item.resolved { panic_with_error!(&env, Error::ClosedRequest); }
-        let eligible = members(&env).len() - 1;
+        // Votan quienes ya eran miembros cuando se creó el pedido, salvo quien lo pidió
+        let mut eligible: u32 = 0;
+        for m in members(&env).iter() { if m != item.member && joined_at(&env, &m) <= item.id { eligible += 1; } }
         let quorum_bps: u32 = env.storage().instance().get(&Key::Quorum).unwrap();
         let needed = ((eligible * quorum_bps + 9_999) / 10_000).max(1);
         let approved = item.yes >= needed;
@@ -180,7 +210,9 @@ impl Ayni {
         out
     }
     pub fn member(env: Env, m: Address) -> MemberInfo { require_member(&env, &m); bump(&env); member_info(&env, &m) }
-    pub fn version(_env: Env) -> u32 { 1 }
+    pub fn members(env: Env) -> Vec<Address> { bump(&env); members(&env) }
+    pub fn is_member(env: Env, m: Address) -> bool { members(&env).contains(&m) }
+    pub fn version(_env: Env) -> u32 { 2 }
 }
 
 mod test;

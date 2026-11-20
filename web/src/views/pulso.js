@@ -1,4 +1,11 @@
 import { streamLedgers, DEFAULT_HORIZON } from "../horizon.js";
+import { pickLang } from "../i18n.js";
+
+const COPY = {
+  es: { title: "Pulso de Stellar", subtitle: "Ledgers de testnet cerrándose en vivo", rate: "Ledgers / min", average: "Tiempo medio entre ledgers", operations: "operaciones", transactions: "transacciones", unavailable: "Flujo en vivo no disponible · consultando cada 5 segundos" },
+  en: { title: "Stellar Pulse", subtitle: "Testnet ledgers, closing live", rate: "Ledgers / min", average: "Average close time", operations: "operations", transactions: "transactions", unavailable: "Live stream unavailable · checking every 5 seconds" },
+};
+for (const code of ["pt", "qu", "ay", "gn"]) COPY[code] = { ...COPY.es };
 
 export function normalizeLedger(record = {}) {
   const rawTime = record.closed_at ?? record.closedAt ?? record.timestamp;
@@ -37,10 +44,7 @@ export function scaleLedgerRing(sequence, min = 0, max = 1_000_000_000) {
 }
 
 export function mount(container, { lang = "es" } = {}) {
-  const english = lang === "en";
-  const copy = english
-    ? { title: "Stellar Pulse", subtitle: "Testnet ledgers, closing live", rate: "Ledgers / min", average: "Average close time", operations: "operations", transactions: "transactions", unavailable: "Live stream unavailable · checking every 5 seconds" }
-    : { title: "Pulso de Stellar", subtitle: "Ledgers de testnet cerrándose en vivo", rate: "Ledgers / min", average: "Tiempo medio entre ledgers", operations: "operaciones", transactions: "transacciones", unavailable: "Flujo en vivo no disponible · consultando cada 5 segundos" };
+  const copy = pickLang(COPY, lang);
   const root = document.createElement("section");
   root.style.cssText = "position:relative;width:100%;height:100%;min-height:300px;overflow:hidden;border-radius:18px;background:radial-gradient(ellipse at center,#1f1746 0%,#0a0818 72%);color:#fff;font:14px system-ui,sans-serif";
   const canvas = document.createElement("canvas");

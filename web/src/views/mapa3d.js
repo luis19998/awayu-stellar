@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { PALETTE } from "../aguayo.js";
+import { pickLang } from "../i18n.js";
 
 const CENTER = [-64.5, -16.5];
 const SCALE = 1.7;
@@ -136,8 +137,9 @@ export function mount(container, { circles = [], lang = "es", onSelect, theme } 
   if (!container) throw new TypeError("mapa3d.mount necesita un contenedor");
   const root = document.createElement("div");
   root.className = "awayu-mapa3d";
+  const copy = (es, en) => pickLang({ es, en }, lang);
   root.setAttribute("role", "region");
-  root.setAttribute("aria-label", lang === "en" ? "Savings circles map of Bolivia" : "Mapa de círculos de ahorro de Bolivia");
+  root.setAttribute("aria-label", copy("Mapa de círculos de ahorro de Bolivia", "Savings circles map of Bolivia"));
   const style = document.createElement("style");
   style.textContent = STYLE;
   const tooltip = document.createElement("div");
@@ -328,9 +330,7 @@ export function mount(container, { circles = [], lang = "es", onSelect, theme } 
     const title = document.createElement("strong");
     title.textContent = dep.feature.properties?.name || dep.iso;
     const info = document.createElement("span");
-    info.textContent = lang === "en"
-      ? `${matching.length} savings circles · ${members} members`
-      : `${matching.length} círculos · ${members} miembros`;
+    info.textContent = `${matching.length} ${copy("círculos", "savings circles")} · ${members} ${copy("miembros", "members")}`;
     tooltip.replaceChildren(title, info);
     tooltip.classList.add("is-visible");
     if (event) {
@@ -388,7 +388,7 @@ export function mount(container, { circles = [], lang = "es", onSelect, theme } 
 
   const empty = document.createElement("div");
   empty.className = "awayu-mapa3d__empty";
-  empty.textContent = lang === "en" ? "No circles registered yet" : "Todavía no hay círculos registrados";
+  empty.textContent = copy("Todavía no hay círculos registrados", "No circles registered yet");
   root.append(empty);
 
   async function loadMap() {
@@ -402,7 +402,7 @@ export function mount(container, { circles = [], lang = "es", onSelect, theme } 
       buildPinsAndArcs();
     } catch (error) {
       if (!disposed) {
-        empty.textContent = lang === "en" ? "Could not load the Bolivia map" : "No se pudo cargar el mapa de Bolivia";
+        empty.textContent = copy("No se pudo cargar el mapa de Bolivia", "Could not load the Bolivia map");
         console.error("Awayu: no se pudo cargar el GeoJSON del mapa", error);
       }
     }

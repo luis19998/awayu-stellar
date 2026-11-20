@@ -25,7 +25,7 @@ export async function handleEvent(request) {
   }
   let body;
   try { body = JSON.parse(raw); } catch { return Response.json({ error: "El cuerpo debe ser JSON válido." }, { status: 400 }); }
-  if (!validEvent(body)) return Response.json({ error: "Evento inválido: revisá type, circle y data." }, { status: 400 });
+  if (!validEvent(body)) return Response.json({ error: "Evento inválido: revisa type, circle y data." }, { status: 400 });
 
   const webhookUrl = process.env.N8N_WEBHOOK_URL;
   if (!webhookUrl) return Response.json({ accepted: true, forwarded: false }, { status: 202 });

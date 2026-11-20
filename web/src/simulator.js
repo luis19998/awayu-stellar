@@ -1,4 +1,4 @@
-// Simulador de pasanaku: qué significa cada turno en plata y en tiempo.
+// Simulador de pasanaku: qué significa cada turno en dinero y en tiempo.
 // Quien cobra temprano recibe un adelanto sin interés; quien cobra tarde
 // está ahorrando. Todo es aritmética simple, sin datos externos.
 

@@ -2,6 +2,7 @@ import {
   approveMinkaMilestone, cancelMinkaDemo, createMinkaDemo, fundMinkaDemo,
   refundMinkaDemo, submitMinkaEvidence,
 } from "../modes/minka.js";
+import { pickLang } from "../i18n.js";
 import {
   buildMinkaApproveXdr, buildMinkaCancelXdr, buildMinkaEvidenceXdr,
   buildMinkaFundXdr, buildMinkaRefundXdr, readMinka, submitMinkaTransaction,
@@ -26,7 +27,7 @@ const text = {
     approve: "Aprobar hito", refund: "Reclamar devolución", organizer: "Organización",
     backers: "Aportantes", emptyEvidence: "Todavía no hay evidencia", busy: "Procesando…",
     success: "Listo. El estado del proyecto se actualizó.", escrow: "En producción, el resguardo de fondos puede hacerse con Trustless Work. Esta vista muestra la versión nativa del escrow, programada directamente en Soroban.",
-    error: "No se pudo completar la acción.", connect: "Conectá tu billetera para participar en testnet.",
+    error: "No se pudo completar la acción.", connect: "Conecta tu billetera para participar en testnet.",
     demo: "Proyecto de ejemplo", testnet: "Proyecto en Stellar testnet",
   },
   en: {
@@ -41,6 +42,7 @@ const text = {
     demo: "Sample project", testnet: "Project on Stellar testnet",
   },
 };
+for (const code of ["pt", "qu", "ay", "gn"]) text[code] = { ...text.es };
 const DEMO_EN = {
   title: "Irrigation for Tiraque",
   description: "A canal and reservoir to bring water to the community's fields.",
@@ -64,14 +66,16 @@ function safeImageUrl(uri) {
 
 export function mount(container, { lang = "es", mode = "demo", deployment = null, address = null, sign = null } = {}) {
   if (!container) throw new TypeError("minka.mount necesita un contenedor");
-  let currentLang = lang === "en" ? "en" : "es";
-  let locale = text[currentLang];
+  let currentLang = lang || "es";
+  let locale = pickLang(text, currentLang);
+  const localText = (es, en) => pickLang({ es, en }, currentLang);
+  let english = pickLang({ es: false, en: true }, currentLang);
   const contractId = deployment?.minkaContractId || deployment?.minka?.contractId || null;
   let state = createMinkaDemo();
   let busy = false;
   let destroyed = false;
   const root = el("section", "awayu-minka");
-  root.setAttribute("aria-label", lang === "en" ? "Community project timeline" : "Línea de tiempo del proyecto comunitario");
+  root.setAttribute("aria-label", localText("Línea de tiempo del proyecto comunitario", "Community project timeline"));
   const style = el("style"); style.textContent = STYLE;
   const status = el("div", "awayu-minka__notice"); status.setAttribute("role", "status"); status.setAttribute("aria-live", "polite");
   root.append(style);
@@ -79,7 +83,7 @@ export function mount(container, { lang = "es", mode = "demo", deployment = null
 
   const isChain = mode === "testnet" && Boolean(contractId);
   const decimals = isChain ? 1e7 : 1;
-  const showAmount = (value) => (Number(value) / decimals).toLocaleString(currentLang === "en" ? "en-US" : "es-BO", { maximumFractionDigits: 2 });
+  const showAmount = (value) => (Number(value) / decimals).toLocaleString(({ es: "es-BO", en: "en-US", pt: "pt-BR", qu: "es-BO", ay: "es-BO", gn: "es-BO" })[currentLang] || "es-BO", { maximumFractionDigits: 2 });
   const token = () => isChain ? (deployment?.tokenSymbol || "XLM") : (state.token || "XLM");
   async function reload() {
     if (!isChain) return;
@@ -93,8 +97,8 @@ export function mount(container, { lang = "es", mode = "demo", deployment = null
     const head = el("header", "awayu-minka__head");
     const intro = document.createElement("div");
     intro.append(
-      el("h2", "awayu-minka__title", !isChain && currentLang === "en" ? DEMO_EN.title : state.title),
-      el("p", "awayu-minka__desc", !isChain && currentLang === "en" ? DEMO_EN.description : state.description || ""),
+      el("h2", "awayu-minka__title", !isChain && english ? DEMO_EN.title : state.title),
+      el("p", "awayu-minka__desc", !isChain && english ? DEMO_EN.description : state.description || ""),
     );
     head.append(intro, el("span", "awayu-minka__status", isChain ? locale.testnet : locale.demo));
     root.append(head);
@@ -105,7 +109,7 @@ export function mount(container, { lang = "es", mode = "demo", deployment = null
     const goal = el("span", "", `${locale.amount} ${showAmount(state.goal)} ${locale.target} ${token()}`);
     row.append(tally, goal);
     const track = el("div", "awayu-minka__track"); track.setAttribute("role", "progressbar");
-    track.setAttribute("aria-label", lang === "en" ? "Funding progress" : "Avance de la meta");
+    track.setAttribute("aria-label", localText("Avance de la meta", "Funding progress"));
     track.setAttribute("aria-valuemin", "0"); track.setAttribute("aria-valuemax", String(state.goal)); track.setAttribute("aria-valuenow", String(state.raised));
     const fill = el("div", "awayu-minka__fill" + (progress >= 100 ? " is-ready" : ""));
     requestAnimationFrame(() => { if (!destroyed) fill.style.width = `${progress}%`; });
@@ -116,13 +120,13 @@ export function mount(container, { lang = "es", mode = "demo", deployment = null
       const step = el("article", `awayu-minka__step${milestone.released ? " is-released" : ""}`);
       step.append(el("span", "awayu-minka__mark", milestone.released ? "✓" : String(index + 1)));
       const card = el("div", "awayu-minka__card");
-      const milestoneTitle = !isChain && currentLang === "en" ? DEMO_EN.milestones[index] : milestone.title;
+      const milestoneTitle = !isChain && english ? DEMO_EN.milestones[index] : milestone.title;
       card.append(el("h3", "", milestoneTitle), el("div", "awayu-minka__amount", `${showAmount(milestone.amount)} ${token()}`));
       card.append(el("p", "awayu-minka__meta", milestone.released ? locale.released : `${Number(milestone.approvals || 0)} ${locale.approvals}`));
       if (milestone.evidence) {
         const imageUrl = safeImageUrl(String(milestone.evidence));
         if (imageUrl) {
-          const image = el("img", "awayu-minka__evidence"); image.src = imageUrl; image.alt = lang === "en" ? `Evidence for ${milestone.title}` : `Evidencia para ${milestone.title}`;
+          const image = el("img", "awayu-minka__evidence"); image.src = imageUrl; image.alt = localText(`Evidencia para ${milestone.title}`, `Evidence for ${milestone.title}`);
           image.loading = "lazy"; image.referrerPolicy = "no-referrer"; card.append(image);
         }
         const link = el("a", "awayu-minka__meta", locale.evidence); link.href = String(milestone.evidence); link.target = "_blank"; link.rel = "noopener noreferrer";
@@ -167,7 +171,7 @@ export function mount(container, { lang = "es", mode = "demo", deployment = null
       const backers = el("details", "awayu-minka__state");
       const summary = document.createElement("summary");
       summary.textContent = isChain
-        ? (currentLang === "en" ? "Your contribution" : "Tu aporte")
+        ? localText("Tu aporte", "Your contribution")
         : `${locale.backers} (${state.backers?.length || 0})`;
       backers.append(summary);
       const list = document.createElement("ul");
@@ -185,7 +189,7 @@ export function mount(container, { lang = "es", mode = "demo", deployment = null
     busy = true; status.textContent = locale.busy; draw();
     try {
       if (isChain) {
-        if (!address || !sign) throw new Error("Conectá una billetera para firmar esta acción");
+        if (!address || !sign) throw new Error("Conecta una billetera para firmar esta acción");
         let xdr;
         if (name === "fund") xdr = await buildMinkaFundXdr(deployment, contractId, address, Math.round(Number(new FormData(form).get("amount")) * decimals));
         if (name === "evidence") xdr = await buildMinkaEvidenceXdr(deployment, contractId, address, state.nextMilestone, new FormData(form).get("uri"));
@@ -221,7 +225,7 @@ export function mount(container, { lang = "es", mode = "demo", deployment = null
 
   return {
     update(next = {}) {
-      if (next.lang && text[next.lang]) { currentLang = next.lang; locale = text[currentLang]; }
+      if (next.lang) { currentLang = next.lang; locale = pickLang(text, currentLang); english = pickLang({ es: false, en: true }, currentLang); }
       if (next && Array.isArray(next.milestones)) state = next;
       else if (next.state) state = next.state;
       draw();

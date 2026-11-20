@@ -7,10 +7,10 @@ export const MESSAGES = {
     ["¿Qué es Stellar?", ["Una red para mover activos digitales", "Una billetera", "Un banco"], 0, "Stellar es una red abierta para transferir y emitir activos digitales."],
     ["¿Qué es una stablecoin?", ["Un token diseñado para seguir el valor de otro activo", "Una moneda que siempre sube", "Una contraseña"], 0, "Una stablecoin busca mantener un valor de referencia; puede tener riesgos."],
     ["¿Cómo suelen ser las comisiones de Stellar?", ["Bajas, pero no necesariamente cero", "Siempre muy altas", "No existe ninguna comisión"], 0, "La red cobra comisiones pequeñas para procesar operaciones; pueden cambiar."],
-    ["¿Qué hacés con tu frase semilla?", ["La compartís con soporte", "La guardás en privado y segura", "La publicás para recuperar la cuenta"], 1, "Quien conoce la frase semilla puede controlar la billetera. Nunca la compartás."],
+    ["¿Qué haces con tu frase semilla?", ["La compartes con soporte", "La guardas en privado y segura", "La publicas para recuperar la cuenta"], 1, "Quien conoce la frase semilla puede controlar la billetera. Nunca la compartas."],
     ["¿Cuál es una señal de estafa?", ["Te apuran para enviar dinero o revelar claves", "Te explican las reglas", "Te muestran una dirección pública"], 0, "La urgencia y el pedido de claves son señales de alerta."],
-    ["¿Una transacción confirmada se puede revertir fácilmente?", ["No, por lo general es difícil o imposible", "Sí, con un botón", "La billetera la cancela después"], 0, "Revisá dirección y monto antes de firmar; las transferencias suelen ser irreversibles."],
-    ["¿Qué dato podés compartir para recibir un pago?", ["Tu dirección pública", "Tu frase semilla", "Tu contraseña"], 0, "La dirección pública sirve para recibir; las claves privadas se mantienen secretas."],
+    ["¿Una transacción confirmada se puede revertir fácilmente?", ["No, por lo general es difícil o imposible", "Sí, con un botón", "La billetera la cancela después"], 0, "Revisa dirección y monto antes de firmar; las transferencias suelen ser irreversibles."],
+    ["¿Qué dato puedes compartir para recibir un pago?", ["Tu dirección pública", "Tu frase semilla", "Tu contraseña"], 0, "La dirección pública sirve para recibir; las claves privadas se mantienen secretas."],
     ["¿La marca del aguayo garantiza que te darán un crédito?", ["Sí, garantiza aprobación", "No, muestra historial y no garantiza crédito", "Solo si el aguayo es grande"], 1, "El historial puede informar decisiones, pero no es aprobación automática de crédito."],
   ] },
   en: { title: "Pasanaku and Stellar", start: "Start", next: "Next", finish: "See result", score: "Score", badge0: "Learner", badge6: "Trust weaver", badge10: "Pasanaku guardian", questions: [

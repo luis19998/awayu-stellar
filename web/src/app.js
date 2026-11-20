@@ -4,7 +4,7 @@
 import "./style.css";
 import "./features.css";
 import "./dashboard.css";
-import { initLang, getLang } from "./i18n.js";
+import { getLang, initLang, pickLang, t } from "./i18n.js";
 import { initDashboard } from "./dashboard.js";
 import { structuredData } from "./seo.js";
 import { state } from "./state.js";
@@ -35,12 +35,12 @@ const fab = document.querySelector("#help-fab");
 const helpMenu = document.querySelector("#help-menu");
 const TOPIC_ORDER = ["wallet", "contribute", "payout", "guarantee", "create", "customize", "simulator", "ayni-contribute", "ayni-request", "ayni-vote", "minka-fund", "minka-milestone", "alasitas-create", "alasitas-save", "live-mode", "map", "passport", "risk", "games", "amawta"];
 async function fillHelpMenu() {
-  const [{ HELP_TOPICS, ROUTE_TOPICS }, { t, getLang }] = await Promise.all([import("./guide/help.js"), import("./i18n.js")]);
-  const en = getLang() === "en";
+  const { HELP_TOPICS, ROUTE_TOPICS } = await import("./guide/help.js");
+  const lang = getLang();
   // Primero los tutoriales de la sección abierta; después el resto
   const here = (ROUTE_TOPICS?.[document.body.dataset.route] || []).filter((id) => HELP_TOPICS[id]);
   const rest = TOPIC_ORDER.filter((id) => HELP_TOPICS[id] && !here.includes(id));
-  const item = (id) => `<button role="menuitem" data-topic="${id}">🎬 ${HELP_TOPICS[id].title[en ? "en" : "es"]}</button>`;
+  const item = (id) => `<button role="menuitem" data-topic="${id}">🎬 ${pickLang(HELP_TOPICS[id].title, lang)}</button>`;
   helpMenu.innerHTML = `<button role="menuitem" data-tour="firstVisit">▶ ${t("Recorrido de bienvenida")}</button>` +
     (here.length ? `<div class="grp" role="presentation">${t("En esta sección")}</div>${here.map(item).join("")}<div class="grp" role="presentation">${t("Todos los tutoriales")}</div>` : "") +
     rest.map(item).join("");
@@ -56,7 +56,6 @@ helpMenu?.addEventListener("click", async (e) => {
   if (!b) return;
   helpMenu.hidden = true;
   fab.setAttribute("aria-expanded", "false");
-  const { getLang } = await import("./i18n.js");
   if (b.dataset.topic) {
     const { openHelp } = await import("./guide/help.js");
     openHelp(b.dataset.topic, { lang: getLang(), anchor: fab });

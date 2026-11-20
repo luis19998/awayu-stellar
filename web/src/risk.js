@@ -147,4 +147,8 @@ export function riskLevel(p) {
 export const MESSAGES = {
   es: { low: "Riesgo bajo", medium: "Riesgo medio", high: "Riesgo alto" },
   en: { low: "Low risk", medium: "Medium risk", high: "High risk" },
+  pt: { low: "Risco baixo", medium: "Risco médio", high: "Risco alto" },
+  qu: { low: "Riesgo bajo", medium: "Riesgo medio", high: "Riesgo alto" },
+  ay: { low: "Riesgo bajo", medium: "Riesgo medio", high: "Riesgo alto" },
+  gn: { low: "Riesgo bajo", medium: "Riesgo medio", high: "Riesgo alto" },
 };

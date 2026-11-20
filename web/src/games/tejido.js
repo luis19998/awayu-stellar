@@ -1,9 +1,10 @@
 import { PALETTE } from "../aguayo.js";
 
 export const MESSAGES = {
-  es: { title: "Tejé tu aguayo", intro: "Mirá la franja y repetí los colores en el mismo orden.", level: "Fila", repeat: "Repetí el patrón", next: "Siguiente fila", done: "¡Qué buen tejido! Completaste todas las filas.", retry: "Probar de nuevo", colors: "Elegí un color" },
+  es: { title: "Teje tu aguayo", intro: "Mira la franja y repite los colores en el mismo orden.", level: "Fila", repeat: "Repite el patrón", next: "Siguiente fila", done: "¡Qué buen tejido! Completaste todas las filas.", retry: "Probar de nuevo", colors: "Elige un color" },
   en: { title: "Weave your aguayo", intro: "Look at the strip and repeat the colors in the same order.", level: "Row", repeat: "Repeat the pattern", next: "Next row", done: "Beautiful weaving! You completed every row.", retry: "Try again", colors: "Choose a color" },
 };
+for (const code of ["pt", "qu", "ay", "gn"]) MESSAGES[code] = { ...MESSAGES.es };
 const COLORS = Object.keys(PALETTE);
 const CLASS = "aw-game-tejido";
 

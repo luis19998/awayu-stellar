@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { PALETTE } from "../aguayo.js";
+import { pickLang } from "../i18n.js";
 import {
   createDemoGoals, depositDemo, earlyExitDemo, progressOf, streakOf, withdrawDemo,
   buildCreateGoalXdr, buildDepositXdr, buildEarlyExitXdr, buildWithdrawGoalXdr,
@@ -17,6 +18,7 @@ const COPY = {
   es: { title: "Tus miniaturas, tus metas", intro: "En Alasitas soñamos en pequeño. Aquí cada miniatura representa un ahorro real, propio o compartido.", add: "Nueva meta", save: "Ahorrar", withdraw: "Retirar", exit: "Retirar mi aporte", saved: "ahorrado", goal: "Meta", people: "Personas", week: "semanas seguidas", ready: "Meta alcanzada", unlock: "Disponible", closed: "Meta cerrada", empty: "Todavía no hay metas. Crea la primera miniatura para empezar.", depositTitle: "¿Cuánto quieres ahorrar?", amount: "Monto", createTitle: "Arma una miniatura", titleLabel: "Nombre de la meta", kindLabel: "Miniatura", targetLabel: "Meta de ahorro", dateLabel: "Retirar desde", membersLabel: "Participantes (separados por coma)", cancel: "Volver", create: "Crear meta", savedOk: "Aporte guardado.", withdrawn: "Aportes repartidos según lo que puso cada persona.", exited: "Tu aporte volvió a tu billetera.", created: "Tu meta ya está en la feria.", currency: "XLM", types: { casa: "Casita", auto: "Auto", estudio: "Birrete", negocio: "Tienda", viaje: "Viaje", salud: "Salud", otro: "Otra meta" } },
   en: { title: "Your miniatures, your goals", intro: "At Alasitas we dream small. Here, each miniature stands for real savings, shared or personal.", add: "New goal", save: "Save", withdraw: "Withdraw", exit: "Withdraw my share", saved: "saved", goal: "Goal", people: "People", week: "weeks in a row", ready: "Goal reached", unlock: "Available", closed: "Goal closed", empty: "No goals yet. Create your first miniature to get started.", depositTitle: "How much would you like to save?", amount: "Amount", createTitle: "Make a miniature", titleLabel: "Goal name", kindLabel: "Miniature", targetLabel: "Savings target", dateLabel: "Withdraw from", membersLabel: "Participants (comma-separated)", cancel: "Back", create: "Create goal", savedOk: "Savings added.", withdrawn: "Savings returned according to each person's contributions.", exited: "Your contribution was returned to your wallet.", created: "Your goal is now at the fair.", currency: "XLM", types: { casa: "Little house", auto: "Car", estudio: "Graduation cap", negocio: "Shop", viaje: "Trip", salud: "Health", otro: "Other goal" } },
 };
+for (const code of ["pt", "qu", "ay", "gn"]) COPY[code] = { ...COPY.es };
 const TYPES = ["casa", "auto", "estudio", "negocio", "viaje", "salud", "otro"];
 const money = (n) => new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(n || 0);
 
@@ -80,7 +82,8 @@ function makeMini(canvas, goal, reduced) {
 
 export function mount(container, opts = {}) {
   if (!container) throw new TypeError("alasitas.mount necesita un contenedor");
-  let lang = opts.lang === "en" ? "en" : "es"; let t = COPY[lang];
+  let lang = opts.lang || "es"; let t = pickLang(COPY, lang);
+  const localText = (es, en) => pickLang({ es, en }, lang);
   let isChain = opts.mode === "testnet" && opts.deployment?.alasitasContractId;
   let address = opts.address || "";
   let goals = createDemoGoals(); let stopped = false; let busy = false; let renderVersion = 0;
@@ -151,11 +154,11 @@ export function mount(container, opts = {}) {
   function shortName(who) {
     const known = opts.deployment?.ayni?.memberNames?.[who];
     if (known) return known;
-    if (who === address) return lang === "en" ? "You" : "Tú";
+    if (who === address) return localText("Tú", "You");
     return /^G[A-Z2-7]{55}$/.test(who) ? `${who.slice(0, 4)}…${who.slice(-4)}` : who;
   }
   async function signAndSubmit(build) {
-    if (typeof opts.sign !== "function") throw new Error(lang === "en" ? "Connect a wallet to sign this action." : "Conectá una billetera para firmar esta acción.");
+    if (typeof opts.sign !== "function") throw new Error(localText("Conecta una billetera para firmar esta acción.", "Connect a wallet to sign this action."));
     return submit(opts.deployment, await opts.sign(await build()));
   }
   async function loadChainGoals() {
@@ -184,7 +187,7 @@ export function mount(container, opts = {}) {
       else { const result = withdrawDemo(goals, goal.id); goals = result.goals; }
       setStatus(action === "deposit" ? t.savedOk : action === "exit" ? t.exited : t.withdrawn); render();
       if (action === "deposit" && progressOf(goals.find((item) => item.id === goal.id)).ratio >= 1) celebrate();
-    } catch (error) { setStatus(error?.message || (lang === "en" ? "The action could not be completed." : "No se pudo completar la acción.")); }
+    } catch (error) { setStatus(error?.message || localText("No se pudo completar la acción.", "The action could not be completed.")); }
     finally { busy = false; }
   }
   async function createGoal(data) {
@@ -202,7 +205,7 @@ export function mount(container, opts = {}) {
         goals = [...goals, { id, title: data.title.trim(), kind: data.kind, target: Number(data.target), saved: 0, unlockAt, token: t.currency, members, contributions: Object.fromEntries(members.map((member) => [member, 0])), streaks: Object.fromEntries(members.map((member) => [member, 0])), closed: false }];
       }
       setStatus(t.created); render();
-    } catch (error) { setStatus(error?.message || (lang === "en" ? "The goal could not be created." : "No se pudo crear la meta.")); }
+    } catch (error) { setStatus(error?.message || localText("No se pudo crear la meta.", "The goal could not be created.")); }
     finally { busy = false; }
   }
   function celebrate() {
@@ -212,13 +215,13 @@ export function mount(container, opts = {}) {
     const colors = Object.values(PALETTE); const pieces = Array.from({ length: 80 }, () => ({ x: Math.random() * rect.width, y: -Math.random() * rect.height * 0.35, vy: 1.5 + Math.random() * 3, vx: (Math.random() - 0.5) * 1.3, color: colors[Math.floor(Math.random() * colors.length)], size: 3 + Math.random() * 5 }));
     let frame = 0; const start = performance.now(); const draw = (now) => { ctx.clearRect(0, 0, rect.width, rect.height); for (const p of pieces) { p.x += p.vx; p.y += p.vy; ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.size, p.size * 1.6); } if (now - start < 1700 && !stopped) frame = requestAnimationFrame(draw); else { cancelAnimationFrame(frame); canvas.remove(); } }; frame = requestAnimationFrame(draw);
   }
-  async function load() { if (!isChain) return; try { goals = await loadChainGoals(); if (!stopped) render(); } catch (error) { setStatus(error?.message || (lang === "en" ? "Savings goals could not be loaded." : "No se pudieron cargar las metas.")); } }
+  async function load() { if (!isChain) return; try { goals = await loadChainGoals(); if (!stopped) render(); } catch (error) { setStatus(error?.message || localText("No se pudieron cargar las metas.", "Savings goals could not be loaded.")); } }
   render(); load();
   return {
     update(next = {}) {
       Object.assign(opts, next);
       const oldChain = isChain; const oldAddress = address;
-      lang = opts.lang === "en" ? "en" : "es"; t = COPY[lang];
+      lang = opts.lang || "es"; t = pickLang(COPY, lang);
       isChain = opts.mode === "testnet" && Boolean(opts.deployment?.alasitasContractId); address = opts.address || "";
       if (oldChain !== isChain || oldAddress !== address || next.deployment) { goals = isChain ? [] : createDemoGoals(); load(); }
       setStatus(""); title.textContent = t.title; description.textContent = t.intro; addButton.textContent = t.add;

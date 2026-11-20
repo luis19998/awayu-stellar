@@ -11,37 +11,39 @@ export function hasSeenTour(id = "firstVisit") {
   try { return localStorage.getItem(`${TOUR_SEEN_KEY}.${id}`) === "1"; } catch { return false; }
 }
 
-const bi = (es, en) => ({ es, en });
+import { pickLang } from "../i18n.js";
+
+const bi = (es, en, translations = {}) => ({ es, en, pt: translations.pt ?? es, qu: translations.qu ?? es, ay: translations.ay ?? es, gn: translations.gn ?? es });
 const step = (selector, title, text, placement = "auto", video) => ({ selector, title, text, placement, video });
 
 export const TOURS = Object.freeze({
   firstVisit: [
     step("#panel", bi("Tu panel", "Your dashboard"), bi("Aquí ves la ronda, la cuota y el pozo del círculo.", "See the round, contribution, and circle pot here.")),
     step("#stage", bi("El círculo 3D", "The 3D circle"), bi("El tejido muestra la historia de aportes de cada persona.", "The woven scene shows each person's contribution history.")),
-    step("#btn-wallet", bi("Conectá tu billetera", "Connect your wallet"), bi("Usá Freighter o ingresá con Google o correo cuando Pollar esté habilitado.", "Use Freighter or sign in with Google or email when Pollar is enabled.")),
-    step("#btn-custom", bi("Hacelo a tu manera", "Make it yours"), bi("Personalizá personajes y tejidos para la demo.", "Customize characters and patterns for the demo.")),
+    step("#btn-wallet", bi("Conecta tu billetera", "Connect your wallet"), bi("Usa Freighter o ingresa con Google o correo cuando Pollar esté habilitado.", "Use Freighter or sign in with Google or email when Pollar is enabled.")),
+    step("#btn-custom", bi("Hazlo a tu manera", "Make it yours"), bi("Personaliza personajes y tejidos para la demo.", "Customize characters and patterns for the demo.")),
   ],
   contributeAndPayout: [
     step("#btn-contribute", bi("Aportar", "Contribute"), bi("Cada miembro aporta la cuota de la ronda.", "Each member contributes the round amount.")),
-    step("#members", bi("Revisá los aportes", "Check contributions"), bi("La lista muestra quién ya aportó y el historial de cada miembro.", "The list shows who has contributed and each member's history.")),
+    step("#members", bi("Revisa los aportes", "Check contributions"), bi("La lista muestra quién ya aportó y el historial de cada miembro.", "The list shows who has contributed and each member's history.")),
     step("#btn-payout", bi("Pagar el pozo", "Pay out the pot"), bi("Cuando todos aportaron o venció el plazo, se puede pagar a quien está de turno.", "Once everyone has contributed or the deadline passes, the pot can be paid to the person whose turn it is.")),
   ],
-  createCircle: [step("#btn-create", bi("Crear un círculo", "Create a circle"), bi("Elegí la cuota, la duración de ronda y las personas que participarán.", "Choose the contribution, round length, and participants."))],
+  createCircle: [step("#btn-create", bi("Crear un círculo", "Create a circle"), bi("Elige la cuota, la duración de ronda y las personas que participarán.", "Choose the contribution, round length, and participants."))],
   guarantee: [
-    step("#btn-guarantee", bi("Garantía opcional", "Optional guarantee"), bi("Una garantía puede cubrir una cuota pendiente. Revisá el monto y las reglas antes de firmar.", "A guarantee can cover an unpaid contribution. Review the amount and rules before signing.")),
+    step("#btn-guarantee", bi("Garantía opcional", "Optional guarantee"), bi("Una garantía puede cubrir una cuota pendiente. Revisa el monto y las reglas antes de firmar.", "A guarantee can cover an unpaid contribution. Review the amount and rules before signing.")),
     step("#members", bi("Estado visible", "Visible status"), bi("Los saldos y marcas guardados en la cadena son públicos.", "Balances and marks stored on-chain are public.")),
   ],
   mapAndPassport: [
-    step("#nav", bi("Mapa de Bolivia", "Map of Bolivia"), bi("Explorá los círculos registrados por departamento.", "Explore registered circles by department.")),
+    step("#nav", bi("Mapa de Bolivia", "Map of Bolivia"), bi("Explora los círculos registrados por departamento.", "Explore registered circles by department.")),
     step("#nav", bi("Tu pasaporte", "Your passport"), bi("Reúne las marcas de participación de los círculos donde declaraste tu membresía.", "It gathers participation marks from circles where you declared your membership.")),
   ],
-  map: [step("#nav", bi("Mapa de Bolivia", "Map of Bolivia"), bi("Explorá los círculos registrados por departamento.", "Explore registered circles by department."))],
+  map: [step("#nav", bi("Mapa de Bolivia", "Map of Bolivia"), bi("Explora los círculos registrados por departamento.", "Explore registered circles by department."))],
   passport: [step("#nav", bi("Pasaporte", "Passport"), bi("Revisa las marcas reunidas de tus círculos. No es una aprobación de crédito.", "Review marks gathered from your circles. This is not a credit approval."))],
 });
 
 function localized(value, lang) {
   if (typeof value === "string") return value;
-  return value?.[lang] || value?.es || value?.en || "";
+  return pickLang(value, lang) || value?.en || "";
 }
 
 function addStyles() {
@@ -68,11 +70,10 @@ function addStyles() {
 export function startTour(steps, { lang = "es", onEnd, id = "firstVisit" } = {}) {
   if (typeof document === "undefined" || !validateSteps(steps)) return { end() {} };
   addStyles();
-  const english = lang === "en";
   const shade = document.createElement("div"); shade.className = "aw-guide-tour-shade";
   const spot = document.createElement("div"); spot.className = "aw-guide-tour-spot"; spot.setAttribute("aria-hidden", "true");
   const card = document.createElement("section"); card.className = "aw-guide-tour-card";
-  card.setAttribute("role", "dialog"); card.setAttribute("aria-modal", "true"); card.setAttribute("aria-label", english ? "Guided tour" : "Recorrido guiado");
+  card.setAttribute("role", "dialog"); card.setAttribute("aria-modal", "true"); card.setAttribute("aria-label", pickLang({ es: "Recorrido guiado", en: "Guided tour", pt: "Tour guiado", qu: "Puriy yachay", ay: "Uñjañ thakhi", gn: "Guata hag̃ua ñembo'e" }, lang));
   document.body.append(shade, spot, card);
   let index = 0; let ended = false; let target = null; let resizeObserver;
   const previousFocus = document.activeElement;
@@ -105,20 +106,20 @@ export function startTour(steps, { lang = "es", onEnd, id = "firstVisit" } = {})
     target.scrollIntoView?.({ block: "nearest", inline: "nearest", behavior: globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     card.replaceChildren();
     const arrow = document.createElement("span"); arrow.className = "aw-guide-tour-arrow"; arrow.textContent = "◆"; arrow.setAttribute("aria-hidden", "true");
-    const heading = document.createElement("h2"); heading.textContent = localized(current.title, english ? "en" : "es"); heading.id = "aw-guide-tour-title";
+    const heading = document.createElement("h2"); heading.textContent = localized(current.title, lang); heading.id = "aw-guide-tour-title";
     card.setAttribute("aria-labelledby", heading.id);
-    const text = document.createElement("p"); text.textContent = localized(current.text, english ? "en" : "es");
+    const text = document.createElement("p"); text.textContent = localized(current.text, lang);
     card.append(arrow, heading, text);
     if (current.video) {
-      const video = document.createElement("video"); video.src = current.video; video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true; video.setAttribute("playsinline", ""); video.setAttribute("aria-label", english ? "Tutorial video" : "Video tutorial");
+      const video = document.createElement("video"); video.src = current.video; video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true; video.setAttribute("playsinline", ""); video.setAttribute("aria-label", pickLang({ es: "Video tutorial", en: "Tutorial video", pt: "Vídeo tutorial" }, lang));
       video.addEventListener("error", () => video.remove(), { once: true }); card.append(video);
     }
     const controls = document.createElement("div"); controls.className = "aw-guide-tour-actions";
     const count = document.createElement("span"); count.className = "aw-guide-tour-count"; count.textContent = `${index + 1} / ${steps.length}`;
     const group = document.createElement("div"); group.style.cssText = "display:flex;gap:7px";
-    const skip = document.createElement("button"); skip.type = "button"; skip.textContent = english ? "Skip" : "Saltar"; skip.addEventListener("click", () => finish(false));
-    const prev = document.createElement("button"); prev.type = "button"; prev.textContent = english ? "Previous" : "Anterior"; prev.disabled = index === 0; prev.addEventListener("click", () => { index = Math.max(0, index - 1); render(); });
-    const next = document.createElement("button"); next.type = "button"; next.className = "aw-guide-tour-next"; next.textContent = index === steps.length - 1 ? (english ? "Finish" : "Terminar") : (english ? "Next" : "Siguiente"); next.addEventListener("click", () => { if (index + 1 >= steps.length) finish(true); else { index++; render(); } });
+    const skip = document.createElement("button"); skip.type = "button"; skip.textContent = pickLang({ es: "Saltar", en: "Skip", pt: "Pular" }, lang); skip.addEventListener("click", () => finish(false));
+    const prev = document.createElement("button"); prev.type = "button"; prev.textContent = pickLang({ es: "Anterior", en: "Previous", pt: "Anterior" }, lang); prev.disabled = index === 0; prev.addEventListener("click", () => { index = Math.max(0, index - 1); render(); });
+    const next = document.createElement("button"); next.type = "button"; next.className = "aw-guide-tour-next"; next.textContent = index === steps.length - 1 ? pickLang({ es: "Terminar", en: "Finish", pt: "Concluir" }, lang) : pickLang({ es: "Siguiente", en: "Next", pt: "Próximo" }, lang); next.addEventListener("click", () => { if (index + 1 >= steps.length) finish(true); else { index++; render(); } });
     group.append(skip, prev, next); controls.append(count, group); card.append(controls);
     requestAnimationFrame(position); next.focus();
     if (resizeObserver) resizeObserver.disconnect();

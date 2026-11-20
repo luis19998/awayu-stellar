@@ -69,7 +69,7 @@
       </section>
 
       <section class="members">
-        <h2><span data-i18n>Miembros</span> <small data-i18n>tocá uno para ver su aguayo</small></h2>
+        <h2><span data-i18n>Miembros</span> <small data-i18n>toca uno para ver su aguayo</small></h2>
         <ul id="members"></ul>
       </section>
 
@@ -95,7 +95,10 @@
 
     <div class="wallet">
       <button id="btn-sound" class="lang" aria-label="Silenciar">🔊</button>
-      <button id="btn-lang" class="lang" aria-label="Cambiar idioma / Change language">EN</button>
+      <select id="sel-lang" class="lang" aria-label="Idioma / Language">
+        <option value="es">Español</option><option value="en">English</option><option value="pt">Português</option>
+        <option value="qu">Runa Simi (quechua)</option><option value="ay">Aymar aru (aymara)</option><option value="gn">Avañe'ẽ (guaraní)</option>
+      </select>
       <button id="btn-wallet" data-i18n>Conectar billetera</button>
       <span id="wallet-balance" class="balance" hidden></span>
       <div class="wallet-menu" id="wallet-menu" hidden>
@@ -133,7 +136,7 @@
         </div>
         <fieldset>
           <legend data-i18n>Círculo de demostración</legend>
-          <label><span data-i18n>Miembros (uno por línea: nombre, y si querés, oficio · lugar)</span>
+          <label><span data-i18n>Miembros (uno por línea: nombre, y si quieres, oficio · lugar)</span>
             <textarea name="people" rows="6" placeholder="Doña Rosa, Comerciante · La Cancha&#10;Don Teo, Productor de papa · Tiraque"></textarea>
           </label>
           <div class="row2">
@@ -156,7 +159,7 @@
 
     <dialog id="dlg-figure" class="wide-dialog">
       <form method="dialog">
-        <h2 data-i18n>Elegí un personaje</h2>
+        <h2 data-i18n>Elige un personaje</h2>
         <p class="muted" data-i18n>36 figuras talladas estilo Alasitas, modeladas en Blender.</p>
         <div class="fig-grid" id="fig-grid"></div>
         <menu><button value="close" class="primary" data-i18n>Cerrar</button></menu>
@@ -166,7 +169,7 @@
     <dialog id="dlg-create">
       <form method="dialog" id="form-create">
         <h2 data-i18n>Crear un pasanaku en testnet</h2>
-        <p class="muted" data-i18n>Vos firmás el despliegue. El orden de cobro lo sortea la red.</p>
+        <p class="muted" data-i18n>Tú firmas el despliegue. El orden de cobro lo sortea la red.</p>
         <div class="row2">
           <label><span data-i18n>Nombre del círculo</span>
             <input name="cname" maxlength="40" placeholder="Pasanaku de la feria" required />

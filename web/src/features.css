@@ -38,6 +38,10 @@ dialog menu { flex-wrap: wrap; }
 #howto-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .howto-chip { border: 1px solid rgba(19, 163, 176, 0.5); background: rgba(19, 163, 176, 0.1); color: #8ff0f7; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; cursor: pointer; }
 .howto-chip:hover { background: rgba(19, 163, 176, 0.22); }
+.pane-h .howto { margin-top: 12px; }
+.howto-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.help-menu { max-height: min(70vh, 560px); overflow-y: auto; }
+.help-menu .grp { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 8px 12px 4px; }
 .help-fab { position: fixed; z-index: 60; right: 20px; bottom: 20px; width: 52px; height: 52px; border-radius: 50%; border: 0; font: 800 22px var(--display);
   color: #1b1030; background: radial-gradient(circle at 30% 30%, #ffe39a, var(--gold)); box-shadow: 0 10px 30px rgba(255, 209, 102, 0.35); cursor: pointer; animation: fabpulse 3s ease-in-out infinite; }
 @keyframes fabpulse { 50% { box-shadow: 0 10px 30px rgba(255, 209, 102, 0.6), 0 0 0 8px rgba(255, 209, 102, 0.12); } }

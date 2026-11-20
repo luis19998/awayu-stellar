@@ -121,6 +121,7 @@ function show(id, force = false) {
     });
   } else rendered = Promise.resolve(swap());
   rendered.then(() => {
+    if (alive(tk)) addHowto(view, id);
     // Lectores de pantalla: el foco va al título de la sección nueva
     const h = alive(tk) && view.querySelector("h1");
     if (h && document.activeElement?.closest?.("#nav")) {
@@ -194,6 +195,29 @@ async function renderMode(v, tk, name) {
     address: state.address,
     sign,
   }));
+}
+
+// "¿Cómo se hace?": mini videos de cada acción de la sección, bajo su título
+async function addHowto(view, id) {
+  const head = view.querySelector(".pane-h") || view.querySelector(".hero-in");
+  if (!head || head.querySelector(".howto")) return;
+  const { ROUTE_TOPICS, HELP_TOPICS, openHelp } = await import("./guide/help.js");
+  const ids = (ROUTE_TOPICS[id] || []).filter((x) => HELP_TOPICS[x]);
+  if (!ids.length || !head.isConnected) return;
+  const en = getLang() === "en";
+  const box = document.createElement("div");
+  box.className = "howto";
+  box.innerHTML = `<span>${t("¿Cómo se hace?")}</span><div class="howto-row"></div>`;
+  for (const topicId of ids) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "howto-chip";
+    b.dataset.topic = topicId;
+    b.textContent = `▶ ${HELP_TOPICS[topicId].title[en ? "en" : "es"]}`;
+    b.onclick = () => openHelp(topicId, { lang: getLang(), anchor: b });
+    box.querySelector(".howto-row").append(b);
+  }
+  head.append(box);
 }
 
 const VIEWS = {

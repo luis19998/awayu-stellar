@@ -11,8 +11,8 @@ describe("guía Awayu", () => {
     expect(validateSteps(null)).toBe(false);
   });
 
-  it("incluye los 10 temas de ayuda en castellano e inglés", () => {
-    expect(Object.keys(HELP_TOPICS)).toHaveLength(10);
+  it("incluye los 20 temas de ayuda en castellano e inglés", () => {
+    expect(Object.keys(HELP_TOPICS)).toHaveLength(20);
     for (const data of Object.values(HELP_TOPICS)) {
       for (const lang of ["es", "en"]) {
         expect(data.title[lang].trim()).not.toBe("");
@@ -40,5 +40,17 @@ describe("guía Awayu", () => {
     expect(formatted).not.toContain("<script>");
     expect(formatted).toContain("SUCCESS");
     expect(formatted).toContain("GABC");
+  });
+});
+
+import { existsSync } from "node:fs";
+import { ROUTE_TOPICS } from "../src/guide/help.js";
+describe("tutoriales por sección", () => {
+  it("cada sección ofrece temas existentes y cada tema tiene su video y póster", () => {
+    for (const ids of Object.values(ROUTE_TOPICS)) for (const id of ids) expect(HELP_TOPICS[id]).toBeTruthy();
+    for (const id of Object.keys(HELP_TOPICS)) {
+      expect(existsSync(new URL(`../public/tutoriales/${id}.webm`, import.meta.url))).toBe(true);
+      expect(existsSync(new URL(`../public/tutoriales/${id}.jpg`, import.meta.url))).toBe(true);
+    }
   });
 });

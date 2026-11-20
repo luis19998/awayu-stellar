@@ -37,3 +37,12 @@ describe("motor de riesgo", () => {
     expect(fairDrawProof([2, 0, 1], 42).probabilities).toEqual([1 / 3, 1 / 3, 1 / 3]);
   });
 });
+
+import { paymentProbability } from "../src/risk.js";
+describe("paymentProbability", () => {
+  it("cuenta el pago tarde como pago y la falta como falla", () => {
+    expect(paymentProbability([])).toBeCloseTo(0.9);
+    expect(paymentProbability([2, 2])).toBeGreaterThan(paymentProbability([]));
+    expect(paymentProbability([3, 3])).toBeLessThan(paymentProbability([]));
+  });
+});

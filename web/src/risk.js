@@ -49,6 +49,21 @@ function seededRandom(seed) {
  * `expectedLossByRecipient` expresa la pérdida promedio por destinatario.
  * Una seed idéntica produce exactamente el mismo resultado.
  */
+/**
+ * Probabilidad de que una persona pague su cuota en una ronda (a tiempo o tarde: el pozo se llena igual).
+ * Distinta de la puntualidad que muestra memberReliability. El prior Beta(9, 1) supone que 9 de cada 10
+ * personas pagan su cuota, como es habitual en los pasanakus que funcionan por confianza.
+ */
+export function paymentProbability(history = [], prior = { a: 9, b: 1 }) {
+  let a = prior.a;
+  let b = prior.b;
+  for (const mark of Array.isArray(history) ? history : []) {
+    if (mark === 1 || mark === 2) a += 1;
+    else if (mark === 3 || mark === 4) b += 1;
+  }
+  return a / (a + b);
+}
+
 export function simulateCircle(circle, { runs = 5000, seed = 1 } = {}) {
   const members = Array.isArray(circle?.members) ? circle.members : [];
   const order = Array.isArray(circle?.order) ? circle.order : [];
@@ -67,7 +82,7 @@ export function simulateCircle(circle, { runs = 5000, seed = 1 } = {}) {
     runs: 0,
   };
 
-  const reliability = members.map((m) => memberReliability(m?.history).mean);
+  const reliability = members.map((m) => paymentProbability(m?.history));
   let completed = 0;
   for (let run = 0; run < count; run++) {
     const random = seededRandom((Number(seed) >>> 0) ^ Math.imul(run + 1, 0x9e3779b1));

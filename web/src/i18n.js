@@ -187,6 +187,8 @@ const EN = {
   "En vivo en Stellar testnet: firmás con tu billetera.": "Live on Stellar testnet: you sign with your wallet.",
   "Contrato desplegado en testnet. Conectá tu billetera para usarlo; mientras tanto, demo.": "Contract deployed on testnet. Connect your wallet to use it; meanwhile, demo.",
   "Ver en": "View in",
+  "En esta sección": "In this section",
+  "Todos los tutoriales": "All tutorials",
   "Demo": "Demo",
   "Testnet en vivo": "Live testnet",
   "Datos reales de Stellar testnet. Conectá tu billetera para firmar.": "Real data from Stellar testnet. Connect your wallet to sign.",

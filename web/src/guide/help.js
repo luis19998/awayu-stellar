@@ -14,6 +14,30 @@ export const HELP_TOPICS = Object.freeze({
   map: topic("Mapa", "Map", ["Buscá círculos registrados por departamento.", "Abrí una ficha para conocer sus datos públicos.", "El mapa depende de los círculos registrados."], ["Browse registered circles by department.", "Open a card to see its public details.", "The map depends on circles being registered."]),
   passport: topic("Pasaporte", "Passport", ["Conectá la cuenta que declaró su participación.", "Revisá las marcas reunidas de tus círculos.", "El puntaje es un resumen y no garantiza crédito."], ["Connect the account that declared its participation.", "Review marks gathered from your circles.", "The score is a summary and does not guarantee credit."]),
   amawta: topic("Amawta", "Amawta", ["Escribí una pregunta sobre cómo funciona Awayu.", "Leé la respuesta y verificá los detalles importantes en la interfaz.", "No compartás información privada ni claves."], ["Ask a question about how Awayu works.", "Read the answer and verify important details in the interface.", "Do not share private information or keys."]),
+  "ayni-contribute": topic("Aportar al fondo Ayni", "Contribute to the Ayni fund", ["Entrá a Ayni desde el menú.", "Tocá Aportar: tu cuota mensual entra al fondo común.", "El fondo crece y queda en el historial."], ["Open Ayni from the menu.", "Press Contribute: your monthly share joins the fund.", "The fund grows and the history records it."]),
+  "ayni-request": topic("Pedir ayuda en Ayni", "Ask for help in Ayni", ["Tocá Pedir ayuda.", "Escribí el monto y para qué lo necesitás.", "Enviá el pedido: la comunidad lo vota."], ["Press Ask for help.", "Enter the amount and what it is for.", "Send it: the community votes on it."]),
+  "ayni-vote": topic("Votar un pedido", "Vote on a request", ["Buscá el pedido en votación.", "Tocá A favor o En contra.", "Con el quórum, se cierra y el fondo presta el dinero."], ["Find the request being voted on.", "Press In favor or Against.", "Once quorum is reached it closes and the fund lends the money."]),
+  "minka-fund": topic("Aportar a una Minka", "Back a Minka project", ["Mirá la meta y los hitos del proyecto.", "Escribí cuánto querés aportar y tocá Aportar.", "La barra avanza; el dinero queda guardado hasta cada hito."], ["Check the goal and the project's milestones.", "Type how much to give and press Contribute.", "The bar moves; money stays locked until each milestone."]),
+  "minka-milestone": topic("Liberar un hito", "Release a milestone", ["Con la meta completa, se sube la evidencia del avance.", "Los validadores la revisan y aprueban.", "Con mayoría, el hito se libera al organizador."], ["Once fully funded, the organizer uploads evidence.", "Validators review and approve it.", "With a majority, the milestone is paid out."]),
+  "alasitas-create": topic("Crear una meta Alasitas", "Create an Alasitas goal", ["Tocá Nueva meta.", "Elegí la miniatura, el monto y la fecha de retiro.", "Sumá participantes si es una meta compartida."], ["Press New goal.", "Pick the miniature, target and unlock date.", "Add people if the goal is shared."]),
+  "alasitas-save": topic("Ahorrar en una meta", "Save toward a goal", ["Elegí la miniatura de tu meta.", "Tocá Ahorrar y escribí el monto.", "La barra y tu racha semanal crecen."], ["Pick your goal's miniature.", "Press Save and enter the amount.", "The bar and your weekly streak grow."]),
+  "live-mode": topic("Ver datos reales en testnet", "See live testnet data", ["Arriba de cada tradición está el selector Demo / Testnet en vivo.", "Elegí Testnet en vivo para leer el contrato real.", "Conectá tu billetera para firmar acciones."], ["Above each tradition there is a Demo / Live testnet switch.", "Pick Live testnet to read the real contract.", "Connect your wallet to sign actions."]),
+  risk: topic("Leer las probabilidades", "Read the probabilities", ["Abrí un círculo y entrá a Probabilidades.", "Mirá la chance de que el círculo termine bien.", "Revisá la confiabilidad de cada miembro según su historial."], ["Open a circle and go to Probabilities.", "See the chance the circle finishes well.", "Check each member's reliability from their history."]),
+  games: topic("Jugar y aprender", "Play and learn", ["Elegí un juego en las pestañas.", "Tejé el aguayo, respondé el quiz o probá el sorteo.", "Tu mejor puntaje queda guardado."], ["Pick a game from the tabs.", "Weave the aguayo, take the quiz or try the draw.", "Your best score is saved."]),
+});
+
+// Qué tutoriales se ofrecen en cada sección del panel (el primero es el más útil)
+export const ROUTE_TOPICS = Object.freeze({
+  inicio: ["wallet", "create", "live-mode"],
+  circulo: ["contribute", "payout", "guarantee", "create", "customize", "simulator"],
+  ayni: ["ayni-contribute", "ayni-request", "ayni-vote", "live-mode"],
+  minka: ["minka-fund", "minka-milestone", "live-mode"],
+  alasitas: ["alasitas-create", "alasitas-save", "live-mode"],
+  mapa: ["map"],
+  billetera: ["wallet", "passport"],
+  riesgo: ["risk", "simulator"],
+  juegos: ["games"],
+  amawta: ["amawta"],
 });
 
 function ensureStyles() {

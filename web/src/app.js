@@ -32,12 +32,17 @@ try {
 // ---------- Ayuda: botón flotante con recorridos y mini tutoriales ----------
 const fab = document.querySelector("#help-fab");
 const helpMenu = document.querySelector("#help-menu");
-const TOPIC_ORDER = ["wallet", "contribute", "payout", "guarantee", "create", "customize", "simulator", "map", "passport", "amawta"];
+const TOPIC_ORDER = ["wallet", "contribute", "payout", "guarantee", "create", "customize", "simulator", "ayni-contribute", "ayni-request", "ayni-vote", "minka-fund", "minka-milestone", "alasitas-create", "alasitas-save", "live-mode", "map", "passport", "risk", "games", "amawta"];
 async function fillHelpMenu() {
-  const [{ HELP_TOPICS }, { t, getLang }] = await Promise.all([import("./guide/help.js"), import("./i18n.js")]);
+  const [{ HELP_TOPICS, ROUTE_TOPICS }, { t, getLang }] = await Promise.all([import("./guide/help.js"), import("./i18n.js")]);
   const en = getLang() === "en";
+  // Primero los tutoriales de la sección abierta; después el resto
+  const here = (ROUTE_TOPICS?.[document.body.dataset.route] || []).filter((id) => HELP_TOPICS[id]);
+  const rest = TOPIC_ORDER.filter((id) => HELP_TOPICS[id] && !here.includes(id));
+  const item = (id) => `<button role="menuitem" data-topic="${id}">🎬 ${HELP_TOPICS[id].title[en ? "en" : "es"]}</button>`;
   helpMenu.innerHTML = `<button role="menuitem" data-tour="firstVisit">▶ ${t("Recorrido de bienvenida")}</button>` +
-    TOPIC_ORDER.filter((id) => HELP_TOPICS[id]).map((id) => `<button role="menuitem" data-topic="${id}">🎬 ${HELP_TOPICS[id].title[en ? "en" : "es"]}</button>`).join("");
+    (here.length ? `<div class="grp" role="presentation">${t("En esta sección")}</div>${here.map(item).join("")}<div class="grp" role="presentation">${t("Todos los tutoriales")}</div>` : "") +
+    rest.map(item).join("");
 }
 fab?.addEventListener("click", async () => {
   const open = helpMenu.hidden;

@@ -111,6 +111,47 @@ export function createScene(container, { onPick, active: startActive = true } = 
   const motes = new THREE.Points(motesGeo, motesMat);
   scene.add(motes);
 
+  // Clima elegido por la persona: lluvia, nieve, pétalos de colores o luciérnagas
+  const WX_N = small ? 500 : 1100;
+  const wxPos = new Float32Array(WX_N * 3);
+  const wxCol = new Float32Array(WX_N * 3);
+  const wxSeed = new Float32Array(WX_N);
+  for (let k = 0; k < WX_N; k++) {
+    wxPos.set([(Math.random() - 0.5) * 30, Math.random() * 14, (Math.random() - 0.5) * 30], k * 3);
+    wxSeed[k] = Math.random() * 100;
+  }
+  const wxGeo = new THREE.BufferGeometry();
+  wxGeo.setAttribute("position", new THREE.BufferAttribute(wxPos, 3));
+  wxGeo.setAttribute("color", new THREE.BufferAttribute(wxCol, 3));
+  const wxMat = new THREE.PointsMaterial({ size: 0.06, vertexColors: true, transparent: true, opacity: 0.85, depthWrite: false });
+  const weatherPts = new THREE.Points(wxGeo, wxMat);
+  weatherPts.visible = false;
+  weatherPts.frustumCulled = false;
+  scene.add(weatherPts);
+  const WEATHER = {
+    despejado: null,
+    lluvia: { colors: ["#9ec9ff", "#c9e2ff"], size: 0.05, fall: 0.32, drift: 0.01, blend: THREE.NormalBlending, opacity: 0.7 },
+    nieve: { colors: ["#ffffff", "#e8f0ff"], size: 0.09, fall: 0.025, drift: 0.02, blend: THREE.NormalBlending, opacity: 0.95 },
+    petalos: { colors: ["#d81b60", "#f9c22e", "#13a3b0", "#1f9d55", "#f57c1f", "#ffffff"], size: 0.1, fall: 0.02, drift: 0.035, blend: THREE.NormalBlending, opacity: 0.95 },
+    luciernagas: { colors: ["#fff3a0", "#c8ff8a"], size: 0.11, fall: -0.002, drift: 0.015, blend: THREE.AdditiveBlending, opacity: 0.9 },
+  };
+  let weather = null;
+  function setWeather(id) {
+    weather = WEATHER[id] || null;
+    weatherPts.visible = !!weather;
+    if (!weather) return;
+    const c = new THREE.Color();
+    for (let k = 0; k < WX_N; k++) {
+      c.set(weather.colors[k % weather.colors.length]);
+      wxCol.set([c.r, c.g, c.b], k * 3);
+    }
+    wxGeo.attributes.color.needsUpdate = true;
+    wxMat.size = weather.size;
+    wxMat.blending = weather.blend;
+    wxMat.opacity = weather.opacity;
+    wxMat.needsUpdate = true;
+  }
+
   // Todo lo que está sobre la mesa vive en "stage", que sube con la altura de la mesa
   const stage = new THREE.Group();
   scene.add(stage);
@@ -713,6 +754,18 @@ export function createScene(container, { onPick, active: startActive = true } = 
       }
       pos.needsUpdate = true;
     }
+    if (weather && !calm) {
+      const pos = wxGeo.attributes.position;
+      for (let k = 0; k < WX_N; k++) {
+        let y = pos.getY(k) - weather.fall * (0.7 + (wxSeed[k] % 1) * 0.6);
+        if (y < 0) y = 14;
+        if (y > 14) y = 0.2;
+        pos.setY(k, y);
+        pos.setX(k, pos.getX(k) + Math.sin(t * 0.8 + wxSeed[k]) * weather.drift);
+        pos.setZ(k, pos.getZ(k) + Math.cos(t * 0.6 + wxSeed[k]) * weather.drift * 0.6);
+      }
+      pos.needsUpdate = true;
+    }
     if (illa.visible) {
       illa.rotation.y = t * 0.6;
       illa.position.y = topOf(illaOwner) + 0.02 + Math.sin(t * 1.8) * 0.04;
@@ -814,8 +867,41 @@ export function createScene(container, { onPick, active: startActive = true } = 
     tableSlot.add(t);
   }
 
+  // Hora del día: cambia cielo y luces sobre el escenario elegido ("auto" = la del escenario)
+  const TIMES = {
+    dia: { sky: ["#2f6fb8", "#8cc2f0", "#e6f2ff"], fog: ["#cfe2f5", 0.009], night: false, hemi: ["#ffffff", "#8a9a7a", 0.75], sun: ["#fff4e0", 2.0, [10, 18, 6]], exposure: 0.85, bloom: 0.15, hearth: 3 },
+    atardecer: { sky: ["#2a1c5a", "#d4567a", "#ffbf6b"], fog: ["#d98a7a", 0.014], night: false, hemi: ["#ffcfa8", "#3a1d24", 0.7], sun: ["#ffa25a", 1.8, [-14, 6, -8]], exposure: 1.0, bloom: 0.6, hearth: 9 },
+    noche: { sky: ["#03030c", "#0f0a2a", "#22163f"], fog: ["#0a0820", 0.022], night: true, hemi: ["#6f68b8", "#1e1010", 0.5], sun: ["#c9d4ff", 1.0, [-8, 14, 6]], exposure: 1.05, bloom: 0.9, hearth: 18 },
+  };
+  let timeOfDay = "auto";
+  function applyTime() {
+    const base = SCENARIOS[skin.scenario] || SCENARIOS.altiplano;
+    const tm = TIMES[timeOfDay];
+    if (!tm) return;
+    sky.userData.setColors(tm.sky);
+    scene.background = new THREE.Color(tm.sky[2]);
+    scene.fog = new THREE.FogExp2(tm.fog[0], Math.max(tm.fog[1], base.fog[1] * 0.6));
+    starField.visible = tm.night;
+    motesMat.color.set(tm.night ? "#ffe9a8" : "#fff6d8");
+    motesMat.opacity = tm.night ? 0.9 : 0.45;
+    hemi.color.set(tm.hemi[0]); hemi.groundColor.set(tm.hemi[1]); hemi.intensity = tm.hemi[2];
+    moon.color.set(tm.sun[0]); moon.intensity = tm.sun[1]; moon.position.set(...tm.sun[2]);
+    renderer.toneMappingExposure = tm.exposure;
+    bloom.strength = baseBloom = tm.bloom;
+    hearth.intensity = baseHearth = tm.hearth;
+    scene.environmentIntensity = tm.night ? 0.35 : 0.55;
+  }
+  function setAmbience({ time, weather: wx } = {}) {
+    if (time) {
+      timeOfDay = time;
+      if (time === "auto") setScenario(skin.scenario || "altiplano");
+      else applyTime();
+    }
+    if (wx) setWeather(wx);
+  }
+
   function setSkin({ scenario, vessel, table } = {}) {
-    if (scenario && scenario !== skin.scenario) setScenario(scenario);
+    if (scenario && scenario !== skin.scenario) { setScenario(scenario); applyTime(); }
     if (vessel && vessel !== skin.vessel) setVessel(vessel);
     if (table && table !== skin.table) setTable(table);
   }
@@ -842,7 +928,7 @@ export function createScene(container, { onPick, active: startActive = true } = 
   setTable("suelo");
 
   return {
-    placeIlla, retheme, setDeadline, setSkin, setActive, setFigure, figuresReady,
+    placeIlla, retheme, setDeadline, setSkin, setAmbience, setActive, setFigure, figuresReady,
     figureNames: () => (figures ? [...figures.keys()].sort() : []),
     setMembers, updateLabels, setTurn, addLayer, setPending, commitPending,
     flyContribution, flyPayout, setPotLevel, select, focus, controls,

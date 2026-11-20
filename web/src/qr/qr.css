@@ -1,0 +1,23 @@
+/* Diálogos de QR (invitar, recibir, escanear, recargar con QR bancario) */
+dialog.aw-qr { width: min(440px, 94vw); border: 1px solid var(--line, #ffffff30); border-radius: 20px; background: #1b1030; color: var(--ink, #fff); padding: 20px; box-shadow: 0 24px 70px #000a; }
+dialog.aw-qr::backdrop { background: #08051099; backdrop-filter: blur(4px); }
+.aw-qr h2 { margin: 0 0 6px; font-size: 20px; }
+.aw-qr-lead { margin: 0 0 14px; color: var(--muted, #cfc6e0); font-size: 14px; }
+.aw-qr-code { display: grid; place-items: center; background: #fff; border-radius: 16px; padding: 10px; }
+.aw-qr-code svg { width: min(260px, 70vw); height: auto; }
+.aw-qr code { display: block; margin: 10px 0; padding: 8px 10px; border-radius: 10px; background: #ffffff10; font-size: 11px; word-break: break-all; max-height: 4.5em; overflow: auto; }
+.aw-qr-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.aw-qr-actions button, .aw-qr-result button { padding: 9px 13px; border-radius: 999px; font-weight: 700; cursor: pointer; }
+.aw-qr-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.aw-qr-form label { display: grid; gap: 4px; font-size: 13px; color: var(--muted, #cfc6e0); }
+.aw-qr-form input, .aw-qr-form select { padding: 9px; border-radius: 10px; border: 1px solid var(--line, #ffffff30); background: #ffffff0d; color: inherit; font: inherit; }
+.aw-qr video { width: 100%; border-radius: 14px; background: #000; aspect-ratio: 4 / 3; object-fit: cover; }
+.aw-qr-file { display: grid; gap: 6px; margin-top: 10px; font-size: 13px; color: var(--muted, #cfc6e0); }
+.aw-qr-result h3 { margin: 12px 0 4px; font-size: 16px; }
+.aw-qr-result p { margin: 0 0 10px; word-break: break-all; }
+.aw-qr ol { padding-inline-start: 20px; display: grid; gap: 6px; }
+.aw-qr-status { margin: 12px 0; padding: 12px; border-radius: 12px; background: #13a3b01a; border: 1px solid #13a3b066; font-size: 14px; }
+.aw-qr-legal { font-size: 12px; color: var(--muted, #cfc6e0); }
+.aw-qr menu { display: flex; justify-content: flex-end; padding: 0; margin: 14px 0 0; }
+.qr-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+@media (max-width: 420px) { .aw-qr-form { grid-template-columns: 1fr; } }

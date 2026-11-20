@@ -13,7 +13,7 @@ on:
         default: ""
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
   attestations: write
 
@@ -39,6 +39,21 @@ jobs:
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: target/wasm32v1-none/release/*.wasm
+      # Release con los wasm exactos que se despliegan y aviso a la API de validación
+      # de Stellar Expert (como el soroban-build-workflow oficial); Stellar Lab lo lee.
+      - name: Publicar los wasm y pedir la validación del código
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="contratos-${{ github.workflow == 'Demo en testnet' && 'demo' || 'modos' }}-${{ github.run_id }}"
+          gh release create "$TAG" target/wasm32v1-none/release/*.wasm --title "$TAG" --notes "Wasm compilados en ${{ github.workflow }} (commit ${{ github.sha }}) con atestación de procedencia; son los que se despliegan en Stellar testnet."
+          for w in target/wasm32v1-none/release/*.wasm; do
+            h=$(sha256sum "$w" | cut -d' ' -f1)
+            body=$(printf '{"repository":"%s","commitHash":"%s","jobId":"%s","runId":"%s","contractHash":"%s","packageName":"%s"}' "${{ github.server_url }}/${{ github.repository }}" "${{ github.sha }}" "${{ github.job }}" "${{ github.run_id }}" "$h" "$(basename "$w" .wasm)")
+            echo "$body"
+            curl -s -X POST "https://api.stellar.expert/explorer/public/contract-validation/match" -H "Content-Type: application/json" -d "$body" --max-time 15 || true
+            echo
+          done
       - name: Desplegar y jugar rondas
         env:
           REGISTRO: ${{ inputs.registro }}

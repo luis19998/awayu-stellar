@@ -17,7 +17,9 @@ Awayu es un pasanaku (círculo de ahorro rotativo) en Stellar para el hackatón 
 - En esta PC, Smart App Control bloquea los scripts de compilación de Rust: `cargo test` y `stellar contract build` se corren en GitHub Actions (o en Codespaces/WSL), no localmente. No desactivar esa protección.
 - `stellar` CLI 30 sí funciona localmente para desplegar o invocar con un wasm ya compilado.
 - Nunca subir claves: identidades de `stellar keys` viven fuera del repo; la clave publicable de Pollar va en `web/.env.local` como `VITE_POLLAR_KEY`.
-- Textos de la interfaz en castellano boliviano, claros para gente sin experiencia cripto.
+- Textos de la interfaz en español neutro (tuteo, sin voseo ni modismos de un país: "dinero", no "plata"), claros para gente sin experiencia cripto. Se conservan los nombres culturales andinos (pasanaku, ayni, minka, alasitas, aguayo, pollera).
+- Idiomas de la web: español (base), inglés, portugués, quechua, aymara y guaraní. Todo texto nuevo debe tener las seis versiones o caer al español de forma explícita.
+- Cada acción nueva de la interfaz lleva su tutorial en video (tema en `HELP_TOPICS` y `ROUTE_TOPICS` de `web/src/guide/help.js`).
 
 ## Comandos
 - Web: `npm --prefix web install`, `npm --prefix web run dev` (puerto 5180 en `.claude/launch.json`), `npm --prefix web run build`.

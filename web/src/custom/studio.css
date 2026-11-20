@@ -6,6 +6,7 @@ dialog.aw-studio::backdrop { background: #08051099; backdrop-filter: blur(4px); 
 .aw-tabs button { border: 1px solid var(--line, #ffffff30); background: none; color: var(--muted, #cfc6e0); border-radius: 999px; padding: 7px 13px; font-weight: 700; cursor: pointer; }
 .aw-tabs button[aria-selected="true"] { background: var(--gold); color: #1b1030; border-color: var(--gold); }
 .aw-pane { display: grid; gap: 12px; min-height: 180px; }
+.aw-pane[hidden] { display: none; }
 .aw-pane fieldset { border: 1px solid var(--line, #ffffff30); border-radius: 14px; padding: 6px 12px 12px; margin: 0; }
 .aw-pane legend { color: var(--gold); font-size: 13px; padding: 0 6px; }
 .aw-chips { display: flex; flex-wrap: wrap; gap: 6px; }

@@ -26,17 +26,59 @@ export const HELP_TOPICS = Object.freeze({
   "live-mode": topic("Ver datos reales en testnet", "See live testnet data", ["Arriba de cada tradición está el selector Demo / Testnet en vivo.", "Elige Testnet en vivo para leer el contrato real.", "Conecta tu billetera para firmar acciones."], ["Above each tradition there is a Demo / Live testnet switch.", "Pick Live testnet to read the real contract.", "Connect your wallet to sign actions."]),
   risk: topic("Leer las probabilidades", "Read the probabilities", ["Abre un círculo y entra a Probabilidades.", "Mira la chance de que el círculo termine bien.", "Revisa la confiabilidad de cada miembro según su historial."], ["Open a circle and go to Probabilities.", "See the chance the circle finishes well.", "Check each member's reliability from their history."]),
   games: topic("Jugar y aprender", "Play and learn", ["Elige un juego en las pestañas.", "Teje el aguayo, responde el quiz o prueba el sorteo.", "Tu mejor puntaje queda guardado."], ["Pick a game from the tabs.", "Weave the aguayo, take the quiz or try the draw.", "Your best score is saved."]),
+  "qr-invite": topic("Invitar con QR", "Invite with QR", ["En el círculo, toca Invitar con QR.", "Muestra el código o compártelo por mensaje.", "Quien lo escanea abre el círculo y revisa las reglas antes de unirse."], ["In the circle, press Invite with QR.", "Show the code or share it in a message.", "Whoever scans it opens the circle and checks the rules before joining."]),
+  "qr-receive": topic("Recibir pagos con QR", "Receive payments with QR", ["En Billetera, toca Recibir con QR.", "Si quieres, escribe el monto y elige la moneda.", "La otra persona lo escanea con una billetera Stellar y te paga."], ["In Wallet, press Receive with QR.", "Optionally enter the amount and pick the asset.", "The other person scans it with a Stellar wallet and pays you."]),
+  "qr-scan": topic("Escanear un QR", "Scan a QR", ["En Billetera, toca Escanear QR y permite la cámara.", "Apunta a una invitación, un pedido de pago o una dirección.", "Awayu te dice qué es y te ofrece abrirlo."], ["In Wallet, press Scan QR and allow the camera.", "Point at an invite, a payment request or an address.", "Awayu tells you what it is and offers to open it."]),
+  "qr-bank": topic("Recargar con el QR del banco", "Top up with a bank QR", ["Toca Recargar con el QR de tu banco.", "Paga en bolivianos con la app de tu banco.", "Un proveedor autorizado te envía dólares digitales (USDC)."], ["Press Top up with your bank's QR.", "Pay in bolivianos with your bank app.", "A licensed provider sends you digital dollars (USDC)."]),
+  studio: topic("Estudio de personalización", "Customization studio", ["En el círculo, toca Estudio.", "Elige la hora del día, el clima y los colores de tu aguayo.", "Ajusta el color, el tamaño de letra o el contraste de la interfaz."], ["In the circle, press Studio.", "Pick the time of day, the weather and your aguayo colors.", "Adjust the interface color, text size or contrast."]),
 });
+
+// Traducciones de los temas de ayuda. Portugués completo; en quechua, aymara y
+// guaraní los títulos (los pasos caen al español hasta la revisión de hablantes).
+const LOCAL = {
+  wallet: { pt: ["Conectar carteira", ["Escolha Freighter, Google ou e-mail.", "Confira a rede e a conta exibida.", "Confirme cada ação na sua carteira."]], qu: "Qullqi wayaqata tinkiy", ay: "Qullqi wayaqa chikt'aña", gn: "Embojoaju viru ryru" },
+  contribute: { pt: ["Contribuir", ["Confira a contribuição e a rodada atual.", "Escolha Contribuir e confirme a assinatura.", "Aguarde o resultado da rede."]], qu: "Qullqita churay", ay: "Qullqi churaña", gn: "Emoĩ nde viru" },
+  payout: { pt: ["Pagar o fundo", ["Veja de quem é a vez.", "O fundo pode ser pago quando todos contribuíram ou o prazo venceu.", "A rede registra o pagamento e o avanço da rodada."]], qu: "Huñusqa qullqita payllay", ay: "Tantachat qullqi payllaña", gn: "Ehepyme'ẽ pe viru aty" },
+  guarantee: { pt: ["Garantia", ["É opcional e equivale a uma contribuição.", "Pode cobrir uma contribuição pendente conforme as regras do círculo.", "Ao terminar, o que sobrar pode ser retirado."]], qu: "Garantía", ay: "Garantía", gn: "Garantía" },
+  create: { pt: ["Criar um círculo", ["Defina a contribuição e a duração da rodada.", "Adicione os endereços dos participantes.", "Revise os dados antes de assinar; ficam públicos na Stellar."]], qu: "Muyuta ruray", ay: "Muyu luraña", gn: "Ejapo peteĩ círculo" },
+  customize: { pt: ["Personalizar", ["Escolha personagens, cenário e aguayo.", "As mudanças são visuais e servem para a demonstração.", "Volte ao círculo para ver o tecido atualizado."]], qu: "Sumaqchay", ay: "Sumachaña", gn: "Embojegua" },
+  simulator: { pt: ["Simulador", ["Teste valores e quantidades de membros diferentes.", "Os resultados são cálculos de exemplo.", "Não representam ganhos nem uma recomendação."]], qu: "Yachachiq", ay: "Yant'aña", gn: "Simulador" },
+  map: { pt: ["Mapa", ["Procure círculos registrados por departamento.", "Abra uma ficha para ver seus dados públicos.", "O mapa depende dos círculos registrados."]], qu: "Mapa", ay: "Mapa", gn: "Mapa" },
+  passport: { pt: ["Passaporte", ["Conecte a conta que declarou sua participação.", "Revise as marcas reunidas dos seus círculos.", "A pontuação é um resumo e não garante crédito."]], qu: "Pasaporte", ay: "Pasaporte", gn: "Pasaporte" },
+  amawta: { pt: ["Amawta", ["Escreva uma pergunta sobre como o Awayu funciona.", "Leia a resposta e confira os detalhes importantes na interface.", "Não compartilhe informações privadas nem chaves."]], qu: "Amawta", ay: "Amawta", gn: "Amawta" },
+  "ayni-contribute": { pt: ["Contribuir para o fundo Ayni", ["Entre no Ayni pelo menu.", "Toque em Contribuir: sua cota mensal entra no fundo comum.", "O fundo cresce e fica no histórico."]], qu: "Ayni qullqiman churay", ay: "Ayni qullqir churaña", gn: "Emoĩ viru Ayni-pe" },
+  "ayni-request": { pt: ["Pedir ajuda no Ayni", ["Toque em Pedir ajuda.", "Escreva o valor e para que precisa.", "Envie o pedido: a comunidade vota."]], qu: "Ayni-pi yanapata mañakuy", ay: "Ayni-n yanapa mayiña", gn: "Ejerure pytyvõ Ayni-pe" },
+  "ayni-vote": { pt: ["Votar em um pedido", ["Encontre o pedido em votação.", "Toque em A favor ou Contra.", "Com o quórum, fecha e o fundo empresta o dinheiro."]], qu: "Mañakuypaq akllay", ay: "Mayiwitak ajlliña", gn: "Eiporavo peteĩ jerure" },
+  "minka-fund": { pt: ["Apoiar uma Minka", ["Veja a meta e as etapas do projeto.", "Escreva quanto quer contribuir e toque em Contribuir.", "A barra avança; o dinheiro fica guardado até cada etapa."]], qu: "Minkata yanapay", ay: "Minka yanapaña", gn: "Epytyvõ peteĩ Minka" },
+  "minka-milestone": { pt: ["Liberar uma etapa", ["Com a meta completa, envia-se a evidência do avanço.", "Os validadores revisam e aprovam.", "Com maioria, a etapa é liberada ao organizador."]], qu: "Huk patata kachariy", ay: "Mä thaki antutaña", gn: "Emosãso peteĩ jehupyty" },
+  "alasitas-create": { pt: ["Criar uma meta Alasitas", ["Toque em Nova meta.", "Escolha a miniatura, o valor e a data de retirada.", "Adicione pessoas se a meta for compartilhada."]], qu: "Alasitas munayta ruray", ay: "Alasitas amtaña luraña", gn: "Ejapo peteĩ Alasitas jehupyty" },
+  "alasitas-save": { pt: ["Poupar para uma meta", ["Escolha a miniatura da sua meta.", "Toque em Poupar e escreva o valor.", "A barra e sua sequência semanal crescem."]], qu: "Munaypaq waqaychay", ay: "Amtatak imaña", gn: "Eñongatu nde jehupytyrã" },
+  "live-mode": { pt: ["Ver dados reais na testnet", ["Acima de cada tradição há o seletor Demo / Testnet ao vivo.", "Escolha Testnet ao vivo para ler o contrato real.", "Conecte sua carteira para assinar ações."]], qu: "Testnet-pi cheqaq willakuykunata qhaway", ay: "Testnet-na chiqpach yatiyawinak uñjaña", gn: "Ehecha mba'e añetegua testnet-pe" },
+  risk: { pt: ["Ler as probabilidades", ["Abra um círculo e entre em Probabilidades.", "Veja a chance de o círculo terminar bem.", "Confira a confiabilidade de cada membro pelo histórico."]], qu: "Atikuykunata ñawinchay", ay: "Inas utjirinak liyt'aña", gn: "Emoñe'ẽ umi ikatúva" },
+  games: { pt: ["Jogar e aprender", ["Escolha um jogo nas abas.", "Teça o aguayo, responda ao quiz ou teste o sorteio.", "Sua melhor pontuação fica salva."]], qu: "Pukllay yachaypas", ay: "Anataña yatiqañasa", gn: "Ñembosarái ha ñaaprende" },
+  "qr-invite": { pt: ["Convidar com QR", ["No círculo, toque em Convidar com QR.", "Mostre o código ou compartilhe por mensagem.", "Quem escanear abre o círculo e confere as regras antes de entrar."]], qu: "QR nisqawan invitay", ay: "QR ukamp jawsaña", gn: "Eguerohenói QR rupive" },
+  "qr-receive": { pt: ["Receber pagamentos com QR", ["Em Carteira, toque em Receber com QR.", "Se quiser, escreva o valor e escolha a moeda.", "A outra pessoa escaneia com uma carteira Stellar e paga."]], qu: "QR nisqawan qullqita chaskiy", ay: "QR ukamp qullqi katuqaña", gn: "Ehupyty viru QR rupive" },
+  "qr-scan": { pt: ["Escanear um QR", ["Em Carteira, toque em Escanear QR e permita a câmera.", "Aponte para um convite, um pedido de pagamento ou um endereço.", "O Awayu diz o que é e oferece abrir."]], qu: "QR-ta qhaway", ay: "QR uñjaña", gn: "Ehecha peteĩ QR" },
+  "qr-bank": { pt: ["Recarregar com o QR do banco", ["Toque em Recarregar com o QR do seu banco.", "Pague em bolivianos com o app do seu banco.", "Um provedor autorizado envia dólares digitais (USDC)."]], qu: "Bancoq QR-ninwan yapay", ay: "Bancon QR-pampi yapxataña", gn: "Emyenyhẽ banco QR rupive" },
+  studio: { pt: ["Estúdio de personalização", ["No círculo, toque em Estúdio.", "Escolha a hora do dia, o clima e as cores do seu aguayo.", "Ajuste a cor, o tamanho do texto ou o contraste da interface."]], qu: "Sumaqchana wasi", ay: "Suma lurañ uta", gn: "Mbojeguaha róga" },
+};
+for (const [id, loc] of Object.entries(LOCAL)) {
+  const tp = HELP_TOPICS[id];
+  if (!tp) continue;
+  tp.title.pt = loc.pt[0];
+  tp.steps.pt = loc.pt[1];
+  for (const code of ["qu", "ay", "gn"]) if (loc[code]) tp.title[code] = loc[code];
+}
 
 // Qué tutoriales se ofrecen en cada sección del panel (el primero es el más útil)
 export const ROUTE_TOPICS = Object.freeze({
   inicio: ["wallet", "create", "live-mode"],
-  circulo: ["contribute", "payout", "guarantee", "create", "customize", "simulator"],
+  circulo: ["contribute", "payout", "guarantee", "create", "studio", "qr-invite", "customize", "simulator"],
   ayni: ["ayni-contribute", "ayni-request", "ayni-vote", "live-mode"],
   minka: ["minka-fund", "minka-milestone", "live-mode"],
   alasitas: ["alasitas-create", "alasitas-save", "live-mode"],
   mapa: ["map"],
-  billetera: ["wallet", "passport"],
+  billetera: ["wallet", "qr-receive", "qr-scan", "qr-bank", "passport"],
   riesgo: ["risk", "simulator"],
   juegos: ["games"],
   amawta: ["amawta"],

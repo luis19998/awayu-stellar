@@ -11,6 +11,11 @@ const QU = {
   "Aportar": "Qullqi churay", "Compartir enlace": "Tinkina rakiy", "Cerrar": "Wichqay", "Abrir": "Kichay",
   "Pasaporte": "Pasaporte", "Billetera": "Billetera digital", "Cancel": "Sayachiy",
   // Panel (textos que faltaban)
+  "🎨 Estudio": "🎨 Sumaqchana",
+  "Invitar con QR": "QR nisqawan invitay",
+  "Recibir con QR": "QR nisqawan chaskiy",
+  "Escanear QR": "QR qhaway",
+  "Recargar con el QR de tu banco": "Bancoykiq QR-ninwan yapay",
   "Este modo llega en la próxima versión.": "Este modo llega en la próxima versión.",
   "Probabilidades del círculo": "Probabilidades del círculo",
   "Monte Carlo con la confiabilidad de cada miembro (modelo Beta-Bernoulli) y las garantías depositadas.": "Monte Carlo con la confiabilidad de cada miembro (modelo Beta-Bernoulli) y las garantías depositadas.",

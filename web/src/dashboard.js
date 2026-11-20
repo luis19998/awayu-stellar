@@ -382,9 +382,14 @@ async function renderWallet(v, tk) {
   const addr = state.address;
   v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t("Tu billetera y tu pasaporte")}</h1>
     <p>${addr ? t("Datos en vivo de Stellar testnet (Horizon) y tu historial en todos los círculos del registro.") : t("Modo demo: conecta tu billetera para ver tus datos reales.")}</p>
-    ${addr ? "" : `<button class="btn primary" id="w-connect">${t("Conectar billetera")}</button>`}</header>
+    ${addr ? "" : `<button class="btn primary" id="w-connect">${t("Conectar billetera")}</button>`}
+    <div class="qr-row"><button class="btn" id="w-receive">▣ ${t("Recibir con QR")}</button><button class="btn" id="w-scan">⌖ ${t("Escanear QR")}</button><button class="btn" id="w-bank">🏦 ${t("Recargar con el QR de tu banco")}</button></div></header>
     <div class="grid2"><div class="stage-box tall" id="wallet-box"></div><div id="passport" class="passport"></div></div></section>`;
   $("#w-connect")?.addEventListener("click", () => hooks.connectWallet?.());
+  const qr = () => import("./qr/qr.js");
+  $("#w-receive").onclick = async () => (await qr()).openReceive(state.address, getLang());
+  $("#w-scan").onclick = async () => (await qr()).openScanner(getLang(), { onCircle: (id) => hooks.openCircle?.(id) });
+  $("#w-bank").onclick = async () => (await qr()).openBankTopUp(getLang(), { pollarClient: async () => (await import("./wallet.js")).pollarClient() });
   const [{ mount }, hz, chain] = await Promise.all([import("./views/billetera3d.js"), import("./horizon.js"), import("./chain.js")]);
   let data = { lang: getLang() };
   let passport = { circles: [], history: [], score: 0 };

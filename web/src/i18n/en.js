@@ -235,6 +235,11 @@ export default {
   "Ese aguayo es tu historial crediticio: portable, verificable, tuyo.":
     "That aguayo is your payment record: portable, verifiable, yours.",
   // Panel (textos que faltaban)
+  "🎨 Estudio": "🎨 Studio",
+  "Invitar con QR": "Invite with QR",
+  "Recibir con QR": "Receive with QR",
+  "Escanear QR": "Scan QR",
+  "Recargar con el QR de tu banco": "Top up with your bank's QR",
   "Este modo llega en la próxima versión.": "This mode is coming in the next version.",
   "Probabilidades del círculo": "Circle probabilities",
   "Monte Carlo con la confiabilidad de cada miembro (modelo Beta-Bernoulli) y las garantías depositadas.": "Monte Carlo using each member's reliability (Beta-Bernoulli model) and the deposited guarantees.",

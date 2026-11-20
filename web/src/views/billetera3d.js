@@ -199,6 +199,7 @@ export function mount(container, initial = {}) {
     satellites.children.forEach((satellite, i) => { satellite.rotation.y += reduced.matches ? 0 : dt * (0.12 + i * 0.025); });
     comets.children.forEach((comet) => { comet.position.x += (comet.userData.incoming ? 1 : -1) * dt * 0.48; if (Math.abs(comet.position.x) > 4.8) comet.position.x *= -1; });
     controls.update(); composer.render();
+    frame = requestAnimationFrame(animate); // sin esto se dibujaba un solo cuadro
   }
   if (visible) frame = requestAnimationFrame(animate);
 

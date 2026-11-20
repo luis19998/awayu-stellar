@@ -37,9 +37,9 @@ export async function startRecording(name, { width = 1440, height = 810, scale =
   mkdirSync(dir, { recursive: true });
   const browser = await chromium.launch({
     channel: "chrome", headless: true,
-    args: ["--use-angle=d3d11", "--enable-gpu-rasterization", "--ignore-gpu-blocklist", "--autoplay-policy=no-user-gesture-required", "--hide-scrollbars", "--force-color-profile=srgb"],
+    args: ["--use-angle=d3d11", "--enable-gpu-rasterization", "--ignore-gpu-blocklist", "--autoplay-policy=no-user-gesture-required", "--hide-scrollbars", "--force-color-profile=srgb", "--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"],
   });
-  const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: scale, locale: "es-BO", timezoneId: "America/La_Paz", geolocation: geo, permissions: ["geolocation"] });
+  const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: scale, locale: "es-BO", timezoneId: "America/La_Paz", geolocation: geo, permissions: ["geolocation", "camera"] });
   await context.addInitScript(CURSOR);
   const page = await context.newPage();
   const cdp = await context.newCDPSession(page);

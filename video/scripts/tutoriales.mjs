@@ -226,7 +226,69 @@ Object.assign(TOPICS, {
   },
 });
 
+
+// ---------- QR y estudio ----------
+Object.assign(TOPICS, {
+  "qr-invite": async (r) => {
+    await r.click("#btn-invite");
+    await r.sleep(900);
+    await r.move(".aw-qr-code", 800);
+    await r.sleep(1200);
+    await r.move(".aw-qr-actions button >> nth=0", 700);
+    await r.sleep(1500);
+  },
+  "qr-receive": async (r) => {
+    await r.click("#w-receive");
+    await r.sleep(700);
+    await r.click(".aw-qr-form input");
+    await r.type("25", 160);
+    await r.move(".aw-qr-form select", 600);
+    await r.page.selectOption(".aw-qr-form select", "USDC");
+    await r.page.dispatchEvent(".aw-qr-form select", "input");
+    await r.sleep(800);
+    await r.move(".aw-qr-code", 700);
+    await r.sleep(800);
+    await r.move(".aw-qr-actions .primary", 700);
+    await r.sleep(1400);
+  },
+  "qr-scan": async (r) => {
+    await r.click("#w-scan");
+    await r.sleep(3800);
+    await r.move(".aw-qr-result button >> nth=0", 700).catch(() => {});
+    await r.sleep(1600);
+  },
+  "qr-bank": async (r) => {
+    await r.click("#w-bank");
+    await r.sleep(1500);
+    await r.move(".aw-qr ol", 800);
+    await r.sleep(1200);
+    await r.move(".aw-qr-status", 800);
+    await r.sleep(2000);
+  },
+  studio: async (r) => {
+    await r.click("#btn-studio");
+    await r.sleep(700);
+    await r.click(".aw-chip[data-v=atardecer]");
+    await r.sleep(900);
+    await r.click(".aw-chip[data-v=petalos]");
+    await r.sleep(900);
+    await r.click(".aw-tabs button[data-tab=ui]");
+    await r.sleep(600);
+    await r.click(".aw-dot >> nth=3");
+    await r.sleep(800);
+    await r.click(".aw-studio .aw-done");
+    await r.sleep(2600);
+  },
+});
+// En la grabación, un lector de QR simulado "lee" una invitación de ejemplo
+const FAKE_SCAN = `globalThis.BarcodeDetector = class { constructor() { this.n = 0; } async detect() { return ++this.n > 60 ? [{ rawValue: location.origin + "/?c=CCNZYPMRSWINOELDI2HGMJ5O3IVA5JW4MVQGJFT2PG3ZNDWUT6DFFSRS#/circulo" }] : []; } };`;
+const OUTNAME = { billetera: "wallet", aportar: "contribute", pozo: "payout", garantia: "guarantee", crear: "create", personalizar: "customize", simulador: "simulator", mapa: "map", pasaporte: "passport" };
 const PRE = {
+  "qr-invite": ["circulo", 5000],
+  "qr-receive": ["billetera", 3000],
+  "qr-scan": ["billetera", 3000],
+  "qr-bank": ["billetera", 3000],
+  studio: ["circulo", 5000],
   "ayni-contribute": ["ayni", 2500],
   "ayni-request": ["ayni", 2500],
   "ayni-vote": ["ayni", 2500],
@@ -242,6 +304,7 @@ const pick = process.argv.slice(2);
 for (const [id, fn] of Object.entries(TOPICS)) {
   if (pick.length && !pick.includes(id)) continue;
   const rec = await startRecording(id, { width: 1100, height: 660, scale: 1, out: "." });
+  if (id === "qr-scan") await rec.context.addInitScript(FAKE_SCAN);
   await rec.page.goto(BASE + "/#/inicio", { waitUntil: "load" });
   await rec.page.evaluate(() => {
     try {
@@ -259,11 +322,12 @@ for (const [id, fn] of Object.entries(TOPICS)) {
   } catch (e) {
     console.error(id, "falló:", e.message);
   }
+  const name = OUTNAME[id] || id;
   const mp4 = `./${id}.mp4`;
   const info = await rec.end(mp4);
   // WebM liviano para la web (sin audio) y un póster
-  spawnSync(ffmpeg, ["-y", "-hide_banner", "-loglevel", "error", "-i", mp4, "-vf", "fps=24,scale=720:-2:flags=lanczos", "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "42", "-row-mt", "1", "-an", `${OUT}/${id}.webm`], { stdio: "inherit" });
-  spawnSync(ffmpeg, ["-y", "-hide_banner", "-loglevel", "error", "-sseof", "-1.2", "-i", mp4, "-frames:v", "1", "-vf", "scale=720:-2", "-q:v", "5", `${OUT}/${id}.jpg`], { stdio: "inherit" });
+  spawnSync(ffmpeg, ["-y", "-hide_banner", "-loglevel", "error", "-i", mp4, "-vf", "fps=24,scale=720:-2:flags=lanczos", "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "42", "-row-mt", "1", "-an", `${OUT}/${name}.webm`], { stdio: "inherit" });
+  spawnSync(ffmpeg, ["-y", "-hide_banner", "-loglevel", "error", "-sseof", "-1.2", "-i", mp4, "-frames:v", "1", "-vf", "scale=720:-2", "-q:v", "5", `${OUT}/${name}.jpg`], { stdio: "inherit" });
   rmSync(mp4, { force: true });
-  console.log(id, `${info.seconds.toFixed(1)} s`, `${Math.round(statSync(`${OUT}/${id}.webm`).size / 1024)} kB`);
+  console.log(id, `${info.seconds.toFixed(1)} s`, `${Math.round(statSync(`${OUT}/${name}.webm`).size / 1024)} kB`);
 }

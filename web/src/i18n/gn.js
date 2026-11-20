@@ -11,6 +11,11 @@ const GN = {
   "Aportar": "Eme'ẽ", "Compartir enlace": "Emboja'o joajuha", "Cerrar": "Emboty", "Abrir": "Eipe'a",
   "Pasaporte": "Pasaporte", "Billetera": "Billetera digital",
   // Panel (textos que faltaban)
+  "🎨 Estudio": "🎨 Mbojeguaha",
+  "Invitar con QR": "Eguerohenói QR rupive",
+  "Recibir con QR": "Ehupyty QR rupive",
+  "Escanear QR": "Ehecha QR",
+  "Recargar con el QR de tu banco": "Emyenyhẽ nde banco QR rupive",
   "Este modo llega en la próxima versión.": "Este modo llega en la próxima versión.",
   "Probabilidades del círculo": "Probabilidades del círculo",
   "Monte Carlo con la confiabilidad de cada miembro (modelo Beta-Bernoulli) y las garantías depositadas.": "Monte Carlo con la confiabilidad de cada miembro (modelo Beta-Bernoulli) y las garantías depositadas.",

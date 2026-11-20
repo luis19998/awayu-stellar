@@ -11,6 +11,11 @@ const AY = {
   "Aportar": "Qullqi churaña", "Compartir enlace": "Chinuñapa jaljaña", "Cerrar": "Jist'antaña", "Abrir": "Jist'araña",
   "Pasaporte": "Pasaporte", "Billetera": "Billetera digital",
   // Panel (textos que faltaban)
+  "🎨 Estudio": "🎨 Suma lurawi",
+  "Invitar con QR": "QR ukamp jawsaña",
+  "Recibir con QR": "QR ukamp katuqaña",
+  "Escanear QR": "QR uñjaña",
+  "Recargar con el QR de tu banco": "Bancoman QR-pampi yapxataña",
   "Este modo llega en la próxima versión.": "Este modo llega en la próxima versión.",
   "Probabilidades del círculo": "Probabilidades del círculo",
   "Monte Carlo con la confiabilidad de cada miembro (modelo Beta-Bernoulli) y las garantías depositadas.": "Monte Carlo con la confiabilidad de cada miembro (modelo Beta-Bernoulli) y las garantías depositadas.",

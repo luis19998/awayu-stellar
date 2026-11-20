@@ -1,11 +1,22 @@
-.ia-dialog { max-width: min(92vw, 560px); border: 1px solid #9584b9; border-radius: 18px; padding: 1.4rem; color: #241a38; background: #fffaf3; box-shadow: 0 20px 80px #100a25aa; }
-.ia-dialog::backdrop { background: #100a25aa; }
+.ia-dialog { max-width: min(92vw, 560px); border: 1px solid var(--line, #ffffff30); border-radius: 20px; padding: 1.4rem; color: var(--ink, #fff); background: #1b1030; box-shadow: 0 24px 70px #000a; }
+.ia-dialog::backdrop { background: #08051099; backdrop-filter: blur(4px); }
+.ia-dialog a { color: var(--gold); }
 .ia-dialog menu { display: flex; justify-content: flex-end; gap: .6rem; padding: 0; }
-.ia-dialog button:disabled { opacity: .5; }
-.proactive-card { position: fixed; z-index: 58; right: 84px; bottom: 26px; width: min(320px, calc(100vw - 100px)); padding: 14px; border-radius: 16px; background: #fffaf3; color: #241a38; box-shadow: 0 8px 32px #100a2540; }
+.ia-dialog button { padding: 9px 15px; border-radius: 999px; font-weight: 700; cursor: pointer; }
+.ia-dialog button:disabled { opacity: .5; cursor: not-allowed; }
+/* Burbuja de consejos de Amawta: tarjeta oscura con acento, coherente con el tema */
+.proactive-card { position: fixed; z-index: 58; right: 84px; bottom: 26px; width: min(330px, calc(100vw - 100px)); padding: 14px 14px 12px; border-radius: 18px; background: linear-gradient(160deg, #2a1846, #1b1030); color: var(--ink, #fff); border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent); box-shadow: 0 14px 40px #000a; animation: aw-tip-in .35s ease-out; }
+.proactive-card::before { content: "✺ Amawta"; display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; font-weight: 800; }
 body[data-route="circulo"] .proactive-card { right: 452px; }
-.proactive-card p { margin: 0 0 10px; }
-.proactive-card button { margin-right: 6px; }
-.proactive-card .dismiss { float: right; }
+.proactive-card p { margin: 0 0 10px; font-size: 14px; line-height: 1.45; }
+.proactive-card button { margin: 0 6px 0 0; border: 1px solid var(--line, #ffffff30); background: #ffffff10; color: inherit; border-radius: 999px; padding: 6px 11px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.proactive-card button.ask { background: var(--gold); color: #1b1030; border-color: var(--gold); }
+.proactive-card button:hover { filter: brightness(1.12); }
+.proactive-card .dismiss { float: right; margin: -4px -4px 0 6px; width: 28px; height: 28px; padding: 0; font-size: 16px; }
+.proactive-card .mute { background: none; border: 0; color: var(--muted, #cfc6e0); text-decoration: underline; padding: 6px 2px; }
+@keyframes aw-tip-in { from { opacity: 0; transform: translateY(10px); } }
 @media(max-width:760px) { .proactive-card, body[data-route="circulo"] .proactive-card { right: 14px; bottom: 146px; width: min(320px, calc(100vw - 28px)); } }
 @media(prefers-reduced-motion:reduce) { .proactive-card { animation: none; scroll-behavior: auto; } }
+.consent-dialog ul { padding-inline-start: 20px; margin: 0 0 12px; display: grid; gap: 4px; }
+.consent-dialog label { display: flex; align-items: flex-start; gap: 10px; margin: 6px 0; font-size: 14px; cursor: pointer; }
+.consent-dialog label input { width: 18px; height: 18px; margin: 2px 0 0; flex: none; accent-color: var(--gold); }

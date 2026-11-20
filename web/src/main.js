@@ -735,6 +735,18 @@ function fillThemes() {
 }
 fillThemes();
 
+// Estudio de personalización (hora, clima, paleta propia, interfaz) e invitación por QR
+const studioCtx = () => ({ scene, applyPalette, basePalette: THEMES[themeId].palette, rebuild, setMuted: (m) => sfx.setMuted(m) });
+import("./custom/studio.js").then(({ loadStudio, applyScenePrefs }) => applyScenePrefs(loadStudio(), studioCtx()));
+$("#btn-studio").onclick = async () => {
+  const { openStudio } = await import("./custom/studio.js");
+  openStudio(getLang(), studioCtx());
+};
+$("#btn-invite").onclick = async () => {
+  const { openInvite } = await import("./qr/qr.js");
+  openInvite(circle?.contractId || "", getLang());
+};
+
 $("#btn-custom").onclick = () => {
   const f = $("#form-custom");
   fillThemes();

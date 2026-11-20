@@ -18,6 +18,11 @@ const PT = {
   "Finanzas comunitarias andinas en Stellar": "Finanças comunitárias andinas na Stellar",
   "Dinero": "Dinheiro", "dinero": "dinheiro", "Nombre del círculo": "Nome do círculo", "Departamento": "Departamento",
   // Panel (textos que faltaban)
+  "🎨 Estudio": "🎨 Estúdio",
+  "Invitar con QR": "Convidar com QR",
+  "Recibir con QR": "Receber com QR",
+  "Escanear QR": "Escanear QR",
+  "Recargar con el QR de tu banco": "Recarregar com o QR do seu banco",
   "Este modo llega en la próxima versión.": "Este modo chega na próxima versão.",
   "Probabilidades del círculo": "Probabilidades do círculo",
   "Monte Carlo con la confiabilidad de cada miembro (modelo Beta-Bernoulli) y las garantías depositadas.": "Monte Carlo com a confiabilidade de cada membro (modelo Beta-Bernoulli) e as garantias depositadas.",

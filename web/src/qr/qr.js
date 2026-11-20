@@ -22,6 +22,7 @@ const T = {
   receiveLead: { es: "Muestra este código: cualquier billetera Stellar compatible con SEP-7 (por ejemplo LOBSTR) lo escanea y te envía el pago.", en: "Show this code: any Stellar wallet that supports SEP-7 (for example LOBSTR) scans it and sends you the payment.", pt: "Mostre este código: qualquer carteira Stellar compatível com SEP-7 (por exemplo LOBSTR) o escaneia e envia o pagamento.", qu: "Kay QR-ta rikuchiy: SEP-7 nisqawan llamk'aq Stellar qullqi wayaqa (LOBSTR hina) qhawaspa qullqita kachamusunki.", ay: "Aka QR uñacht'ayma: SEP-7 apnaqir Stellar qullqi wayaqa (LOBSTR ukham) uñjasaw qullqi apayanmätam.", gn: "Ehechauka ko QR: oimeraẽ viru ryru Stellar SEP-7 reheguáva (LOBSTR ramo) ohecha ha omondo ndéve pe viru." },
   amount: { es: "Monto (opcional)", en: "Amount (optional)", pt: "Valor (opcional)", qu: "Qullqi (munaspaqa)", ay: "Qullqi (munasax)", gn: "Mboy (ndaha'éi tekotevẽ)" },
   asset: { es: "Moneda", en: "Asset", pt: "Moeda", qu: "Qullqi laya", ay: "Qullqi kasta", gn: "Viru" },
+  demoNote: { es: "Ejemplo con una cuenta de demostración de testnet. Conecta tu billetera para generar el tuyo.", en: "Example with a testnet demo account. Connect your wallet to create yours.", pt: "Exemplo com uma conta de demonstração da testnet. Conecte sua carteira para gerar o seu.", qu: "Testnet yachachiy cuentawan rikuchiy. Qullqi wayaqaykita tinkiy kikiykitaq ruranaykipaq.", ay: "Testnet uñacht'äwi cuentampi. Qullqi wayaqam chikt'ayam jumankir lurañataki.", gn: "Techapyrã peteĩ testnet cuenta ndive. Embojoaju nde viru ryru rejapo hag̃ua mba'e ndeguáva." },
   noAddress: { es: "Conecta tu billetera para generar tu QR de cobro.", en: "Connect your wallet to create your payment QR.", pt: "Conecte sua carteira para gerar seu QR de cobrança.", qu: "Qullqi wayaqaykita tinkiy QR-ykita ruranaykipaq.", ay: "Qullqi wayaqam chikt'ayam QR lurañataki.", gn: "Embojoaju nde viru ryru rejapo hag̃ua nde QR." },
   scan: { es: "Escanear QR", en: "Scan QR", pt: "Escanear QR", qu: "QR qhaway", ay: "QR uñjaña", gn: "Ehecha QR" },
   scanLead: { es: "Apunta la cámara a un QR de Awayu, a un pedido de pago de Stellar o a una dirección.", en: "Point the camera at an Awayu QR, a Stellar payment request or an address.", pt: "Aponte a câmera para um QR do Awayu, um pedido de pagamento Stellar ou um endereço.", qu: "Kamarata Awayu QR-man, Stellar mañakuyman utaq direccionman churay.", ay: "Cámara Awayu QR-ru, Stellar mayiwiru jan ukax direccionaru uñtayma.", gn: "Ehechauka cámara peteĩ Awayu QR, peteĩ Stellar pagorã jerure térã peteĩ dirección-pe." },
@@ -146,9 +147,13 @@ export function openInvite(contractId, lang = "es") {
   qrBlock(body, url, lang, { link: url });
 }
 
+// Cuenta de demostración de testnet (Ana, del despliegue de ejemplo) para mostrar el QR sin billetera
+export const DEMO_ADDRESS = "GC6YRXEASH7XBIRAUGT3VAGJ26K7U7B2MBDHTDP4WHTYU7YBZZMRSA7I";
+
 export function openReceive(address, lang = "es") {
   const { body } = dialog(lang, pick(T.receive, lang), pick(T.receiveLead, lang));
-  if (!address) { body.textContent = pick(T.noAddress, lang); return; }
+  const demo = !address;
+  if (demo) address = DEMO_ADDRESS;
   const form = document.createElement("div");
   form.className = "aw-qr-form";
   form.innerHTML = `<label><span></span><input type="number" min="0" step="any" inputmode="decimal"></label><label><span></span><select><option value="XLM">XLM</option><option value="USDC">USDC</option></select></label>`;
@@ -165,6 +170,12 @@ export function openReceive(address, lang = "es") {
   };
   form.addEventListener("input", draw);
   body.replaceChildren(form, out);
+  if (demo) {
+    const note = document.createElement("p");
+    note.className = "aw-qr-legal";
+    note.textContent = pick(T.demoNote, lang);
+    body.prepend(note);
+  }
   draw();
 }
 

@@ -10,6 +10,7 @@ import { structuredData } from "./seo.js";
 import { state } from "./state.js";
 
 initLang();
+import("./custom/studio.js").then(({ applyUiPrefs }) => applyUiPrefs());
 
 // Tras un despliegue nuevo, una pestaña vieja puede pedir archivos que ya no
 // existen: se recarga una sola vez para traer la versión actual.
@@ -33,7 +34,7 @@ try {
 // ---------- Ayuda: botón flotante con recorridos y mini tutoriales ----------
 const fab = document.querySelector("#help-fab");
 const helpMenu = document.querySelector("#help-menu");
-const TOPIC_ORDER = ["wallet", "contribute", "payout", "guarantee", "create", "customize", "simulator", "ayni-contribute", "ayni-request", "ayni-vote", "minka-fund", "minka-milestone", "alasitas-create", "alasitas-save", "live-mode", "map", "passport", "risk", "games", "amawta"];
+const TOPIC_ORDER = ["wallet", "contribute", "payout", "guarantee", "create", "studio", "qr-invite", "qr-receive", "qr-scan", "qr-bank", "customize", "simulator", "ayni-contribute", "ayni-request", "ayni-vote", "minka-fund", "minka-milestone", "alasitas-create", "alasitas-save", "live-mode", "map", "passport", "risk", "games", "amawta"];
 async function fillHelpMenu() {
   const { HELP_TOPICS, ROUTE_TOPICS } = await import("./guide/help.js");
   const lang = getLang();

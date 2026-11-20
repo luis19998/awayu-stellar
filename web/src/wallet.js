@@ -23,6 +23,11 @@ export async function connectFreighter() {
   return current;
 }
 
+/** Cliente de Pollar si hay clave publicable (para rampas y otras integraciones). */
+export function pollarClient() {
+  return getPollar();
+}
+
 async function getPollar() {
   if (!POLLAR_KEY) throw new Error("Falta VITE_POLLAR_KEY");
   if (pollar) return pollar;

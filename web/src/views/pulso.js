@@ -2,10 +2,11 @@ import { streamLedgers, DEFAULT_HORIZON } from "../horizon.js";
 import { pickLang } from "../i18n.js";
 
 const COPY = {
-  es: { title: "Pulso de Stellar", subtitle: "Ledgers de testnet cerrándose en vivo", rate: "Ledgers / min", average: "Tiempo medio entre ledgers", operations: "operaciones", transactions: "transacciones", unavailable: "Flujo en vivo no disponible · consultando cada 5 segundos" },
-  en: { title: "Stellar Pulse", subtitle: "Testnet ledgers, closing live", rate: "Ledgers / min", average: "Average close time", operations: "operations", transactions: "transactions", unavailable: "Live stream unavailable · checking every 5 seconds" },
+  es: { title: "Pulso de Stellar", listening: "Escuchando el próximo ledger…", subtitle: "Ledgers de testnet cerrándose en vivo", rate: "Ledgers / min", average: "Tiempo medio entre ledgers", operations: "operaciones", transactions: "transacciones", unavailable: "Flujo en vivo no disponible · consultando cada 5 segundos" },
+  en: { title: "Stellar Pulse", listening: "Listening for the next ledger…", subtitle: "Testnet ledgers, closing live", rate: "Ledgers / min", average: "Average close time", operations: "operations", transactions: "transactions", unavailable: "Live stream unavailable · checking every 5 seconds" },
 };
 for (const code of ["pt", "qu", "ay", "gn"]) COPY[code] = { ...COPY.es };
+COPY.pt = { ...COPY.es, title: "Pulso da Stellar", subtitle: "Ledgers da testnet fechando ao vivo", average: "Tempo médio entre ledgers", operations: "operações", transactions: "transações", listening: "Aguardando o próximo ledger…" };
 
 export function normalizeLedger(record = {}) {
   const rawTime = record.closed_at ?? record.closedAt ?? record.timestamp;
@@ -137,7 +138,7 @@ export function mount(container, { lang = "es" } = {}) {
     if (!ledgers.length) {
       context.textAlign = "center"; context.textBaseline = "middle";
       context.fillStyle = "rgba(255,255,255,.68)"; context.font = "14px system-ui";
-      context.fillText(english ? "Listening for the next ledger…" : "Escuchando el próximo ledger…", cx, cy);
+      context.fillText(copy.listening, cx, cy);
     }
     if (!reducedMotion?.matches) frame = requestAnimationFrame(draw);
   }

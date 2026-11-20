@@ -47,3 +47,14 @@ describe("t", () => {
     }
   });
 });
+
+import { readFileSync, readdirSync } from "node:fs";
+describe("vistas sin variables de idioma sueltas", () => {
+  it("ninguna vista usa una variable english sin declararla", () => {
+    const dir = new URL("../src/views/", import.meta.url);
+    for (const f of readdirSync(dir)) {
+      const s = readFileSync(new URL(f, dir), "utf8");
+      if (/\benglish\b/.test(s)) expect(s).toMatch(/\b(let|const|var)\s+english\b/);
+    }
+  });
+});

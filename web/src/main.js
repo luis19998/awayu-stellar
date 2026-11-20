@@ -20,7 +20,7 @@ import {
   buildRegisterXdr, buildJoinXdr, buildEndorseXdr,
   readBalance,
 } from "./chain.js";
-import { pollarEnabled, connectFreighter, connectPollar, sign, wallet } from "./wallet.js";
+import { pollarEnabled, connectFreighter, connectPollar, connectKit, sign, wallet } from "./wallet.js";
 
 const $ = (s) => document.querySelector(s);
 const fmt = (n, t) => `${n.toLocaleString("es-BO", { maximumFractionDigits: 2 })} ${t}`;
@@ -580,6 +580,8 @@ menu.querySelectorAll("button").forEach((b) => {
           }
           throw e;
         }
+      } else if (b.dataset.w === "kit") {
+        await onConnected(await connectKit());
       } else if (b.dataset.w === "google") {
         await onConnected(await connectPollar("google"));
       } else {

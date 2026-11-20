@@ -7,7 +7,41 @@ const POLLAR_KEY = import.meta.env.VITE_POLLAR_KEY;
 export const pollarEnabled = Boolean(POLLAR_KEY);
 
 let pollar = null;
-let current = null; // { kind: "freighter" | "pollar", address }
+let current = null; // { kind: "freighter" | "pollar" | "kit", address }
+let kit = null;
+
+/**
+ * Stellar Wallets Kit (el mismo que usa Stellar Lab): xBull, Albedo (sin instalar
+ * nada), LOBSTR, Rabet y Hana. Útil donde Freighter tiene restricciones regionales.
+ * Se carga solo cuando alguien elige "Otra billetera".
+ */
+async function getKit() {
+  if (kit) return kit;
+  const [{ StellarWalletsKit }, types, albedo, xbull, lobstr, rabet, hana] = await Promise.all([
+    import("@creit.tech/stellar-wallets-kit/sdk"),
+    import("@creit.tech/stellar-wallets-kit/types"),
+    import("@creit.tech/stellar-wallets-kit/modules/albedo"),
+    import("@creit.tech/stellar-wallets-kit/modules/xbull"),
+    import("@creit.tech/stellar-wallets-kit/modules/lobstr"),
+    import("@creit.tech/stellar-wallets-kit/modules/rabet"),
+    import("@creit.tech/stellar-wallets-kit/modules/hana"),
+  ]);
+  StellarWalletsKit.init({
+    modules: [new albedo.AlbedoModule(), new xbull.xBullModule(), new lobstr.LobstrModule(), new rabet.RabetModule(), new hana.HanaModule()],
+    network: types.Networks.TESTNET,
+    authModal: { showInstallLabel: true },
+  });
+  kit = StellarWalletsKit;
+  return kit;
+}
+
+export async function connectKit() {
+  const k = await getKit();
+  const { address } = await k.authModal();
+  if (!address) throw new Error("No se eligió ninguna billetera");
+  current = { kind: "kit", address };
+  return current;
+}
 
 export const wallet = () => current;
 
@@ -82,6 +116,11 @@ export async function sign(xdr) {
   if (!current) throw new Error("Conecta una billetera primero");
   const [{ ensureConsent }, { getLang }] = await Promise.all([import("./legal/consent.js"), import("./i18n.js")]);
   if (!(await ensureConsent(getLang()))) throw new Error("Debes aceptar los términos y el aviso de riesgos antes de firmar.");
+  if (current.kind === "kit") {
+    const k = await getKit();
+    const { signedTxXdr } = await k.signTransaction(xdr, { networkPassphrase: Networks.TESTNET, address: current.address });
+    return { signedXdr: signedTxXdr };
+  }
   if (current.kind === "freighter") {
     const f = await import("@stellar/freighter-api");
     const r = await f.signTransaction(xdr, { networkPassphrase: Networks.TESTNET, address: current.address });

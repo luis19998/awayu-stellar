@@ -51,7 +51,7 @@ jobs:
             h=$(sha256sum "$w" | cut -d' ' -f1)
             body=$(printf '{"repository":"%s","commitHash":"%s","jobId":"%s","runId":"%s","contractHash":"%s","packageName":"%s"}' "${{ github.server_url }}/${{ github.repository }}" "${{ github.sha }}" "${{ github.job }}" "${{ github.run_id }}" "$h" "$(basename "$w" .wasm)")
             echo "$body"
-            curl -s -X POST "https://api.stellar.expert/explorer/public/contract-validation/match" -H "Content-Type: application/json" -d "$body" --max-time 15 || true
+            for net in testnet public; do curl -s -X POST "https://api.stellar.expert/explorer/$net/contract-validation/match" -H "Content-Type: application/json" -d "$body" --max-time 15 || true; echo; done
             echo
           done
       - name: Desplegar y jugar rondas

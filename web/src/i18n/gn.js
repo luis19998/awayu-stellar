@@ -11,6 +11,12 @@ const GN = {
   "Aportar": "Eme'ẽ", "Compartir enlace": "Emboja'o joajuha", "Cerrar": "Emboty", "Abrir": "Eipe'a",
   "Pasaporte": "Pasaporte", "Billetera": "Billetera digital",
   // Panel (textos que faltaban)
+  "Probar en Stellar Lab": "Ehecha Stellar Lab-pe",
+  "Fondo de ayuda mutua abierto: unirse, aportar, pedir, votar y devolver.": "Fondo de ayuda mutua abierto: unirse, aportar, pedir, votar y devolver.",
+  "Proyectos con dinero liberado por hitos aprobados.": "Proyectos con dinero liberado por hitos aprobados.",
+  "Metas de ahorro con racha y fecha de desbloqueo.": "Metas de ahorro con racha y fecha de desbloqueo.",
+  "xBull, Albedo (sin instalar nada), LOBSTR, Rabet y Hana, el mismo kit que usa Stellar Lab.": "xBull, Albedo (sin instalar nada), LOBSTR, Rabet y Hana, el mismo kit que usa Stellar Lab.",
+  "Otra billetera (xBull, Albedo, LOBSTR…)": "Ambue viru ryru (xBull, Albedo, LOBSTR…)",
   "🎨 Estudio": "🎨 Mbojeguaha",
   "Invitar con QR": "Eguerohenói QR rupive",
   "Recibir con QR": "Ehupyty QR rupive",

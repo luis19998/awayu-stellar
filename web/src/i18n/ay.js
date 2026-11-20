@@ -11,6 +11,12 @@ const AY = {
   "Aportar": "Qullqi churaña", "Compartir enlace": "Chinuñapa jaljaña", "Cerrar": "Jist'antaña", "Abrir": "Jist'araña",
   "Pasaporte": "Pasaporte", "Billetera": "Billetera digital",
   // Panel (textos que faltaban)
+  "Probar en Stellar Lab": "Stellar Lab-na yant'aña",
+  "Fondo de ayuda mutua abierto: unirse, aportar, pedir, votar y devolver.": "Fondo de ayuda mutua abierto: unirse, aportar, pedir, votar y devolver.",
+  "Proyectos con dinero liberado por hitos aprobados.": "Proyectos con dinero liberado por hitos aprobados.",
+  "Metas de ahorro con racha y fecha de desbloqueo.": "Metas de ahorro con racha y fecha de desbloqueo.",
+  "xBull, Albedo (sin instalar nada), LOBSTR, Rabet y Hana, el mismo kit que usa Stellar Lab.": "xBull, Albedo (sin instalar nada), LOBSTR, Rabet y Hana, el mismo kit que usa Stellar Lab.",
+  "Otra billetera (xBull, Albedo, LOBSTR…)": "Yaqha qullqi wayaqa (xBull, Albedo, LOBSTR…)",
   "🎨 Estudio": "🎨 Suma lurawi",
   "Invitar con QR": "QR ukamp jawsaña",
   "Recibir con QR": "QR ukamp katuqaña",

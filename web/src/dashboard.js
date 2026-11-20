@@ -221,6 +221,10 @@ async function addHowto(view, id) {
   head.append(box);
 }
 
+/** Enlace al explorador de contratos de Stellar Lab: muestra la interfaz, el
+ *  almacenamiento, la verificación del build y permite invocar funciones. */
+export const labUrl = (id) => `https://lab.stellar.org/smart-contracts/contract-explorer?$=network$id=testnet&label=Testnet&horizonUrl=https:////horizon-testnet.stellar.org&rpcUrl=https:////soroban-testnet.stellar.org&passphrase=Test%20SDF%20Network%20/;%20September%202015;&smartContracts$explorer$contractId=${encodeURIComponent(id)};;`;
+
 const VIEWS = {
   ayni: (v, tk) => renderMode(v, tk, "ayni"),
   minka: (v, tk) => renderMode(v, tk, "minka"),
@@ -573,7 +577,11 @@ async function renderEcosystem(v) {
     ["horizon", "Horizon", "Saldos, pagos y ledgers en vivo para la billetera y el pulso.", "https://horizon-testnet.stellar.org"],
     ["pasanaku", "Contrato pasanaku v3", "Turno sorteado, aportes, pozo, garantías, alias y marcas.", dep?.contractId],
     ["registro", "Contrato registro", "Memoria colectiva: círculos, miembros, regiones y avales.", dep?.registro],
+    ["ayni", "Contrato ayni v2", "Fondo de ayuda mutua abierto: unirse, aportar, pedir, votar y devolver.", dep?.ayni?.contractId],
+    ["minka", "Contrato minka", "Proyectos con dinero liberado por hitos aprobados.", dep?.minka?.contractId],
+    ["alasitas", "Contrato alasitas", "Metas de ahorro con racha y fecha de desbloqueo.", dep?.alasitas?.contractId],
     ["freighter", "Freighter", "Billetera de extensión para firmar en testnet.", null],
+    ["swk", "Stellar Wallets Kit", "xBull, Albedo (sin instalar nada), LOBSTR, Rabet y Hana, el mismo kit que usa Stellar Lab.", null],
     ["pollar", "Pollar", "Login con Google o correo y billetera sin frase semilla; Earn (Blend/DeFindex) y rampas.", null],
     ["vaquita", "Vaquita · Blend · DeFindex", "Rendimiento del pozo mientras espera (vía Pollar Earn). En la demo, proyección.", null],
     ["trustless", "Trustless Work", "Escrow como servicio sobre Soroban para garantías por hitos (siguiente paso).", null],
@@ -582,7 +590,7 @@ async function renderEcosystem(v) {
   ];
   v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t("Ecosistema integrado")}</h1>
     <p>${t("Estado en vivo de cada pieza que usa Awayu.")}</p></header>
-    <div class="eco">${items.map(([id, name, desc, url]) => `<article class="eco-c" data-id="${id}"><i class="dot"></i><h3>${esc(name)}</h3><p>${esc(t(desc))}</p><small class="st">${t("comprobando…")}</small>${url && url.startsWith("C") ? `<a href="https://stellar.expert/explorer/testnet/contract/${esc(url)}" target="_blank" rel="noopener">${esc(url.slice(0, 6))}…${esc(url.slice(-4))} ↗</a>` : ""}</article>`).join("")}</div></section>`;
+    <div class="eco">${items.map(([id, name, desc, url]) => `<article class="eco-c" data-id="${id}"><i class="dot"></i><h3>${esc(name)}</h3><p>${esc(t(desc))}</p><small class="st">${t("comprobando…")}</small>${url && url.startsWith("C") ? `<a href="https://stellar.expert/explorer/testnet/contract/${esc(url)}" target="_blank" rel="noopener">${esc(url.slice(0, 6))}…${esc(url.slice(-4))} ↗</a> · <a href="${labUrl(url)}" target="_blank" rel="noopener">${t("Probar en Stellar Lab")} ↗</a>` : ""}</article>`).join("")}</div></section>`;
   const mark = (id, ok, text) => {
     const c = v.querySelector(`[data-id="${id}"]`);
     if (!c) return;
@@ -602,6 +610,17 @@ async function renderEcosystem(v) {
   if (dep?.contractId) chain.readCircle(dep).then((c) => mark("pasanaku", true, `v${c.version} · ${c.members.length} ${t("miembros")}`)).catch(() => mark("pasanaku", false, t("sin respuesta")));
   if (dep?.registro) chain.readRegistry(dep).then((l) => mark("registro", true, `${l.length} ${t("círculos")}`)).catch(() => mark("registro", false, t("sin respuesta")));
   else mark("registro", null, t("sin desplegar"));
+  // Ayni, Minka y Alasitas: se comprueba que respondan con su versión
+  for (const name of ["ayni", "minka", "alasitas"]) {
+    const id = dep?.[name]?.contractId;
+    if (!id) { mark(name, null, t("sin desplegar")); continue; }
+    import(`./modes/${name}.js`).then((m) =>
+      name === "ayni" ? m.readVersion(dep, id)
+        : name === "alasitas" ? m.readVersion({ ...dep, alasitasContractId: id })
+          : m.readMinka(dep, id).then(() => null))
+      .then((ver) => mark(name, true, ver ? `${t("en línea")} · v${ver}` : t("en línea"))).catch(() => mark(name, false, t("sin respuesta")));
+  }
+  mark("swk", true, t("configurado"));
   import("@stellar/freighter-api").then((f) => f.isConnected()).then((r) => mark("freighter", r?.isConnected ? true : null, r?.isConnected ? t("instalada") : t("no instalada en este navegador"))).catch(() => mark("freighter", null, t("no instalada en este navegador")));
   const { pollarEnabled } = await import("./wallet.js");
   mark("pollar", pollarEnabled ? true : null, pollarEnabled ? t("configurado") : t("falta la clave publicable"));

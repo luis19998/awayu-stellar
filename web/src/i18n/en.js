@@ -235,6 +235,12 @@ export default {
   "Ese aguayo es tu historial crediticio: portable, verificable, tuyo.":
     "That aguayo is your payment record: portable, verifiable, yours.",
   // Panel (textos que faltaban)
+  "Probar en Stellar Lab": "Try it in Stellar Lab",
+  "Fondo de ayuda mutua abierto: unirse, aportar, pedir, votar y devolver.": "Open mutual aid fund: join, contribute, ask, vote and repay.",
+  "Proyectos con dinero liberado por hitos aprobados.": "Projects with money released by approved milestones.",
+  "Metas de ahorro con racha y fecha de desbloqueo.": "Savings goals with streaks and an unlock date.",
+  "xBull, Albedo (sin instalar nada), LOBSTR, Rabet y Hana, el mismo kit que usa Stellar Lab.": "xBull, Albedo (nothing to install), LOBSTR, Rabet and Hana, the same kit Stellar Lab uses.",
+  "Otra billetera (xBull, Albedo, LOBSTR…)": "Other wallet (xBull, Albedo, LOBSTR…)",
   "🎨 Estudio": "🎨 Studio",
   "Invitar con QR": "Invite with QR",
   "Recibir con QR": "Receive with QR",

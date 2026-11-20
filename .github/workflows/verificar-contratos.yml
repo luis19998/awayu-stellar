@@ -1,0 +1,49 @@
+name: Verificar contratos
+# Compilación verificable (SEP-55) sin redesplegar: recompila los wasm con los mismos
+# metadatos (la compilación es reproducible: mismo código, mismo hash), firma su
+# procedencia, publica un release y pide a Stellar Expert que valide el código.
+# Stellar Lab y Stellar Expert muestran entonces el contrato con su código fuente.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust con destino wasm
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup target add wasm32v1-none
+      - uses: Swatinem/rust-cache@v2
+      - name: Stellar CLI
+        run: curl -sSL https://github.com/stellar/stellar-cli/releases/download/v30.0.1/stellar-cli-30.0.1-x86_64-unknown-linux-gnu.tar.gz | tar xz -C /usr/local/bin stellar
+      - name: Compilar wasm con metadatos de origen
+        run: stellar contract build --meta source_repo=github:${{ github.repository }} --meta home_domain=awayu-two.vercel.app
+      - name: Hashes
+        run: sha256sum target/wasm32v1-none/release/*.wasm | tee hashes.txt
+      - name: Atestar la procedencia de los wasm
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: target/wasm32v1-none/release/*.wasm
+      - name: Publicar release y pedir la validación del código
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="verificacion-${{ github.run_id }}"
+          gh release create "$TAG" target/wasm32v1-none/release/*.wasm hashes.txt --title "$TAG" --notes "Wasm reproducibles de Awayu (commit ${{ github.sha }}) con atestación de procedencia."
+          for w in target/wasm32v1-none/release/*.wasm; do
+            h=$(sha256sum "$w" | cut -d' ' -f1)
+            body=$(printf '{"repository":"%s","commitHash":"%s","jobId":"%s","runId":"%s","contractHash":"%s","packageName":"%s"}' "${{ github.server_url }}/${{ github.repository }}" "${{ github.sha }}" "${{ github.job }}" "${{ github.run_id }}" "$h" "$(basename "$w" .wasm)")
+            for net in testnet public; do
+              echo "$net $body"
+              curl -s -X POST "https://api.stellar.expert/explorer/$net/contract-validation/match" -H "Content-Type: application/json" -d "$body" --max-time 20 || true
+              echo
+            done
+          done

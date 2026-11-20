@@ -18,6 +18,12 @@ const PT = {
   "Finanzas comunitarias andinas en Stellar": "Finanças comunitárias andinas na Stellar",
   "Dinero": "Dinheiro", "dinero": "dinheiro", "Nombre del círculo": "Nome do círculo", "Departamento": "Departamento",
   // Panel (textos que faltaban)
+  "Probar en Stellar Lab": "Testar no Stellar Lab",
+  "Fondo de ayuda mutua abierto: unirse, aportar, pedir, votar y devolver.": "Fundo de ajuda mútua aberto: entrar, contribuir, pedir, votar e devolver.",
+  "Proyectos con dinero liberado por hitos aprobados.": "Projetos com dinheiro liberado por etapas aprovadas.",
+  "Metas de ahorro con racha y fecha de desbloqueo.": "Metas de poupança com sequência e data de liberação.",
+  "xBull, Albedo (sin instalar nada), LOBSTR, Rabet y Hana, el mismo kit que usa Stellar Lab.": "xBull, Albedo (sem instalar nada), LOBSTR, Rabet e Hana, o mesmo kit que o Stellar Lab usa.",
+  "Otra billetera (xBull, Albedo, LOBSTR…)": "Outra carteira (xBull, Albedo, LOBSTR…)",
   "🎨 Estudio": "🎨 Estúdio",
   "Invitar con QR": "Convidar com QR",
   "Recibir con QR": "Receber com QR",

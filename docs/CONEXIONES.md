@@ -1,50 +1,52 @@
-# Conexiones que tiene que hacer el equipo
+# Lo que tiene que hacer el equipo (paso a paso)
 
-Todo lo de esta lista necesita **tu cuenta, tu identidad o aceptar términos**, así que ni Claude Code ni Codex pueden hacerlo. Lo demás ya está construido y se activa solo cuando la clave existe. Orden sugerido por impacto en el hackatón.
+Todo lo de esta lista necesita **tu cuenta, tu identidad, tu permiso o aceptar términos**, así que ni Claude Code ni Codex pueden hacerlo por ti. Lo demás ya está construido y se activa solo cuando la clave existe. Nunca pegues claves en un chat: van directo en Vercel o en tu gestor de contraseñas.
 
-## 1. Despliegue automático en Vercel (5 min)
-1. Entrá a https://vercel.com, proyecto **awayu** → **Settings → Git**.
-2. **Connect Git Repository** → GitHub → instalá la app de Vercel y dale acceso a `luis19998/awayu-stellar`.
-3. Desde ahí, cada push a `main` publica solo y cada rama de Codex tiene su vista previa.
+Orden sugerido por impacto en el hackatón (cierre virtual: **22 de noviembre**).
 
-## 2. Amawta con Gemini (5 min)
-1. https://aistudio.google.com/apikey → **Create API key** (gratis).
-2. Vercel → proyecto **awayu** → **Settings → Environment Variables** → `GEMINI_API_KEY` = la clave (Production y Preview). Opcional: `GEMINI_MODEL` = `gemini-2.5-flash`.
-3. Pedime un redeploy (o hacé push). La sección Ecosistema mostrará "Gemini".
+## A. Obligatorio (20 min)
+1. **Inscripción al hackatón**: https://tally.so/r/2jj26A (equipo de 2 a 5 personas).
+2. **Inscripción a Commit del Mes**: https://tally.so/r/zEMQB1 con el repo público `https://github.com/luis19998/awayu-stellar`.
+3. **Video del pitch**: súbelo a YouTube como "No listado" (o a Drive con acceso "cualquiera con el enlace") desde `video/awayu-pitch.mp4` y guarda el enlace para el formulario.
+4. **Seguridad de Vercel**: en https://vercel.com/account/settings/authentication genera **nuevos códigos de recuperación** (los anteriores se compartieron en un chat) y guárdalos solo en tu gestor de contraseñas.
 
-## 3. Pollar: login con Google, Earn (Blend/DeFindex), swaps y rampas (15 min)
-1. https://dashboard.pollar.xyz → crear la aplicación **Awayu** en **testnet**.
-2. **Build → API Keys → Generate**: copiá la clave **publicable** (`pub_testnet_…`). La secreta (`sec_…`) no se usa en la web.
-3. **Build → Domains**: agregá `https://awayu-two.vercel.app`, `https://awayu-pasanaku.netlify.app` y `http://localhost:5180`.
-4. **Treasury → Funding Mode**: `IMMEDIATE` para la demo.
-5. Si aparece **Earn** en el panel, activá los proveedores Blend y DeFindex (así el rendimiento de Vaquita deja de ser una proyección).
-6. Vercel → Environment Variables → `VITE_POLLAR_KEY` = la clave publicable → redeploy.
+## B. Claves gratuitas que activan funciones (cada una 5 a 15 min)
+Todas se cargan en Vercel → proyecto **awayu** → **Settings → Environment Variables** (marca Production y Preview) y luego se vuelve a publicar.
 
-## 4. Freighter para probar la firma (3 min)
-1. Instalá https://www.freighter.app en Chrome, creá una billetera y elegí **Testnet** en la configuración.
-2. En Awayu: **Conectar billetera → Freighter**. La web fondea la cuenta con Friendbot sola.
+| Servicio | Para qué | Dónde se obtiene | Variable |
+|---|---|---|---|
+| **Gemini** (Google AI Studio) | Amawta responde con IA (sin clave usa respuestas locales) | https://aistudio.google.com/apikey → *Create API key* | `GEMINI_API_KEY` (opcional `GEMINI_MODEL=gemini-2.5-flash`) |
+| **Pollar** (testnet) | Ingreso con Google o correo, billetera embebida, swaps, Earn y rampas de dinero | https://dashboard.pollar.xyz → tu app → *Developers → API keys* → *Create key* → clave **publicable** `pub_testnet_…` | `VITE_POLLAR_KEY` |
+| **Trustless Work** (testnet) | Escrow regulado para garantías y Minka | https://dapp.trustlesswork.com → solicitar clave de testnet | `TRUSTLESS_API_KEY` (solo servidor) |
+| **Bot de Telegram** (vía n8n) | Recordatorios de cuotas | En Telegram habla con @BotFather → `/newbot` | credencial dentro de n8n |
+| **n8n** | Automatizaciones (recordatorios, resumen semanal) | https://n8n.io (prueba gratis) → importa los flujos de `automations/n8n/` | `N8N_WEBHOOK_URL` y `N8N_SECRET` |
 
-## 5. Trustless Work: escrow de garantías y Minka (10 min)
-1. https://dapp.trustlesswork.com (o la página **Request API Key** de su documentación) → pedí una clave de **testnet**.
-2. Vercel → Environment Variables → `TRUSTLESS_API_KEY` (va en el servidor, nunca en la web).
-3. Avisame para confirmar las rutas exactas de su API contra la documentación y activarlo.
+Pasos extra en Pollar (además de la clave):
+1. En *Domains* agrega `https://awayu-two.vercel.app` y `http://localhost:5180`.
+2. **Rampa en bolivianos con QR bancario**: en *Ramps → Providers* activa **Stereum** (compra con QR de banco en BOB y venta a cuenta bancaria). Con eso, el botón "Recargar con el QR de tu banco" muestra rutas reales en vez del aviso de demostración.
+3. **Verificación de identidad (KYC)**: en *Identity checks* activa **Didit** (proveedor integrado de Pollar). Las rampas la exigen por normativa.
+4. Si ves **Earn/Savings**, activa los proveedores para que el rendimiento deje de ser una proyección.
+5. Pollar cobra por créditos (100 créditos = 1 USD) según uso; en testnet se recarga con USDC de prueba. Revisa *Settings → Credits*.
 
-## 6. n8n: recordatorios por Telegram y correo (15 min)
-1. Creá una cuenta en https://n8n.io (prueba gratis) o usá tu instancia.
-2. Importá los tres flujos de `automations/n8n/` (menú **Import from file**).
-3. En el flujo de recordatorio, creá la credencial de Telegram con un bot de @BotFather y la de correo (Gmail).
-4. Copiá la URL del nodo **Webhook** (modo producción) → Vercel → `N8N_WEBHOOK_URL`; inventá un secreto largo → `N8N_SECRET` (el mismo valor en el nodo de verificación del flujo).
+## C. Servidores MCP para que Claude trabaje directo con los servicios
+- **Pollar MCP (oficial)**: en el panel de Pollar → menú de tu cuenta → *Personal Access Tokens* → crea un token `pat_…` con alcance a la app Awayu y fecha de vencimiento. Luego, en una terminal:
+  ```
+  claude mcp add --transport http pollar https://mcp.api.pollar.xyz/mcp --header "Authorization: Bearer pat_TU_TOKEN"
+  ```
+  Con eso Claude puede revisar la app, saldos, transacciones, dominios y activar activos de prueba (las acciones destructivas piden confirmación). No mueve fondos de usuarios.
+- **Stellar**: la Stellar Development Foundation no publica un MCP oficial; ofrece la **Stellar CLI para agentes** (ya la usamos) y la documentación para IA en https://developers.stellar.org/llms.txt. Hay MCP de la comunidad (por ejemplo `stellar-mcp` de syronlabs o `chronos-mcp`), pero piden claves secretas: no los recomiendo para cuentas reales.
+- **Vercel** (opcional): en claude.ai → *Settings → Connectors → Vercel* → da acceso al equipo **radar-tech** para que Claude lea registros y errores en vivo.
 
-## 7. Conector de Vercel para Claude (opcional, 2 min)
-En claude.ai → Settings → Connectors → Vercel → dar acceso al equipo **radar-tech**. Hoy Claude despliega con la CLI; con esto también podrá leer los registros de errores en vivo.
+## D. Pruebas que solo tú puedes hacer (30 min)
+1. **Freighter**: instala https://www.freighter.app en Chrome, crea una billetera, elige **Testnet**. En Awayu: *Conectar billetera → Freighter*, acepta los términos y prueba aportar en un círculo, apoyar una Minka y crear una meta de Alasitas.
+2. **Pagos por QR (SEP-7)**: instala LOBSTR en tu celular con una cuenta de testnet, abre *Billetera → Recibir con QR* en la computadora y escanéalo.
+3. **Voz de Amawta**: en Chrome abre *Amawta*, toca 🎤 y permite el micrófono; toca 🔊 para escuchar una respuesta.
+4. **Escanear**: en el celular abre *Escanear QR* y apunta a la invitación de un círculo.
 
-## 8. Inscripciones (obligatorio)
-- Hackatón Stellar Bolivia: https://tally.so/r/2jj26A (equipo de 2 a 5, **cierra el 22 de noviembre**).
-- Reto Commit del Mes: https://tally.so/r/zEMQB1 (repo público: `https://github.com/luis19998/awayu-stellar`).
-
-## 9. Seguridad de tus cuentas
-- Activá la verificación en dos pasos en Vercel: https://vercel.com/account/settings/authentication.
-- Los **códigos de recuperación** de Vercel van solo a tu gestor de contraseñas. Si los compartiste en algún chat, generá códigos nuevos.
+## E. Para operar con dinero real (después del hackatón)
+- **Banco Central de Bolivia – OpenBCB**: API gratuita para generar QR interoperables y recibir avisos de pago. Requiere habilitar una cuenta transitoria con el BCB: consulta la sección OpenBCB en https://www.bcb.gob.bo.
+- **Registro como proveedor de servicios de activos virtuales** ante la UIF, o alianza con una Empresa de Tecnología Financiera autorizada por ASFI. Ver la página *Legal y privacidad* de la web y consultar con un abogado.
+- **Auditoría** de los contratos antes de mainnet.
 
 ## Lo que NO hace falta comprar
-Nada. Testnet, Vercel Hobby, Netlify Free, Gemini (cuota gratuita), Pollar en testnet, Freighter y GitHub Actions son gratis. Un dominio propio es opcional.
+Nada para el hackatón: testnet, Vercel Hobby, Gemini (cuota gratuita), Pollar en testnet, Freighter, LOBSTR, GitHub Actions y la voz del navegador son gratis. Un dominio propio es opcional.

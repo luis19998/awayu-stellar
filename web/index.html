@@ -105,6 +105,7 @@
       <button id="btn-wallet" data-i18n>Conectar billetera</button>
       <span id="wallet-balance" class="balance" hidden></span>
       <div class="wallet-menu" id="wallet-menu" hidden>
+        <button data-w="burner"><span data-i18n>⚡ Cuenta de prueba instantánea</span><small data-i18n>Sin instalar nada · solo red de prueba · se borra al cerrar la pestaña</small></button>
         <button data-w="freighter">Freighter</button>
         <button data-w="kit" data-i18n>Otra billetera (xBull, Albedo, LOBSTR…)</button>
         <button data-w="google">Google (Pollar)</button>
@@ -198,8 +199,14 @@
             </select>
           </label>
         </div>
-        <label><span data-i18n>Cuota por ronda (XLM de testnet)</span>
-          <input name="amount" type="number" min="1" step="1" value="10" required />
+        <label><span data-i18n>Moneda de la cuota</span>
+          <select name="tokenChoice" id="create-token">
+            <option value="usdc" data-i18n>USDC de prueba (dólar digital, recomendado)</option>
+            <option value="xlm" data-i18n>XLM de testnet</option>
+          </select>
+        </label>
+        <label><span id="create-amount-label" data-i18n>Cuota por ronda (USDC)</span>
+          <input name="amount" type="number" min="0.1" step="0.1" value="10" required />
         </label>
         <label><span data-i18n>Duración de cada ronda</span>
           <select name="period">
@@ -213,10 +220,28 @@
         <label><span data-i18n>Miembros (una dirección G… por línea; la tuya ya está incluida)</span>
           <textarea name="members" rows="5" placeholder="GABC…&#10;GDEF…"></textarea>
         </label>
+        <div class="usdc-flow" id="create-usdc-flow" hidden>
+          <p id="create-usdc-message" class="muted"></p>
+          <p id="create-usdc-result"></p>
+          <button type="button" class="ghost" id="btn-create-usdc" data-i18n>Obtener USDC de prueba</button>
+        </div>
         <p class="err" id="create-err"></p>
         <menu>
           <button value="cancel" formnovalidate class="ghost" data-i18n>Cancelar</button>
           <button id="btn-create-go" value="ok" class="primary" data-i18n>Crear y firmar</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <dialog id="dlg-usdc">
+      <form method="dialog">
+        <h2 data-i18n>Obtener USDC de prueba</h2>
+        <p class="muted" data-i18n>Es dinero de prueba, sin valor real. Se cambiará XLM de testnet por USDC de prueba.</p>
+        <p id="usdc-flow-message" class="muted"></p>
+        <p id="usdc-flow-result"></p>
+        <menu>
+          <button value="cancel" class="ghost" data-i18n>Cancelar</button>
+          <button type="button" id="btn-usdc-get" class="primary" data-i18n>Obtener USDC de prueba</button>
         </menu>
       </form>
     </dialog>

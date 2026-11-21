@@ -18,9 +18,9 @@ import {
   loadDeployment, readCircle, explorerUrl, buildContributeXdr, buildPayoutXdr, buildCreateXdr,
   buildGuaranteeXdr, buildWithdrawXdr, buildAliasXdr, submit, ensureFunded, short, readActivity, txUrl,
   buildRegisterXdr, buildJoinXdr, buildEndorseXdr,
-  readBalance,
+  readBalance, USDC_TESTNET, usdcStatus, buildUsdcTrustlineXdr, buildBuyUsdcXdr,
 } from "./chain.js";
-import { pollarEnabled, connectFreighter, connectPollar, connectKit, disconnect as forgetWallet, sign, wallet } from "./wallet.js";
+import { pollarEnabled, connectFreighter, connectPollar, connectKit, connectBurner, disconnect as forgetWallet, sign, wallet } from "./wallet.js";
 
 const $ = (s) => document.querySelector(s);
 const fmt = (n, t) => `${n.toLocaleString("es-BO", { maximumFractionDigits: 2 })} ${t}`;
@@ -386,12 +386,21 @@ async function signAndSend(buildXdr, what) {
 }
 
 async function chainContribute() {
+  if (!(await ensureCircleUsdc(circle.amount))) return;
   const i = myIndex();
   await signAndSend(() => buildContributeXdr(deployment, circle.contractId, me()), "tu aporte");
   await animateContribution(i, ON_TIME);
   toast(t("Aporte registrado en la cadena ✓"));
   await refreshChain();
   await updateBalance();
+}
+
+async function ensureCircleUsdc(required) {
+  if (circle.tokenId !== USDC_TESTNET.sac) return true;
+  const status = await usdcStatus(me());
+  if (status.hasTrustline && status.balance >= required) return true;
+  showUsdcDialog(circle.amount * 2);
+  return false;
 }
 
 async function chainPayout() {
@@ -446,6 +455,7 @@ $("#btn-guarantee").onclick = () =>
       await signAndSend(() => buildWithdrawXdr(deployment, circle.contractId, me()), "el retiro de tu garantía");
       toast(t("Garantía devuelta a tu billetera ✓"));
     } else {
+      if (!(await ensureCircleUsdc(circle.amount))) return;
       await signAndSend(() => buildGuaranteeXdr(deployment, circle.contractId, me()), "tu garantía");
       toast(t("Garantía depositada: si un día no puedes pagar, cubre tu cuota ✓"));
     }
@@ -470,6 +480,7 @@ async function openTestnet(contractId) {
   else url.searchParams.delete("c");
   history.replaceState(null, "", url);
   toast(t("Datos reales del contrato en testnet"));
+  await updateBalance();
 }
 
 async function refreshChain(full = false) {
@@ -505,6 +516,7 @@ document.querySelectorAll(".modes button").forEach((b) => {
     rebuild();
     history.replaceState(null, "", location.pathname);
     toast(t("Modo demo"));
+    updateBalance();
   };
 });
 
@@ -543,7 +555,9 @@ async function onConnected(w) {
   menu.hidden = true;
   const btn = $("#btn-wallet");
   btn.removeAttribute("data-i18n");
-  btn.textContent = `${w.kind === "pollar" ? "Pollar" : w.kind === "kit" ? t("Billetera") : "Freighter"} · ${short(w.address)}`;
+  btn.textContent = w.kind === "burner"
+    ? `${t("Cuenta de prueba")} · G…${w.address.slice(-4)}`
+    : `${w.kind === "pollar" ? "Pollar" : w.kind === "kit" ? t("Billetera") : "Freighter"} · ${short(w.address)}`;
   btn.classList.add("on");
   deployment ??= await loadDeployment();
   if (deployment && (await ensureFunded(deployment, w.address))) toast(t("Cuenta de testnet fondeada con Friendbot"));
@@ -570,7 +584,9 @@ async function updateBalance() {
 menu.querySelectorAll("button").forEach((b) => {
   b.onclick = () =>
     run(async () => {
-      if (b.dataset.w === "freighter") {
+      if (b.dataset.w === "burner") {
+        await onConnected(await connectBurner());
+      } else if (b.dataset.w === "freighter") {
         try {
           await onConnected(await connectFreighter());
         } catch (e) {
@@ -594,12 +610,111 @@ menu.querySelectorAll("button").forEach((b) => {
 // ---------- Crear un pasanaku ----------
 
 const dlg = $("#dlg-create");
+const tokenSelect = $("#create-token");
+const amountInput = $("#form-create [name=amount]");
+const amountLabel = $("#create-amount-label");
+const createUsdcFlow = $("#create-usdc-flow");
+const createUsdcMessage = $("#create-usdc-message");
+const createUsdcResult = $("#create-usdc-result");
+const createUsdcButton = $("#btn-create-usdc");
+const createError = $("#create-err");
+let pendingCreate = null;
+let usdcFundingAmount = 20;
+
+function updateCreateTokenLabel() {
+  const usdc = tokenSelect.value === "usdc";
+  amountLabel.textContent = t(usdc ? "Cuota por ronda (USDC)" : "Cuota por ronda (XLM de testnet)");
+  amountInput.min = usdc ? "0.1" : "1";
+  amountInput.step = usdc ? "0.1" : "1";
+}
+tokenSelect.addEventListener("change", () => {
+  updateCreateTokenLabel();
+  if (tokenSelect.value !== "usdc") createUsdcFlow.hidden = true;
+});
+
+function transactionLinks(results) {
+  return results.filter((item) => item?.hash).map((item) =>
+    `<a href="${txUrl(item.hash)}" target="_blank" rel="noopener">${t(item.kind === "trustline" ? "Ver línea de confianza" : "Ver cambio USDC")} ↗</a>`
+  ).join(" · ");
+}
+
+async function acquireTestUsdc(amount) {
+  const txs = [];
+  const status = await usdcStatus(me());
+  if (!status.hasTrustline) {
+    txs.push({ ...(await signAndSend(() => buildUsdcTrustlineXdr(me()), "la línea de confianza USDC")), kind: "trustline" });
+  }
+  txs.push({ ...(await signAndSend(() => buildBuyUsdcXdr(me(), amount), "el cambio a USDC de prueba")), kind: "swap" });
+  await updateBalance();
+  return txs;
+}
+
+function showUsdcDialog(amount) {
+  usdcFundingAmount = amount;
+  $("#usdc-flow-message").textContent = t("Obtener {amount} USDC de prueba para continuar.", { amount: amount.toLocaleString("es-BO", { maximumFractionDigits: 2 }) });
+  $("#usdc-flow-result").textContent = "";
+  $("#btn-usdc-get").hidden = false;
+  $("#dlg-usdc").showModal();
+}
+
+$("#btn-usdc-get").onclick = () => run(async () => {
+  const button = $("#btn-usdc-get");
+  button.disabled = true;
+  try {
+    const txs = await acquireTestUsdc(usdcFundingAmount);
+    $("#usdc-flow-result").innerHTML = transactionLinks(txs);
+    $("#usdc-flow-message").textContent = t("USDC de prueba recibido. Puedes continuar.");
+    button.hidden = true;
+  } finally { button.disabled = false; }
+});
+
+async function createCircle(data) {
+  dlg.close();
+  deployment ??= await loadDeployment();
+  for (const a of data.members) await ensureFunded(deployment, a).catch(() => {});
+  const res = await signAndSend(() => buildCreateXdr(deployment, me(), {
+    ...data,
+    token: data.tokenChoice === "usdc" ? USDC_TESTNET.sac : deployment.token,
+  }), "el nuevo círculo");
+  const id = String(res.value);
+  saveCircle(id);
+  if (deployment.registro) {
+    try {
+      await signAndSend(() => buildRegisterXdr(deployment, me(), id, data.cname, data.region), "el registro del círculo");
+      await signAndSend(() => buildJoinXdr(deployment, me(), id), "tu pasaporte");
+    } catch (e) {
+      toast(t("El círculo se creó, pero no se pudo registrar: {why}", { why: friendly(e) }), 5000);
+    }
+  }
+  toast(t("¡Pasanaku creado! Comparte el enlace con los miembros"));
+  await openTestnet(id);
+}
+
+createUsdcButton.onclick = () => run(async () => {
+  createUsdcButton.disabled = true;
+  createUsdcMessage.textContent = t("Primero se firmará la línea de confianza, si hace falta, y luego el cambio de XLM a USDC.");
+  createUsdcResult.textContent = "";
+  try {
+    const txs = await acquireTestUsdc(pendingCreate.amount * 2);
+    createUsdcResult.innerHTML = transactionLinks(txs);
+    createUsdcMessage.textContent = t("USDC de prueba listo. Selecciona Crear y firmar para continuar.");
+    createUsdcButton.hidden = true;
+  } catch (error) {
+    createUsdcMessage.textContent = t("No se pudieron obtener los USDC de prueba: {why}", { why: friendly(error) });
+    throw error;
+  } finally { createUsdcButton.disabled = false; }
+});
+
 $("#btn-create").onclick = () => {
   if (!me()) {
     menu.hidden = false;
     return toast(t("Primero conecta tu billetera"));
   }
-  $("#create-err").textContent = "";
+  createError.textContent = "";
+  createUsdcFlow.hidden = true;
+  createUsdcResult.textContent = "";
+  createUsdcButton.hidden = false;
+  updateCreateTokenLabel();
   applyStatic(dlg);
   dlg.showModal();
 };
@@ -610,7 +725,7 @@ $("#form-create").addEventListener("submit", (ev) => {
   const f = new FormData(ev.target);
   const others = String(f.get("members")).split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
   const bad = others.find((a) => !StrKey.isValidEd25519PublicKey(a));
-  const err = $("#create-err");
+  const err = createError;
   if (bad) return void (err.textContent = `Dirección inválida: ${short(bad)}`);
   const members = [...new Set([me(), ...others])];
   if (members.length < 2) return void (err.textContent = "Hacen falta al menos 2 miembros");
@@ -618,24 +733,21 @@ $("#form-create").addEventListener("submit", (ev) => {
   const periodSeconds = Number(f.get("period"));
   const cname = String(f.get("cname") || "").trim().slice(0, 40) || "Pasanaku";
   const region = String(f.get("region") || "otro");
-  dlg.close();
+  const tokenChoice = String(f.get("tokenChoice") || "usdc");
+  pendingCreate = { members, amount, periodSeconds, cname, region, tokenChoice };
   run(async () => {
     deployment ??= await loadDeployment();
-    for (const a of members) await ensureFunded(deployment, a).catch(() => {});
-    const res = await signAndSend(() => buildCreateXdr(deployment, me(), { members, amount, periodSeconds }), "el nuevo círculo");
-    const id = String(res.value);
-    saveCircle(id);
-    // Memoria colectiva: el círculo queda en el registro on-chain y el creador se suma a su pasaporte
-    if (deployment.registro) {
-      try {
-        await signAndSend(() => buildRegisterXdr(deployment, me(), id, cname, region), "el registro del círculo");
-        await signAndSend(() => buildJoinXdr(deployment, me(), id), "tu pasaporte");
-      } catch (e) {
-        toast(t("El círculo se creó, pero no se pudo registrar: {why}", { why: friendly(e) }), 5000);
+    if (tokenChoice === "usdc") {
+      const status = await usdcStatus(me());
+      if (!status.hasTrustline || status.balance < amount) {
+        createUsdcFlow.hidden = false;
+        createUsdcButton.hidden = false;
+        createUsdcMessage.textContent = t("Para crear el círculo con USDC, obtén {amount} USDC de prueba para la primera cuota y la garantía.", { amount: (amount * 2).toLocaleString("es-BO", { maximumFractionDigits: 2 }) });
+        createUsdcResult.textContent = "";
+        return;
       }
     }
-    toast(t("¡Pasanaku creado! Comparte el enlace con los miembros"));
-    await openTestnet(id);
+    await createCircle(pendingCreate);
   });
 });
 
@@ -1019,6 +1131,12 @@ export const circleApp = {
     menu.hidden = false;
     $("#btn-wallet").focus();
   },
+  connectBurner: async () => {
+    let connected = null;
+    await run(async () => { connected = await connectBurner(); await onConnected(connected); });
+    return connected;
+  },
+  getTestUsdc: (amount = 20) => showUsdcDialog(amount),
   // Acciones que pide el panel de configuración (⚙)
   startTour: startFirstTour,
   pickFigure: (opts) => openFigurePicker(selected >= 0 ? selected : 0, opts),

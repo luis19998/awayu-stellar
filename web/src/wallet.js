@@ -1,14 +1,33 @@
 // Billeteras: Freighter (extensión) siempre; Pollar (Google o correo, sin
 // frase semilla) solo si existe VITE_POLLAR_KEY, la clave publicable
 // pub_testnet_… de dashboard.pollar.xyz.
-import { Networks } from "@stellar/stellar-sdk";
+import { Keypair, Networks, TransactionBuilder } from "@stellar/stellar-sdk";
+import { t } from "./i18n.js";
 
 const POLLAR_KEY = import.meta.env.VITE_POLLAR_KEY;
 export const pollarEnabled = Boolean(POLLAR_KEY);
 
 let pollar = null;
-let current = null; // { kind: "freighter" | "pollar" | "kit", address }
+let current = null; // { kind: "freighter" | "pollar" | "kit" | "burner", address }
 let kit = null;
+let burnerKeypair = null;
+
+/** Cuenta efímera de prueba: su secreto solo vive en memoria y sessionStorage. */
+export async function connectBurner() {
+  let stored = null;
+  try { stored = sessionStorage.getItem("awayu.burner"); } catch {}
+  try {
+    burnerKeypair = stored ? Keypair.fromSecret(stored) : Keypair.random();
+  } catch {
+    burnerKeypair = Keypair.random();
+  }
+  if (!stored || burnerKeypair.secret() !== stored) {
+    try { sessionStorage.setItem("awayu.burner", burnerKeypair.secret()); }
+    catch { burnerKeypair = null; throw new Error(t("No se pudo guardar la cuenta de prueba en esta pestaña")); }
+  }
+  current = { kind: "burner", address: burnerKeypair.publicKey() };
+  return current;
+}
 
 /**
  * Stellar Wallets Kit (el mismo que usa Stellar Lab): xBull, Albedo (sin instalar
@@ -47,6 +66,8 @@ export const wallet = () => current;
 
 /** Olvida la billetera conectada en esta sesión (no toca nada en la cadena). */
 export function disconnect() {
+  try { sessionStorage.removeItem("awayu.burner"); } catch {}
+  burnerKeypair = null;
   current = null;
 }
 
@@ -121,6 +142,12 @@ export async function sign(xdr) {
   if (!current) throw new Error("Conecta una billetera primero");
   const [{ ensureConsent }, { getLang }] = await Promise.all([import("./legal/consent.js"), import("./i18n.js")]);
   if (!(await ensureConsent(getLang()))) throw new Error("Debes aceptar los términos y el aviso de riesgos antes de firmar.");
+  if (current.kind === "burner") {
+    if (!burnerKeypair || burnerKeypair.publicKey() !== current.address) throw new Error(t("Conecta de nuevo la cuenta de prueba"));
+    const tx = TransactionBuilder.fromXDR(xdr, Networks.TESTNET);
+    tx.sign(burnerKeypair);
+    return { signedXdr: tx.toXDR() };
+  }
   if (current.kind === "kit") {
     const k = await getKit();
     const { signedTxXdr } = await k.signTransaction(xdr, { networkPassphrase: Networks.TESTNET, address: current.address });

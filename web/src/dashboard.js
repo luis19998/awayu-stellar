@@ -413,7 +413,7 @@ async function renderWallet(v, tk) {
   const addr = state.address;
   v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t("Tu billetera y tu pasaporte")}</h1>
     <p>${addr ? t("Datos en vivo de Stellar testnet (Horizon) y tu historial en todos los círculos del registro.") : t("Modo demo: conecta tu billetera para ver tus datos reales.")}</p>
-    ${addr ? "" : `<button class="btn primary" id="w-connect">${t("Conectar billetera")}</button>`}
+    ${addr ? `<button class="btn primary" id="w-usdc">💵 ${t("Obtener USDC de prueba")}</button><p class="muted">${t("Es dinero de prueba, sin valor real.")}</p>` : `<button class="btn primary" id="w-connect">${t("Conectar billetera")}</button>`}
     <div class="qr-row"><button class="btn" id="w-receive">▣ ${t("Recibir con QR")}</button><button class="btn" id="w-scan">⌖ ${t("Escanear QR")}</button><button class="btn" id="w-bank">🏦 ${t("Recargar con el QR de tu banco")}</button></div></header>
     <div class="grid2"><div class="stage-box tall" id="wallet-box"></div><div id="passport" class="passport"></div></div>
     <section class="planet-legend" aria-labelledby="pl-title"><h2 id="pl-title">${t("Cómo leer tu planeta")}</h2><ul>
@@ -424,6 +424,7 @@ async function renderWallet(v, tk) {
       <li><i class="pl pl-comet"></i><b>${t("Los cometas")}</b><span>${t("Tus pagos recientes: los que llegan vienen por la izquierda; los que envías salen por la derecha.")}</span></li>
     </ul><p class="muted">${t("El pasaporte de al lado resume tus marcas en todos los círculos donde te uniste: es evidencia de pagos, no una aprobación de crédito.")}</p></section></section>`;
   $("#w-connect")?.addEventListener("click", () => hooks.connectWallet?.());
+  $("#w-usdc")?.addEventListener("click", () => hooks.getTestUsdc?.(20));
   const qr = () => import("./qr/qr.js");
   $("#w-receive").onclick = async () => (await qr()).openReceive(state.address, getLang());
   $("#w-scan").onclick = async () => (await qr()).openScanner(getLang(), { onCircle: (id) => hooks.openCircle?.(id) });

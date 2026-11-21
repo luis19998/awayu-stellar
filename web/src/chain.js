@@ -3,8 +3,10 @@
 import {
   Account,
   Address,
+  Asset,
   BASE_FEE,
   Contract,
+  Horizon,
   Networks,
   Operation,
   TransactionBuilder,
@@ -14,6 +16,7 @@ import {
   xdr,
 } from "@stellar/stellar-sdk";
 import { Buffer } from "buffer";
+import { t } from "./i18n.js";
 
 // Cuenta nula: la simulación no verifica la secuencia de la cuenta de origen.
 const NULL_ACCOUNT = "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF";
@@ -27,6 +30,37 @@ const DEFAULT = {
   token: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
   tokenSymbol: "XLM",
 };
+
+export const USDC_TESTNET = {
+  code: "USDC",
+  issuer: "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
+  sac: "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA",
+};
+
+const HORIZON_TESTNET = "https://horizon-testnet.stellar.org";
+const horizonFor = () => new Horizon.Server(HORIZON_TESTNET);
+
+export function tokenSymbolOf(tokenId) {
+  if (!tokenId || tokenId === DEFAULT.token) return "XLM";
+  if (tokenId === USDC_TESTNET.sac) return "USDC";
+  return "token";
+}
+
+/** Horizon route parsing is kept pure so it can be tested without network access. */
+export function parseStrictReceivePaths(payload) {
+  const records = Array.isArray(payload) ? payload : payload?._embedded?.records || payload?.paths || [];
+  return records
+    .filter((route) => Number.isFinite(Number(route?.source_amount)) && Number(route.source_amount) > 0)
+    .map((route) => ({ ...route, sourceAmount: Number(route.source_amount) }));
+}
+
+export function bestStrictReceivePath(payload) {
+  return parseStrictReceivePaths(payload).sort((a, b) => a.sourceAmount - b.sourceAmount)[0] || null;
+}
+
+export function roundSendMax(sourceAmount) {
+  return Number((Number(sourceAmount) * 1.05).toFixed(7));
+}
 
 export async function loadDeployment() {
   try {
@@ -87,7 +121,7 @@ export async function readCircle(dep, contractId = dep.contractId, names = {}) {
   });
   return {
     mode: "testnet",
-    token: String(cfg.token) === DEFAULT.token ? "XLM" : dep.tokenSymbol || "token",
+    token: tokenSymbolOf(String(cfg.token)),
     tokenId: String(cfg.token),
     amount: Number(cfg.amount) / DECIMALS,
     periodDays: Number(cfg.period) / 86400,
@@ -156,7 +190,17 @@ export async function wasmHashOf(dep, contractId = dep.contractId) {
 }
 
 /** Despliega un círculo nuevo desde el wasm ya instalado, con constructor. */
-export async function buildCreateXdr(dep, creator, { members, amount, periodSeconds }) {
+export function createConstructorArgs(dep, creator, { members, amount, periodSeconds, token }) {
+  return [
+    new Address(creator).toScVal(),
+    new Address(token || dep.token).toScVal(),
+    nativeToScVal(BigInt(Math.round(amount * DECIMALS)), { type: "i128" }),
+    nativeToScVal(BigInt(periodSeconds), { type: "u64" }),
+    xdr.ScVal.scvVec(members.map((a) => new Address(a).toScVal())),
+  ];
+}
+
+export async function buildCreateXdr(dep, creator, { members, amount, periodSeconds, token }) {
   const wasmHash = await wasmHashOf(dep);
   const salt = new Uint8Array(32);
   crypto.getRandomValues(salt);
@@ -164,15 +208,62 @@ export async function buildCreateXdr(dep, creator, { members, amount, periodSeco
     address: new Address(creator),
     wasmHash,
     salt: Buffer.from(salt),
-    constructorArgs: [
-      new Address(creator).toScVal(),
-      new Address(dep.token).toScVal(),
-      nativeToScVal(BigInt(Math.round(amount * DECIMALS)), { type: "i128" }),
-      nativeToScVal(BigInt(periodSeconds), { type: "u64" }),
-      xdr.ScVal.scvVec(members.map((a) => new Address(a).toScVal())),
-    ],
+    constructorArgs: createConstructorArgs(dep, creator, { members, amount, periodSeconds, token }),
   });
   return prepare(dep, creator, op);
+}
+
+/** Lee si una cuenta tiene trustline de USDC de testnet y su saldo. */
+export async function usdcStatus(address) {
+  const response = await fetch(`${HORIZON_TESTNET}/accounts/${encodeURIComponent(address)}`, { headers: { Accept: "application/json" } });
+  if (response.status === 404) return { hasTrustline: false, balance: 0 };
+  if (!response.ok) throw new Error(t("No se pudo consultar el saldo USDC en Horizon"));
+  const account = await response.json();
+  const balance = (account.balances || []).find((item) => item.asset_code === USDC_TESTNET.code && item.asset_issuer === USDC_TESTNET.issuer);
+  return { hasTrustline: Boolean(balance), balance: Number(balance?.balance || 0) };
+}
+
+/** Arma una transacción clásica para crear la trustline de USDC. */
+export async function buildUsdcTrustlineXdr(address) {
+  const account = await horizonFor().loadAccount(address);
+  return new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: PASSPHRASE })
+    .addOperation(Operation.changeTrust({ asset: new Asset(USDC_TESTNET.code, USDC_TESTNET.issuer) }))
+    .setTimeout(120)
+    .build()
+    .toXDR();
+}
+
+/** Arma el cambio XLM→USDC por la ruta de menor gasto en XLM. */
+export async function buildBuyUsdcXdr(address, usdcAmount) {
+  const amount = Number(usdcAmount);
+  if (!Number.isFinite(amount) || amount <= 0) throw new Error(t("Indica una cantidad válida de USDC de prueba"));
+  const query = new URLSearchParams({
+    source_assets: "native",
+    destination_asset_type: "credit_alphanum4",
+    destination_asset_code: USDC_TESTNET.code,
+    destination_asset_issuer: USDC_TESTNET.issuer,
+    destination_amount: amount.toFixed(7),
+  });
+  const response = await fetch(`${HORIZON_TESTNET}/paths/strict-receive?${query}`);
+  if (!response.ok) throw new Error(t("No se pudo buscar una ruta de cambio a USDC de prueba"));
+  const route = bestStrictReceivePath(await response.json());
+  if (!route) throw new Error(t("No hay liquidez de USDC de prueba en este momento; usa XLM de testnet"));
+  const account = await horizonFor().loadAccount(address);
+  const path = (route.path || []).map((item) => item.asset_type === "native"
+    ? Asset.native()
+    : new Asset(item.asset_code, item.asset_issuer));
+  return new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: PASSPHRASE })
+    .addOperation(Operation.pathPaymentStrictReceive({
+      sendAsset: Asset.native(),
+      sendMax: roundSendMax(route.sourceAmount).toFixed(7),
+      destination: address,
+      destAsset: new Asset(USDC_TESTNET.code, USDC_TESTNET.issuer),
+      destAmount: amount.toFixed(7),
+      path,
+    }))
+    .setTimeout(120)
+    .build()
+    .toXDR();
 }
 
 /** Envía una transacción firmada y espera el resultado. Devuelve el valor de retorno. */
@@ -205,11 +296,30 @@ const tell = (detail) => {
   } catch {}
 };
 
+async function waitForHorizonTransaction(hash, attempts = 30) {
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    const response = await fetch(`${HORIZON_TESTNET}/transactions/${encodeURIComponent(hash)}`, { headers: { Accept: "application/json" } });
+    if (response.ok) return response.json();
+    if (response.status !== 404) throw new Error(t("Horizon no pudo confirmar la transacción clásica"));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+  throw new Error(t("La transacción clásica sigue pendiente en Horizon; vuelve a consultar su estado"));
+}
+
 export async function submit(dep, { signedXdr, hash }) {
   const server = serverFor(dep);
   const call = signedXdr ? describeCall(signedXdr) : {};
   if (signedXdr) {
-    const sent = await server.sendTransaction(TransactionBuilder.fromXDR(signedXdr, PASSPHRASE));
+    const tx = TransactionBuilder.fromXDR(signedXdr, PASSPHRASE);
+    const classic = tx.operations.every((op) => op.type !== "invokeHostFunction" && op.type !== "createContract");
+    if (classic) {
+      const sent = await horizonFor().submitTransaction(tx);
+      hash = sent.hash || tx.hash().toString("hex");
+      await waitForHorizonTransaction(hash);
+      tell({ ...call, hash, status: "confirmada" });
+      return { hash, value: null };
+    }
+    const sent = await server.sendTransaction(tx);
     if (sent.status === "ERROR") {
       tell({ ...call, status: "rechazada" });
       throw new Error("La red rechazó la transacción");

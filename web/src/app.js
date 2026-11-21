@@ -8,8 +8,11 @@ import { getLang, initLang, pickLang, t } from "./i18n.js";
 import { initDashboard } from "./dashboard.js";
 import { structuredData } from "./seo.js";
 import { state } from "./state.js";
+import { mountSettings } from "./settings/panel.js";
 
 initLang();
+state.lang = getLang();
+mountSettings();
 import("./custom/studio.js").then(({ applyUiPrefs }) => applyUiPrefs());
 
 // Tras un despliegue nuevo, una pestaña vieja puede pedir archivos que ya no

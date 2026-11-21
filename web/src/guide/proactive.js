@@ -42,11 +42,23 @@ export function mountProactive({ state, getLang = () => "es" }) {
     card.hidden = false;
     card.focus({ preventScroll: true });
     card.querySelector(".dismiss").onclick = () => { card.hidden = true; };
-    card.querySelector(".mute").onclick = () => { dismissed = true; try { localStorage.setItem("awayu.proactive.muted", "1"); } catch {} card.hidden = true; };
+    card.querySelector(".mute").onclick = () => {
+      dismissed = true;
+      try { localStorage.setItem("awayu.proactive.muted", "1"); } catch {}
+      card.hidden = true;
+      dispatchEvent(new CustomEvent("awayu:proactive-muted", { detail: { muted: true, source: "amawta" } }));
+    };
     card.querySelector(".voice").onclick = async () => (await import("./voice.js")).speak(next.text, getLang());
     card.querySelector(".ask").onclick = () => { sessionStorage.setItem("awayu.amawta.ask", next.ask); if (route === "amawta") { const input = document.querySelector('#view [name="q"]'); const form = document.querySelector("#view #ask"); if (input && form) { input.value = next.ask; form.requestSubmit(); sessionStorage.removeItem("awayu.amawta.ask"); } } else location.hash = "#/amawta"; };
   };
+  const onMuteChange = (event) => {
+    dismissed = Boolean(event.detail?.muted);
+    if (!dismissed) shown.delete(lastRoute);
+    update();
+  };
   const unsub = subscribe(update);
-  addEventListener("hashchange", update); update();
-  return { destroy() { active = false; removeEventListener("hashchange", update); unsub(); card.remove(); } };
+  addEventListener("hashchange", update);
+  addEventListener("awayu:proactive-muted", onMuteChange);
+  update();
+  return { destroy() { active = false; removeEventListener("hashchange", update); removeEventListener("awayu:proactive-muted", onMuteChange); unsub(); card.remove(); } };
 }

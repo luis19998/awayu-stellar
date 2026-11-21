@@ -205,7 +205,7 @@ body:not([data-route="circulo"]) .view .hero-in { padding-right: 260px; }
 .planet-legend li span { grid-column: 2; color: var(--muted); font-size: 13px; }
 .planet-legend .pl { grid-row: span 2; width: 30px; height: 30px; border-radius: 50%; display: block; }
 .pl-planet { background: repeating-linear-gradient(0deg, #d81b60 0 5px, #f9c22e 5px 9px, #13a3b0 9px 14px, #5b2a86 14px 18px); box-shadow: 0 0 12px #5bdcff66; }
-.pl-ring { border: 4px solid #f9c22e; transform: rotateX(65deg); }
+.pl-ring { border: 1.5px solid #f9c22e; transform: rotateX(65deg); }
 .pl-moon { width: 18px !important; height: 18px !important; justify-self: center; background: #13a3b0; box-shadow: 0 0 10px #13a3b0; }
 .pl-crown { border-radius: 4px !important; width: 16px !important; height: 16px !important; justify-self: center; transform: rotate(45deg); background: #ffd166; box-shadow: 0 0 10px #ffd166; }
 .pl-comet { height: 8px !important; border-radius: 8px !important; background: linear-gradient(90deg, transparent, #ffd166); align-self: center; }

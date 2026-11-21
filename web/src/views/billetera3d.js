@@ -16,7 +16,8 @@ for (const code of ["pt", "qu", "ay", "gn"]) TEXT[code] = { ...TEXT.es };
 
 export function scaleBalance(value) {
   const amount = Math.max(0, Number(value) || 0);
-  return 0.035 + Math.min(0.19, Math.log10(amount + 1) * 0.055);
+  // anillos finos: de 0,012 a 0,06 de grosor (antes llegaban a 0,22)
+  return 0.012 + Math.min(0.048, Math.log10(amount + 1) * 0.014);
 }
 
 export function scaleContribution(value) {
@@ -143,7 +144,7 @@ export function mount(container, initial = {}) {
     const balances = data.balances.length ? data.balances : (data.address ? [] : [{ asset: "XLM", balance: "1250" }, { asset: "USDC", balance: "86" }]);
     balances.forEach((entry, i) => {
       const radius = 1.78 + i * 0.23;
-      const mesh = new THREE.Mesh(new THREE.TorusGeometry(radius, scaleBalance(entry.balance), 8, 160), new THREE.MeshStandardMaterial({ color: COLORS[i % COLORS.length], emissive: COLORS[i % COLORS.length], emissiveIntensity: 0.38, metalness: 0.48, roughness: 0.3 }));
+      const mesh = new THREE.Mesh(new THREE.TorusGeometry(radius, scaleBalance(entry.balance), 12, 220), new THREE.MeshStandardMaterial({ color: COLORS[i % COLORS.length], emissive: COLORS[i % COLORS.length], emissiveIntensity: 0.38, metalness: 0.48, roughness: 0.3 }));
       mesh.rotation.x = (i % 2 ? 0.15 : -0.12); rings.add(mesh);
       const label = labelSprite(`${entry.asset ?? entry.code ?? "Asset"}  ${entry.balance ?? "0"}`, COLORS[i % COLORS.length]);
       label.position.set(radius, 0.1 + i * 0.06, 0); rings.add(label);

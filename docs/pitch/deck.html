@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Awayu · Pitch deck</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0b0820; font-family: "Bricolage Grotesque", system-ui, sans-serif; color: #f6f1ff; }
+  .s { width: 1280px; height: 720px; position: relative; overflow: hidden; padding: 64px 80px 56px; page-break-after: always; background: radial-gradient(circle at 85% 10%, #3a1d5a 0, #160e2c 45%, #0b0820 100%); }
+  .s::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 10px; background: repeating-linear-gradient(90deg, #d81b60 0 36px, #f9c22e 36px 72px, #13a3b0 72px 108px, #1f9d55 108px 144px, #5b2a86 144px 180px); }
+  .n { position: absolute; right: 40px; bottom: 26px; font: 600 14px "JetBrains Mono", monospace; color: #8f85a8; }
+  .k { font: 800 15px "JetBrains Mono", monospace; letter-spacing: .14em; text-transform: uppercase; color: #f9c22e; margin: 0 0 14px; }
+  h1 { font-size: 92px; line-height: .95; margin: 0 0 18px; letter-spacing: -.02em; }
+  h2 { font-size: 52px; line-height: 1.05; margin: 0 0 26px; letter-spacing: -.01em; max-width: 1000px; }
+  p, li { font-size: 25px; line-height: 1.4; color: #e6defa; }
+  ul { padding-left: 26px; margin: 0; } li { margin-bottom: 12px; }
+  .lead { font-size: 30px; max-width: 900px; color: #efe8ff; }
+  .muted { color: #a79dc0; }
+  .grid { display: grid; gap: 18px; }
+  .g2 { grid-template-columns: 1fr 1fr; } .g3 { grid-template-columns: repeat(3, 1fr); } .g4 { grid-template-columns: repeat(4, 1fr); }
+  .card { background: #ffffff0d; border: 1px solid #ffffff22; border-radius: 22px; padding: 22px 24px; }
+  .card h3 { margin: 0 0 8px; font-size: 28px; } .card p { margin: 0; font-size: 20px; }
+  .big { font-size: 64px; font-weight: 800; color: #f9c22e; line-height: 1; }
+  .ic { font-size: 34px; color: #f9c22e; }
+  table { border-collapse: collapse; width: 100%; font-size: 21px; }
+  td, th { text-align: left; padding: 10px 12px; border-bottom: 1px solid #ffffff1f; }
+  th { color: #f9c22e; font-weight: 600; }
+  .pill { display: inline-block; padding: 4px 12px; border-radius: 999px; background: #1f9d5533; color: #7ee2a8; font-size: 18px; font-weight: 600; }
+  .pill.w { background: #f9c22e26; color: #f9c22e; }
+  .flow { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+  .flow .card { flex: 1; text-align: center; } .flow .ar { font-size: 34px; color: #f9c22e; }
+  .marks { display: flex; gap: 8px; margin-top: 10px; } .marks span { width: 46px; height: 46px; border-radius: 10px; display: grid; place-items: center; font: 800 20px "JetBrains Mono"; color: #fff; }
+  code { font-family: "JetBrains Mono", monospace; font-size: .85em; color: #f9c22e; }
+  .shot { border-radius: 18px; border: 1px solid #ffffff33; width: 100%; box-shadow: 0 20px 60px #0008; }
+</style>
+</head>
+<body>
+
+<section class="s">
+  <p class="k">National Startups Hackathon by Stellar · Bolivia 2026</p>
+  <h1>Awayu</h1>
+  <p class="lead">El pasanaku que teje tu historial. Pasanaku, ayni, minka y alasitas en contratos Soroban: cada pago cumplido deja una marca verificable que una cooperativa puede leer.</p>
+  <p class="muted" style="margin-top:40px">Equipo Stark Neo · awayu-two.vercel.app · github.com/luis19998/awayu-stellar</p>
+  <div class="marks" style="position:absolute;right:80px;bottom:90px"><span style="background:#1f9d55">1</span><span style="background:#1f9d55">1</span><span style="background:#d69e2e">2</span><span style="background:#2b6cb0">4</span><span style="background:#1f9d55">1</span></div>
+  <div class="n">1</div>
+</section>
+
+<section class="s">
+  <p class="k">El problema</p>
+  <h2>Quien cumple durante años en su pasanaku empieza de cero frente al crédito</h2>
+  <div class="grid g3">
+    <div class="card"><div class="ic">◎</div><h3>Confianza sin rastro</h3><p>Los pasanakus de comerciantes y productores funcionan por confianza, pero solo quedan anotados en un cuaderno o un grupo de WhatsApp.</p></div>
+    <div class="card"><div class="ic">✕</div><h3>Impagos</h3><p>Si alguien deja de pagar, quien cobra recibe un pozo incompleto, y el grupo se rompe.</p></div>
+    <div class="card"><div class="ic">$</div><h3>Ahorro que pierde valor</h3><p>Con la escasez de dólares, ahorrar en bolivianos significa perder poder de compra.</p></div>
+  </div>
+  <p class="muted" style="margin-top:28px">Lo estamos validando con organizadores de Cochabamba y con cooperativas (docs/VALIDACION.md, docs/COOPERATIVAS.md).</p>
+  <div class="n">2</div>
+</section>
+
+<section class="s">
+  <p class="k">La solución</p>
+  <h2>Las reglas del grupo en contratos Soroban, en dólares digitales</h2>
+  <div class="grid g2">
+    <ul>
+      <li>El <b>turno</b> lo sortea la red, no el organizador.</li>
+      <li>Una <b>garantía</b> opcional cubre a quien no paga: el pozo llega completo.</li>
+      <li>Cuotas en <b>USDC</b> sobre Stellar.</li>
+      <li>Cada ronda deja una <b>marca</b> por persona, que se suma a su pasaporte.</li>
+    </ul>
+    <div class="card">
+      <h3>Las marcas</h3>
+      <div class="marks"><span style="background:#1f9d55">1</span><span style="background:#d69e2e">2</span><span style="background:#c53030">3</span><span style="background:#2b6cb0">4</span></div>
+      <p style="margin-top:14px">1 a tiempo · 2 tarde · 3 faltó · 4 cubierto con su garantía. El contrato calcula un puntaje de 0 a 100.</p>
+    </div>
+  </div>
+  <div class="n">3</div>
+</section>
+
+<section class="s">
+  <p class="k">Cuatro tradiciones, un solo tejido</p>
+  <h2>Lo que las familias ya hacen, ahora verificable</h2>
+  <div class="grid g4">
+    <div class="card"><div class="ic">◎</div><h3>Pasanaku</h3><p>Ahorro rotativo con turno sorteado y garantías.</p></div>
+    <div class="card"><div class="ic">❖</div><h3>Ayni</h3><p>Fondo de emergencias: se pide, la comunidad vota y se devuelve sin intereses.</p></div>
+    <div class="card"><div class="ic">✚</div><h3>Minka</h3><p>Proyecto común: el dinero se libera por hitos aprobados.</p></div>
+    <div class="card"><div class="ic">⌂</div><h3>Alasitas</h3><p>Metas de ahorro con racha y bloqueo por fecha.</p></div>
+  </div>
+  <p style="margin-top:26px">Un <b>registro on-chain</b> une los círculos de cada persona en un pasaporte de pagos portable.</p>
+  <div class="n">4</div>
+</section>
+
+<section class="s">
+  <p class="k">Cómo llega a una cooperativa</p>
+  <h2>Del pago al reporte verificable</h2>
+  <div class="flow">
+    <div class="card"><h3>Aporta</h3><p>Con su billetera o con Google (Pollar)</p></div><span class="ar">→</span>
+    <div class="card"><h3>Marca</h3><p>El contrato registra la ronda</p></div><span class="ar">→</span>
+    <div class="card"><h3>Pasaporte</h3><p>Suma todos sus círculos</p></div><span class="ar">→</span>
+    <div class="card"><h3>Reporte</h3><p>La cooperativa lo lee y lo verifica en Stellar</p></div>
+  </div>
+  <p style="margin-top:30px">La persona decide cuándo compartirlo. La cooperativa confirma la identidad con su KYC, y la persona firma con su billetera para demostrar que la cuenta es suya. No hay datos personales en la cadena.</p>
+  <div class="n">5</div>
+</section>
+
+<section class="s">
+  <p class="k">Funciona hoy en testnet</p>
+  <h2>Cinco contratos, todo verificable</h2>
+  <div class="grid g4" style="margin-bottom:24px">
+    <div class="card"><div class="big">5</div><p>contratos Soroban, 34 pruebas</p></div>
+    <div class="card"><div class="big">%INV%</div><p>invocaciones, %ERR% errores</p></div>
+    <div class="card"><div class="big">%TX%</div><p>transacciones de evidencia en USDC de prueba</p></div>
+    <div class="card"><div class="big">%ACC%</div><p>cuentas distintas (de nuestras pruebas)</p></div>
+  </div>
+  <ul>
+    <li>Demo pública con cuenta de prueba instantánea: se prueba en 3 minutos sin instalar nada.</li>
+    <li>Compilación verificable SEP-55, CI con pruebas y releases firmados.</li>
+    <li>Seis idiomas, incluidos quechua, aymara y guaraní.</li>
+  </ul>
+  <div class="n">6</div>
+</section>
+
+<section class="s">
+  <p class="k">Por qué Stellar</p>
+  <h2>Dólares digitales baratos y reglas que nadie puede cambiar</h2>
+  <div class="grid g3">
+    <div class="card"><h3>USDC nativo</h3><p>USDC de Circle con su contrato SAC: el mismo contrato sirve con cualquier token.</p></div>
+    <div class="card"><h3>Comisiones mínimas</h3><p>Fracciones de centavo por pago, y se pueden patrocinar para que nadie necesite XLM.</p></div>
+    <div class="card"><h3>Soroban</h3><p>Reglas, sorteo, garantías y eventos para el historial.</p></div>
+    <div class="card"><h3>Billeteras</h3><p>Stellar Wallets Kit, Freighter y Pollar con Google o correo, sin frase semilla.</p></div>
+    <div class="card"><h3>SEP-7 y DEX</h3><p>Pagos por QR y cambio XLM → USDC en el DEX de Stellar.</p></div>
+    <div class="card"><h3>Rampas</h3><p>Recarga con el QR del banco en bolivianos mediante proveedores autorizados.</p></div>
+  </div>
+  <div class="n">7</div>
+</section>
+
+<section class="s">
+  <p class="k">Mercado y modelo</p>
+  <h2>El comerciante usa gratis; la cooperativa paga por el reporte</h2>
+  <table>
+    <tr><th>Usuario</th><td>Comerciantes de mercados de Cochabamba que ya ahorran en pasanaku</td></tr>
+    <tr><th>Primer cliente que paga</th><td>Cooperativas de ahorro y crédito e IFD que dan microcrédito</td></tr>
+    <tr><th>Nicho</th><td>41 cooperativas y 8 IFD con licencia de ASFI</td></tr>
+    <tr><th>Precio (hipótesis)</th><td>Bs 15 por reporte verificado · Bs 20/mes por círculo para asociaciones</td></tr>
+    <tr><th>Alternativas</th><td>Libreta, grupos de WhatsApp, Excel del organizador, ahorro en la cooperativa</td></tr>
+  </table>
+  <p class="muted" style="margin-top:18px">Supuestos para dimensionar, a confirmar con el piloto.</p>
+  <div class="n">8</div>
+</section>
+
+<section class="s">
+  <p class="k">Lo que falta y cómo lo haremos</p>
+  <h2>De testnet a pagos reales</h2>
+  <table>
+    <tr><th>Ahora</th><td>Entrevistas a 5–10 organizadores y consulta a 2–3 cooperativas</td><td><span class="pill w">en curso</span></td></tr>
+    <tr><th>Diciembre</th><td>Piloto cerrado en testnet con una asociación real y una cooperativa</td><td><span class="pill w">plan</span></td></tr>
+    <tr><th>Ene–feb 2027</th><td>Opinión legal (DS 5384, ASFI, UIF), rampa autorizada en bolivianos y auditoría</td><td><span class="pill w">plan</span></td></tr>
+    <tr><th>Luego</th><td>Mainnet con límites: un círculo de 10 personas, cuota de hasta 20 USDC</td><td><span class="pill w">plan</span></td></tr>
+  </table>
+  <p style="margin-top:20px">Antes de mainnet, el sorteo pasa a compromiso y revelación, porque el generador de la red no es adecuado para montos altos.</p>
+  <div class="n">9</div>
+</section>
+
+<section class="s">
+  <p class="k">Equipo Stark Neo</p>
+  <h2>Técnica, negocio, diseño y llegada a la comunidad</h2>
+  <div class="grid g4">
+    <div class="card"><h3>Luis</h3><p>Líder técnico: contratos Soroban, web y 3D</p></div>
+    <div class="card"><h3>Richard Carvajal</h3><p>Datos, modelo de negocio y producto</p></div>
+    <div class="card"><h3>Liam Camacho</h3><p>Diseño UX/UI</p></div>
+    <div class="card"><h3>natalyfer2709</h3><p>Go-to-market y pitch</p></div>
+  </div>
+  <div class="n">10</div>
+</section>
+
+<section class="s">
+  <p class="k">Pruébalo</p>
+  <h2>Awayu no reemplaza la confianza del pasanaku: la convierte en evidencia</h2>
+  <ul>
+    <li>Demo: <b>awayu-two.vercel.app</b> → ⚡ Cuenta de prueba instantánea</li>
+    <li>Reporte para cooperativas: <b>awayu-two.vercel.app/reporte.html</b></li>
+    <li>Código y evidencia: <b>github.com/luis19998/awayu-stellar</b> (docs/EVIDENCIA.md)</li>
+  </ul>
+  <p class="muted" style="margin-top:30px">Pedimos al ecosistema Stellar: una cooperativa aliada para el piloto, apoyo para la auditoría y una rampa en bolivianos.</p>
+  <div class="n">11</div>
+</section>
+
+</body>
+</html>

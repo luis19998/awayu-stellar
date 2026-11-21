@@ -1,0 +1,109 @@
+{
+  "measuredAt": "2026-11-21T13:08:23.801Z",
+  "contracts": 13,
+  "byKind": {
+    "pasanaku": 7,
+    "registro": 1,
+    "ayni": 2,
+    "minka": 2,
+    "alasitas": 1
+  },
+  "registeredCircles": 7,
+  "invocations": 112,
+  "events": 99,
+  "errors": 0,
+  "distinctAccounts": 23,
+  "rows": [
+    {
+      "id": "CAF7V32UXWDPFOOLMUW7BZLIMAJHMOUEA3WOCMHC76DQM7DHMGOSKGBS",
+      "kind": "pasanaku",
+      "invocations": 22,
+      "events": 18,
+      "errors": 0
+    },
+    {
+      "id": "CAJ52VPA62YF66BJ6ND6OWOC6XBQKJ6EWZKLOTUXQVIRLMCIGTPLMVOJ",
+      "kind": "pasanaku",
+      "invocations": 2,
+      "events": 1,
+      "errors": 0
+    },
+    {
+      "id": "CDARLWWVVPTFZ52X5MOEOXZUAAI3ZFEO42GRVDWRY63P3NNQGOLYRAHH",
+      "kind": "pasanaku",
+      "invocations": 2,
+      "events": 1,
+      "errors": 0
+    },
+    {
+      "id": "CBX3JZ47EJ7NQB5JNPBZ3KTV4BLDUPRSF43XORWDWBPYOKAS7L6MYQXZ",
+      "kind": "pasanaku",
+      "invocations": 2,
+      "events": 1,
+      "errors": 0
+    },
+    {
+      "id": "CDW5KHZUTAGJFUNFZJ3DTYZXKFUJOOLHKMGX4PACXXHAUCZZEHRWD5NN",
+      "kind": "pasanaku",
+      "invocations": 2,
+      "events": 1,
+      "errors": 0
+    },
+    {
+      "id": "CBN76HIIWMGNHOYNRZ6GWXLUAYQ7OCKCZCKYJJ7ODTYTLSD523TBYVLS",
+      "kind": "pasanaku",
+      "invocations": 2,
+      "events": 1,
+      "errors": 0
+    },
+    {
+      "id": "CDOM3IISV3IUFYSRNUJ7H62L3QEGCU6SNZABQTCEMPSQEHAAQA4VA3NG",
+      "kind": "pasanaku",
+      "invocations": 9,
+      "events": 9,
+      "errors": 0
+    },
+    {
+      "id": "CAIOIV7WCXJC37TMIHFSZCMWSWCDMHXMS4V34ZALTD5RH7ZP44LQNVKD",
+      "kind": "registro",
+      "invocations": 29,
+      "events": 28,
+      "errors": 0
+    },
+    {
+      "id": "CCBWIPKD2MUEIEMXCMYOS6JNYKKUJZHXBKH7NPB5POSKBVLNYMQMXNAF",
+      "kind": "ayni",
+      "invocations": 13,
+      "events": 13,
+      "errors": 0
+    },
+    {
+      "id": "CCN6R6TE53QNK6CWOX37LSGN7MZRCV2RVG2IAS2CVOVV3MUFZC3SVTG2",
+      "kind": "minka",
+      "invocations": 6,
+      "events": 5,
+      "errors": 0
+    },
+    {
+      "id": "CDUKQ46OGKK2WQQJ2YRVWVHOW5RATTEZEAGDMU4URANCC5OLY2OE572N",
+      "kind": "alasitas",
+      "invocations": 8,
+      "events": 7,
+      "errors": 0
+    },
+    {
+      "id": "CB2RZDE7USQBJVS4DBXIA6UCTD2VEBTV6DX7FBHXYWVJQJB2IS5RY63Z",
+      "kind": "ayni",
+      "invocations": 9,
+      "events": 9,
+      "errors": 0
+    },
+    {
+      "id": "CDENQ4EMC2L3YZPIUB7V25Z3PJ4G45GXCABBVVQ6YUPTBBXSJE7YQXWQ",
+      "kind": "minka",
+      "invocations": 6,
+      "events": 5,
+      "errors": 0
+    }
+  ]
+}

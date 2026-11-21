@@ -4,6 +4,19 @@ Todo lo de esta lista necesita **tu cuenta, tu identidad, tu permiso o aceptar t
 
 Orden sugerido por impacto en el hackatón (cierre virtual: **22 de noviembre**).
 
+## Estado al 2026-11-20 (revisado en Vercel y en Claude Code)
+| Conexión | Estado | Qué falta |
+|---|---|---|
+| `GEMINI_API_KEY` | ✅ Producción y Preview; Amawta responde con Gemini | Cuota gratuita limitada: si se agota (error 429) Amawta prueba otros modelos y, si no, usa respuestas locales. Para la final, considera activar facturación en Google AI Studio o crear otra clave |
+| `VITE_POLLAR_KEY` | ⚠️ Solo en **Preview** | Agregarla también en **Production** (la web publicada dice "falta la clave publicable") |
+| `POLLAR_KEY` | Cargada, pero la web no la usa | Puedes borrarla: la web solo lee `VITE_POLLAR_KEY` (la clave publicable `pub_testnet_…`). Nunca pongas la secreta `sec_…` en una variable `VITE_` |
+| `TRUSTLESS_API_KEY` | ⚠️ Solo en **Preview** | Agregarla en **Production** |
+| `N8N_WEBHOOK_URL`, `N8N_SECRET` | ❌ Faltan | Ver sección B |
+| GitHub → Vercel (despliegue automático) | ❌ No conectado | Vercel → proyecto awayu → Settings → Git → Connect |
+| MCP de Stellar (**Raven**) | ❌ No agregado | Ver sección C |
+| MCP de Pollar | ❌ No agregado | Ver sección C |
+| Stellar Expert (contratos verificados) | ⏳ Solicitud aceptada, figura "unverified" | Nada que hacer: lo procesan ellos |
+
 ## A. Obligatorio (20 min)
 1. **Inscripción al hackatón**: https://tally.so/r/2jj26A (equipo de 2 a 5 personas).
 2. **Inscripción a Commit del Mes**: https://tally.so/r/zEMQB1 con el repo público `https://github.com/luis19998/awayu-stellar`.
@@ -34,7 +47,12 @@ Pasos extra en Pollar (además de la clave):
   claude mcp add --transport http pollar https://mcp.api.pollar.xyz/mcp --header "Authorization: Bearer pat_TU_TOKEN"
   ```
   Con eso Claude puede revisar la app, saldos, transacciones, dominios y activar activos de prueba (las acciones destructivas piden confirmación). No mueve fondos de usuarios.
-- **Stellar**: la Stellar Development Foundation no publica un MCP oficial; ofrece la **Stellar CLI para agentes** (ya la usamos) y la documentación para IA en https://developers.stellar.org/llms.txt. Hay MCP de la comunidad (por ejemplo `stellar-mcp` de syronlabs o `chronos-mcp`), pero piden claves secretas: no los recomiendo para cuentas reales.
+- **Stellar (Raven, oficial de la SDF)**: documentación, datos del ecosistema y guías para agentes, sin claves. En una terminal:
+  ```
+  claude mcp add --transport http stellar-raven "https://raven.stellar.org/mcp"
+  ```
+  Luego, dentro de Claude Code, `/mcp` → **stellar-raven** → **Authenticate** e inicia sesión. (Para Codex se agrega el mismo endpoint en su configuración de MCP.)
+- **Stellar (otras opciones)**: ofrece la **Stellar CLI para agentes** (ya la usamos) y la documentación para IA en https://developers.stellar.org/llms.txt. Hay MCP de la comunidad (por ejemplo `stellar-mcp` de syronlabs o `chronos-mcp`), pero piden claves secretas: no los recomiendo para cuentas reales.
 - **Vercel** (opcional): en claude.ai → *Settings → Connectors → Vercel* → da acceso al equipo **radar-tech** para que Claude lea registros y errores en vivo.
 
 ## D. Pruebas que solo tú puedes hacer (30 min)
@@ -44,6 +62,7 @@ Pasos extra en Pollar (además de la clave):
 4. **Escanear**: en el celular abre *Escanear QR* y apunta a la invitación de un círculo.
 
 ## E. Para operar con dinero real (después del hackatón)
+- **Koywe** (https://docs.koywe.com): rampa de entrada y salida que cubre **Bolivia**, con KYC y webhooks; está en la lista del *Integration Track* del SCF. Pedir cuenta de prueba en su sitio para evaluar la integración.
 - **Banco Central de Bolivia – OpenBCB**: API gratuita para generar QR interoperables y recibir avisos de pago. Requiere habilitar una cuenta transitoria con el BCB: consulta la sección OpenBCB en https://www.bcb.gob.bo.
 - **Registro como proveedor de servicios de activos virtuales** ante la UIF, o alianza con una Empresa de Tecnología Financiera autorizada por ASFI. Ver la página *Legal y privacidad* de la web y consultar con un abogado.
 - **Auditoría** de los contratos antes de mainnet.

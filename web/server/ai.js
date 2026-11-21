@@ -59,8 +59,26 @@ export function localAnswer(question) {
   return found?.answer ?? "Puedo orientarte sobre Awayu, las garantías, Freighter, testnet, el puntaje y los aportes. Esta demo funciona en Stellar Testnet; revisa las reglas del círculo antes de participar.";
 }
 
+// Modelos de reserva: cada uno tiene su propia cuota gratuita; si uno responde 429
+// (cuota agotada) o 404 (no disponible), se prueba el siguiente.
+const FALLBACK_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"];
+
 async function geminiAnswer(question, lang, context, apiKey) {
-  const model = cleanText(process.env.GEMINI_MODEL || "gemini-2.5-flash", 80).replace(/[^a-zA-Z0-9._-]/g, "") || "gemini-2.5-flash";
+  const preferred = cleanText(process.env.GEMINI_MODEL || "", 80).replace(/[^a-zA-Z0-9._-]/g, "");
+  const models = [...new Set([preferred, ...FALLBACK_MODELS].filter(Boolean))];
+  let lastError = null;
+  for (const model of models) {
+    try {
+      return await geminiWith(model, question, lang, context, apiKey);
+    } catch (error) {
+      lastError = error;
+      if (!/ (429|404|503)$/.test(String(error?.message))) break;
+    }
+  }
+  throw lastError;
+}
+
+async function geminiWith(model, question, lang, context, apiKey) {
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
   const call = (generationConfig) => fetch(endpoint, {
     method: "POST",
@@ -79,7 +97,7 @@ Pregunta: ${question}` }] }],
   // opción y con más margen para que la respuesta llegue completa.
   let response = await call({ temperature: 0.35, maxOutputTokens: 1024, thinkingConfig: { thinkingBudget: 0 } });
   if (response.status === 400) response = await call({ temperature: 0.35, maxOutputTokens: 4096 });
-  if (!response.ok) throw new Error(`Gemini respondió ${response.status}`);
+  if (!response.ok) throw new Error(`Gemini (${model}) respondió ${response.status}`);
   const payload = await response.json();
   const answer = payload?.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("").trim();
   if (!answer) throw new Error(`Gemini no devolvió texto (${payload?.candidates?.[0]?.finishReason || "sin motivo"})`);

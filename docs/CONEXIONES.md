@@ -17,7 +17,7 @@ Orden sugerido por impacto en el hackatón (cierre virtual: **22 de noviembre**)
 | MCP de Pollar | ❌ No agregado | Ver sección C |
 | Stellar Expert (contratos verificados) | ⏳ Solicitud aceptada, figura "unverified" | Nada que hacer: lo procesan ellos |
 
-## 0. Lo que pidió el análisis de IA de Atlas (antes del 22-nov, 15:59)
+## 0. Lo que pidió el análisis de IA de Atlas (antes del cierre: 22-nov a las 11:59, hora de Bolivia)
 1. **Validación (Richard o natalyfer):** entrevistar entre 5 y 10 organizadores de pasanaku con el guion de `docs/VALIDACION.md` y subir los resultados con su propia cuenta de GitHub.
 2. **Cooperativas (natalyfer):** enviar el mensaje de `docs/COOPERATIVAS.md` a 2 o 3 cooperativas con `docs/ejemplo-reporte-historial.pdf` adjunto, y anotar cada respuesta, aunque sea negativa.
 3. **Equipo:** cada integrante sube su parte con su propia cuenta y completa su fila en `docs/EQUIPO.md` y su perfil en Atlas (GitHub o LinkedIn y una descripción real). Luis los agrega como colaboradores.

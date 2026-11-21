@@ -18,6 +18,9 @@ const PT = {
   "Finanzas comunitarias andinas en Stellar": "Finanças comunitárias andinas na Stellar",
   "Dinero": "Dinheiro", "dinero": "dinheiro", "Nombre del círculo": "Nome do círculo", "Departamento": "Departamento",
   // Panel (textos que faltaban)
+  "Entrar con tu correo": "Entrar com seu e-mail",
+  "Tu correo para recibir el código de Pollar:": "Seu e-mail para receber o código da Pollar:",
+  "Enviar código": "Enviar código",
   "Ronda {n}: recibiste {amount}": "Rodada {n}: você recebeu {amount}",
   "Ronda {n}: tu garantía cubrió tu cuota": "Rodada {n}: sua garantia cobriu sua contribuição",
   "Dejaste {amount} de garantía": "Você deixou {amount} de garantia",

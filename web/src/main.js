@@ -607,11 +607,36 @@ menu.querySelectorAll("button").forEach((b) => {
       } else if (b.dataset.w === "google") {
         await onConnected(await connectPollar("google"));
       } else {
-        const email = prompt("Tu correo para recibir el código de Pollar:");
+        const email = await askEmail();
         if (email) await onConnected(await connectPollar({ provider: "email", email }));
       }
     });
 });
+
+/** Pide el correo en un diálogo propio (prompt() no funciona en algunos navegadores de celular). */
+function askEmail() {
+  return new Promise((resolve) => {
+    const d = document.createElement("dialog");
+    d.className = "ask-email";
+    d.innerHTML = `<form method="dialog"><h2></h2><label><span></span><input type="email" name="email" required autocomplete="email" inputmode="email" /></label><menu><button value="cancel" formnovalidate class="ghost"></button><button value="ok" class="primary"></button></menu></form>`;
+    d.querySelector("h2").textContent = t("Entrar con tu correo");
+    d.querySelector("label span").textContent = t("Tu correo para recibir el código de Pollar:");
+    d.querySelector("[value=cancel]").textContent = t("Cancelar");
+    d.querySelector("[value=ok]").textContent = t("Enviar código");
+    const done = (v) => { d.close(); d.remove(); resolve(v); };
+    d.querySelector("form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (e.submitter?.value !== "ok") return done(null);
+      const input = d.querySelector("input");
+      if (!input.checkValidity()) return input.reportValidity();
+      done(input.value.trim());
+    });
+    d.addEventListener("cancel", () => done(null));
+    document.body.append(d);
+    d.showModal();
+    d.querySelector("input").focus();
+  });
+}
 
 // ---------- Crear un pasanaku ----------
 

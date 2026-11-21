@@ -235,6 +235,9 @@ export default {
   "Ese aguayo es tu historial crediticio: portable, verificable, tuyo.":
     "That aguayo is your payment record: portable, verifiable, yours.",
   // Panel (textos que faltaban)
+  "Entrar con tu correo": "Sign in with your email",
+  "Tu correo para recibir el código de Pollar:": "Your email to receive the Pollar code:",
+  "Enviar código": "Send code",
   "Ronda {n}: recibiste {amount}": "Round {n}: you received {amount}",
   "Ronda {n}: tu garantía cubrió tu cuota": "Round {n}: your guarantee covered your contribution",
   "Dejaste {amount} de garantía": "You left {amount} as a guarantee",

@@ -87,7 +87,7 @@ button { font: inherit; cursor: pointer; }
 .caption { position: fixed; left: calc(50% - 190px); bottom: 70px; transform: translateX(-50%); max-width: min(760px, 90vw); text-align: center; font-size: 26px; font-weight: 600; line-height: 1.25; text-shadow: 0 2px 18px #000; opacity: 0; transition: opacity 0.5s; pointer-events: none; }
 .caption.on { opacity: 1; }
 
-.wallet { position: fixed; top: 22px; right: 392px; }
+.wallet { position: fixed; top: 22px; right: 392px; z-index: 45; }
 .wallet > button { border: 1px solid var(--gold); background: var(--glass); color: var(--gold); padding: 9px 16px; border-radius: 999px; font-weight: 700; backdrop-filter: blur(10px); white-space: nowrap; }
 .wallet > button.on { background: var(--gold); color: #1b1030; }
 .wallet-menu { position: absolute; right: 0; top: 46px; display: grid; gap: 4px; background: #1b1030; border: 1px solid var(--line); border-radius: 14px; padding: 6px; min-width: 190px; }

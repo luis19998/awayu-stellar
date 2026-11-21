@@ -11,8 +11,8 @@ describe("guía Awayu", () => {
     expect(validateSteps(null)).toBe(false);
   });
 
-  it("incluye los 30 temas de ayuda en castellano e inglés", () => {
-    expect(Object.keys(HELP_TOPICS)).toHaveLength(30);
+  it("incluye los 32 temas de ayuda en castellano e inglés", () => {
+    expect(Object.keys(HELP_TOPICS)).toHaveLength(32);
     for (const data of Object.values(HELP_TOPICS)) {
       for (const lang of ["es", "en"]) {
         expect(data.title[lang].trim()).not.toBe("");

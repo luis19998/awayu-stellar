@@ -11,6 +11,35 @@ const OUT = "C:/Users/luisc/Documents/stellar-hackathon/web/public/tutoriales";
 mkdirSync(OUT, { recursive: true });
 
 const TOPICS = {
+  "test-account": async (r) => {
+    await r.sleep(1200);
+    await r.click("#btn-wallet");
+    await r.sleep(900);
+    await r.move("#wallet-menu [data-w=burner]", 700);
+    await r.sleep(1200);
+    await r.click("#wallet-menu [data-w=burner]");
+    await r.page.waitForFunction(() => /·/.test(document.querySelector("#btn-wallet")?.textContent || ""), null, { timeout: 60000 });
+    await r.sleep(2500);
+  },
+  "test-usdc": async (r) => {
+    await r.page.evaluate(() => { location.hash = "#/billetera"; });
+    await r.sleep(2500);
+    await r.click("#w-connect");
+    await r.sleep(800);
+    await r.click("#wallet-menu [data-w=burner]");
+    await r.page.waitForFunction(() => /·/.test(document.querySelector("#btn-wallet")?.textContent || ""), null, { timeout: 60000 });
+    await r.sleep(2500);
+    await r.click("#w-usdc");
+    await r.sleep(1200);
+    await r.click("#btn-usdc-get");
+    await r.sleep(900);
+    if (await r.page.locator("dialog[open] input[name=accept]").count()) {
+      await r.click("dialog[open] input[name=accept]");
+      await r.click("dialog[open] button[value=accept]");
+    }
+    await r.page.waitForFunction(() => /USDC/.test(document.querySelector("#usdc-flow-result")?.textContent || ""), null, { timeout: 60000 }).catch(() => {});
+    await r.sleep(3000);
+  },
   billetera: async (r) => {
     await r.page.goto(BASE + "/#/inicio", { waitUntil: "load" });
     await r.sleep(1500);

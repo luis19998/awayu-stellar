@@ -35,6 +35,8 @@ export const HELP_TOPICS = Object.freeze({
   "qr-receive": topic("Recibir pagos con QR", "Receive payments with QR", ["En Billetera, toca Recibir con QR.", "Si quieres, escribe el monto y elige la moneda.", "La otra persona lo escanea con una billetera Stellar y te paga."], ["In Wallet, press Receive with QR.", "Optionally enter the amount and pick the asset.", "The other person scans it with a Stellar wallet and pays you."]),
   "qr-scan": topic("Escanear un QR", "Scan a QR", ["En Billetera, toca Escanear QR y permite la cámara.", "Apunta a una invitación, un pedido de pago o una dirección.", "Awayu te dice qué es y te ofrece abrirlo."], ["In Wallet, press Scan QR and allow the camera.", "Point at an invite, a payment request or an address.", "Awayu tells you what it is and offers to open it."]),
   "qr-bank": topic("Recargar con el QR del banco", "Top up with a bank QR", ["Toca Recargar con el QR de tu banco.", "Paga en bolivianos con la app de tu banco.", "Un proveedor autorizado te envía dólares digitales (USDC)."], ["Press Top up with your bank's QR.", "Pay in bolivianos with your bank app.", "A licensed provider sends you digital dollars (USDC)."]),
+  "test-account": topic("Cuenta de prueba instantánea", "Instant test account", ["Toca Conectar billetera.", "Elige Cuenta de prueba instantánea: no hay que instalar nada.", "La red de prueba la fondea; se borra al cerrar la pestaña."], ["Press Connect wallet.", "Choose Instant test account: nothing to install.", "The test network funds it; it is erased when you close the tab."]),
+  "test-usdc": topic("Obtener USDC de prueba", "Get test USDC", ["Al crear un círculo en USDC, o en Billetera, toca Obtener USDC de prueba.", "Firma la línea de confianza y el cambio de XLM por USDC.", "Es dinero de prueba, sin valor real."], ["When creating a USDC circle, or in Wallet, press Get test USDC.", "Sign the trustline and the XLM to USDC swap.", "It is test money with no real value."]),
   studio: topic("Estudio de personalización", "Customization studio", ["En el círculo, toca Estudio.", "Elige la hora del día, el clima y los colores de tu aguayo.", "Ajusta el color, el tamaño de letra o el contraste de la interfaz."], ["In the circle, press Studio.", "Pick the time of day, the weather and your aguayo colors.", "Adjust the interface color, text size or contrast."]),
 });
 
@@ -69,6 +71,8 @@ const LOCAL = {
   "qr-invite": { pt: ["Convidar com QR", ["No círculo, toque em Convidar com QR.", "Mostre o código ou compartilhe por mensagem.", "Quem escanear abre o círculo e confere as regras antes de entrar."]], qu: "QR nisqawan invitay", ay: "QR ukamp jawsaña", gn: "Eguerohenói QR rupive" },
   "qr-receive": { pt: ["Receber pagamentos com QR", ["Em Carteira, toque em Receber com QR.", "Se quiser, escreva o valor e escolha a moeda.", "A outra pessoa escaneia com uma carteira Stellar e paga."]], qu: "QR nisqawan qullqita chaskiy", ay: "QR ukamp qullqi katuqaña", gn: "Ehupyty viru QR rupive" },
   "qr-scan": { pt: ["Escanear um QR", ["Em Carteira, toque em Escanear QR e permita a câmera.", "Aponte para um convite, um pedido de pagamento ou um endereço.", "O Awayu diz o que é e oferece abrir."]], qu: "QR-ta qhaway", ay: "QR uñjaña", gn: "Ehecha peteĩ QR" },
+  "test-account": { pt: ["Conta de teste instantânea", ["Toque em Conectar carteira.", "Escolha Conta de teste instantânea: não é preciso instalar nada.", "A rede de teste a financia; ela é apagada ao fechar a aba."]] },
+  "test-usdc": { pt: ["Obter USDC de teste", ["Ao criar um círculo em USDC, ou na Carteira, toque em Obter USDC de teste.", "Assine a linha de confiança e a troca de XLM por USDC.", "É dinheiro de teste, sem valor real."]] },
   "qr-bank": { pt: ["Recarregar com o QR do banco", ["Toque em Recarregar com o QR do seu banco.", "Pague em bolivianos com o app do seu banco.", "Um provedor autorizado envia dólares digitais (USDC)."]], qu: "Bancoq QR-ninwan yapay", ay: "Bancon QR-pampi yapxataña", gn: "Emyenyhẽ banco QR rupive" },
   studio: { pt: ["Estúdio de personalização", ["No círculo, toque em Estúdio.", "Escolha a hora do dia, o clima e as cores do seu aguayo.", "Ajuste a cor, o tamanho do texto ou o contraste da interface."]], qu: "Sumaqchana wasi", ay: "Suma lurañ uta", gn: "Mbojeguaha róga" },
 };
@@ -82,13 +86,13 @@ for (const [id, loc] of Object.entries(LOCAL)) {
 
 // Qué tutoriales se ofrecen en cada sección del panel (el primero es el más útil)
 export const ROUTE_TOPICS = Object.freeze({
-  inicio: ["wallet", "settings", "create", "live-mode"],
-  circulo: ["contribute", "payout", "guarantee", "create", "studio", "qr-invite", "customize", "simulator"],
+  inicio: ["test-account", "wallet", "settings", "create", "live-mode"],
+  circulo: ["contribute", "payout", "guarantee", "create", "test-usdc", "studio", "qr-invite", "customize", "simulator"],
   ayni: ["ayni-join", "ayni-contribute", "ayni-request", "ayni-vote", "live-mode"],
   minka: ["minka-fund", "minka-milestone", "live-mode"],
   alasitas: ["alasitas-create", "alasitas-save", "live-mode"],
   mapa: ["map"],
-  billetera: ["wallet", "qr-receive", "qr-scan", "qr-bank", "passport"],
+  billetera: ["wallet", "test-usdc", "qr-receive", "qr-scan", "qr-bank", "passport"],
   riesgo: ["risk", "simulator"],
   juegos: ["games"],
   amawta: ["amawta"],

@@ -235,6 +235,18 @@ export default {
   "Ese aguayo es tu historial crediticio: portable, verificable, tuyo.":
     "That aguayo is your payment record: portable, verifiable, yours.",
   // Panel (textos que faltaban)
+  "Ronda {n}: recibiste {amount}": "Round {n}: you received {amount}",
+  "Ronda {n}: tu garantía cubrió tu cuota": "Round {n}: your guarantee covered your contribution",
+  "Dejaste {amount} de garantía": "You left {amount} as a guarantee",
+  "Pruébalo en 3 minutos, sin instalar nada": "Try it in 3 minutes, nothing to install",
+  "Toca Conectar billetera y elige Cuenta de prueba instantánea.": "Tap Connect wallet and choose Instant test account.",
+  "Crea un pasanaku en USDC de prueba; si no tienes, la web te los consigue en el DEX de Stellar.": "Create a pasanaku in test USDC; if you have none, the site gets them for you on the Stellar DEX.",
+  "Aporta, deja tu garantía y paga el pozo: cada paso muestra su transacción en Stellar Expert.": "Contribute, leave your guarantee and pay out the pot: every step shows its transaction on Stellar Expert.",
+  "Abre el reporte para cooperativas con tu historial verificable.": "Open the cooperative report with your verifiable record.",
+  "Reporte para cooperativas": "Report for cooperatives",
+  "Transacciones reales por acción": "Real transactions per action",
+  "Camino a pagos reales": "Path to real payments",
+  "Prototipo en la red de prueba de Stellar: se usa dinero de prueba, sin valor real.": "Prototype on Stellar's test network: it uses test money with no real value.",
   "Billetera desconectada en este navegador": "Wallet disconnected in this browser",
   "Tu personaje ahora es {f}": "Your character is now {f}",
   "¿En qué situaciones te sirve?": "Where does it help you?",

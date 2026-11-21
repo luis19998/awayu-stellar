@@ -287,9 +287,10 @@ function renderTimeline() {
     for (const e of activity) {
       const name = c.members.find((m) => m.address === e.who)?.name || (e.who ? short(e.who) : "");
       const vars = { n: e.round + 1, name, amount: fmt(e.amount, c.token) };
-      const text = e.kind === "pozo" ? t("Ronda {n}: {name} recibió {amount}", vars)
-        : e.kind === "cubre" ? t("Ronda {n}: la garantía de {name} cubrió su cuota", vars)
-        : t("{name} dejó {amount} de garantía", vars);
+      const mine = e.who && e.who === me();
+      const text = e.kind === "pozo" ? t(mine ? "Ronda {n}: recibiste {amount}" : "Ronda {n}: {name} recibió {amount}", vars)
+        : e.kind === "cubre" ? t(mine ? "Ronda {n}: tu garantía cubrió tu cuota" : "Ronda {n}: la garantía de {name} cubrió su cuota", vars)
+        : t(mine ? "Dejaste {amount} de garantía" : "{name} dejó {amount} de garantía", vars);
       rows.push({ text, href: e.tx ? txUrl(e.tx) : null, kind: e.kind });
     }
   } else {
@@ -551,6 +552,11 @@ if (!pollarEnabled) {
 }
 $("#btn-wallet").onclick = () => (menu.hidden = !menu.hidden);
 
+// La cuenta de prueba instantánea sigue en esta pestaña después de recargar
+try {
+  if (sessionStorage.getItem("awayu.burner")) connectBurner().then(onConnected).catch(() => {});
+} catch { /* sin sessionStorage */ }
+
 async function onConnected(w) {
   menu.hidden = true;
   const btn = $("#btn-wallet");
@@ -654,6 +660,7 @@ function showUsdcDialog(amount) {
   $("#usdc-flow-message").textContent = t("Obtener {amount} USDC de prueba para continuar.", { amount: amount.toLocaleString("es-BO", { maximumFractionDigits: 2 }) });
   $("#usdc-flow-result").textContent = "";
   $("#btn-usdc-get").hidden = false;
+  $("#dlg-usdc button[value=cancel]").textContent = t("Cancelar");
   $("#dlg-usdc").showModal();
 }
 
@@ -665,6 +672,7 @@ $("#btn-usdc-get").onclick = () => run(async () => {
     $("#usdc-flow-result").innerHTML = transactionLinks(txs);
     $("#usdc-flow-message").textContent = t("USDC de prueba recibido. Puedes continuar.");
     button.hidden = true;
+    $("#dlg-usdc button[value=cancel]").textContent = t("Cerrar");
   } finally { button.disabled = false; }
 });
 

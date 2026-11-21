@@ -54,8 +54,14 @@ export function initDashboard(h) {
   ).join("");
   addEventListener("hashchange", route);
   route();
+  let lastAddress = state.address;
   subscribe(() => {
     if (current === "riesgo") renderRisk();
+    // Al conectar o desconectar la billetera, la vista Billetera cambia (botón de USDC, saldos y pasaporte)
+    if (state.address !== lastAddress) {
+      lastAddress = state.address;
+      if (current === "billetera") show("billetera", true);
+    }
   });
 }
 

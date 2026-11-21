@@ -17,6 +17,14 @@ Orden sugerido por impacto en el hackatón (cierre virtual: **22 de noviembre**)
 | MCP de Pollar | ❌ No agregado | Ver sección C |
 | Stellar Expert (contratos verificados) | ⏳ Solicitud aceptada, figura "unverified" | Nada que hacer: lo procesan ellos |
 
+## 0. Lo que pidió el análisis de IA de Atlas (antes del 22-nov, 15:59)
+1. **Validación (Richard o natalyfer):** entrevistar entre 5 y 10 organizadores de pasanaku con el guion de `docs/VALIDACION.md` y subir los resultados con su propia cuenta de GitHub.
+2. **Cooperativas (natalyfer):** enviar el mensaje de `docs/COOPERATIVAS.md` a 2 o 3 cooperativas con `docs/ejemplo-reporte-historial.pdf` adjunto, y anotar cada respuesta, aunque sea negativa.
+3. **Equipo:** cada integrante sube su parte con su propia cuenta y completa su fila en `docs/EQUIPO.md` y su perfil en Atlas (GitHub o LinkedIn y una descripción real). Luis los agrega como colaboradores.
+4. **Video:** subir `video/awayu-flujo-onchain.mp4` a YouTube como "No listado" y pegar el enlace en Atlas.
+5. **Formulario de Atlas:** actualizarlo con los textos corregidos (archivo local `docs/ATLAS-FORMULARIO.md`, que no se sube al repositorio). Incluye la etapa, el cliente, el precio, el deck y los enlaces de tracción.
+6. **Segunda evaluación:** usar "Analizar de nuevo" solo después de los puntos 1 a 5, porque es la última.
+
 ## A. Obligatorio (20 min)
 1. **Inscripción al hackatón**: https://tally.so/r/2jj26A (equipo de 2 a 5 personas).
 2. **Inscripción a Commit del Mes**: https://tally.so/r/zEMQB1 con el repo público `https://github.com/luis19998/awayu-stellar`.

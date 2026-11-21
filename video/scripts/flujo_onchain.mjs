@@ -49,6 +49,7 @@ await page.evaluate(() => {
     localStorage.setItem("awayu.sound.muted", "true");
     localStorage.setItem("awayu.guide.welcome.seen", "1");
     localStorage.setItem("awayu.guide.tour.seen.firstVisit", "1");
+    localStorage.setItem("awayu.proactive.muted", "1");
   } catch {}
 });
 await page.goto(BASE + "/#/circulo", { waitUntil: "load" });
@@ -57,8 +58,13 @@ await r.begin();
 await r.sleep(1500);
 
 // 1. Cuenta de prueba instantánea
-await r.click("#btn-wallet");
-await r.sleep(900);
+await page.waitForFunction(() => document.querySelector("#btn-create") && document.querySelector("#stage canvas"), null, { timeout: 60000 }).catch(() => {});
+for (let i = 0; i < 5; i++) {
+  await r.click("#btn-wallet");
+  await r.sleep(900);
+  if (await page.locator("#wallet-menu:not([hidden])").count()) break;
+  await r.sleep(1500);
+}
 await r.click("#wallet-menu [data-w=burner]");
 await page.waitForFunction(() => /·/.test(document.querySelector("#btn-wallet")?.textContent || ""), null, { timeout: 60000 });
 await r.sleep(2500);

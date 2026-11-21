@@ -196,3 +196,23 @@ body:not([data-route="circulo"]) .view .hero-in { padding-right: 260px; }
 .mode-switch[hidden] { display: none; }
 .mode-switch button { border: 0; background: none; color: var(--muted); font: 700 12px var(--body, inherit); padding: 6px 12px; border-radius: 999px; cursor: pointer; }
 .mode-switch button[aria-pressed="true"] { background: var(--gold); color: #1b1030; }
+
+/* Leyenda del planeta de la billetera */
+.planet-legend { margin-top: 16px; padding: 16px 18px; border-radius: 20px; background: var(--card); border: 1px solid var(--card-b); }
+.planet-legend h2 { margin: 0 0 10px; font-size: 18px; }
+.planet-legend ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 10px; }
+.planet-legend li { display: grid; grid-template-columns: 34px 1fr; gap: 2px 10px; align-items: center; }
+.planet-legend li span { grid-column: 2; color: var(--muted); font-size: 13px; }
+.planet-legend .pl { grid-row: span 2; width: 30px; height: 30px; border-radius: 50%; display: block; }
+.pl-planet { background: repeating-linear-gradient(0deg, #d81b60 0 5px, #f9c22e 5px 9px, #13a3b0 9px 14px, #5b2a86 14px 18px); box-shadow: 0 0 12px #5bdcff66; }
+.pl-ring { border: 4px solid #f9c22e; transform: rotateX(65deg); }
+.pl-moon { width: 18px !important; height: 18px !important; justify-self: center; background: #13a3b0; box-shadow: 0 0 10px #13a3b0; }
+.pl-crown { border-radius: 4px !important; width: 16px !important; height: 16px !important; justify-self: center; transform: rotate(45deg); background: #ffd166; box-shadow: 0 0 10px #ffd166; }
+.pl-comet { height: 8px !important; border-radius: 8px !important; background: linear-gradient(90deg, transparent, #ffd166); align-self: center; }
+
+/* Situaciones donde sirve Awayu */
+.usos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr)); gap: 10px; }
+.uso { display: grid; grid-template-columns: 40px 1fr; gap: 2px 10px; padding: 14px; border-radius: 18px; text-decoration: none; color: var(--ink); background: var(--card); border: 1px solid var(--card-b); animation: rise .5s var(--d) both; transition: transform .2s, border-color .2s; }
+.uso:hover, .uso:focus-visible { transform: translateY(-3px); border-color: color-mix(in srgb, var(--gold) 60%, transparent); }
+.uso .ic { grid-row: span 2; font-size: 28px; align-self: center; }
+.uso span:last-child { color: var(--muted); font-size: 13px; }

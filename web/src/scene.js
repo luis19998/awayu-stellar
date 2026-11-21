@@ -34,6 +34,9 @@ export const TABLES = {
 const RING = 4.4;
 const LAYER_H = 0.3;
 
+// Sube este número cuando cambien los .glb: los modelos se guardan en caché una semana
+export const MODELS_VERSION = 2;
+
 export function createScene(container, { onPick, active: startActive = true } = {}) {
   // Los modelos pesados se piden recién cuando la escena se muestra por primera vez
   let wake;
@@ -205,7 +208,7 @@ export function createScene(container, { onPick, active: startActive = true } = 
   const cache = new Map();
   const loadModel = (name) => {
     if (!cache.has(name))
-      cache.set(name, awake.then(() => new Promise((ok) => loader.load(`/models/${name}.glb`, (g) => ok(g.scene), undefined, () => ok(null)))));
+      cache.set(name, awake.then(() => new Promise((ok) => loader.load(`/models/${name}.glb?v=${MODELS_VERSION}`, (g) => ok(g.scene), undefined, () => ok(null)))));
     return cache.get(name);
   };
   const shadowy = (o) => o.traverse((c) => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });

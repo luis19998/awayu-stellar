@@ -10,6 +10,19 @@ import { structuredData } from "./seo.js";
 import { state } from "./state.js";
 
 initLang();
+
+// Bienvenida para quien entra por primera vez (una sola vez por perfil)
+import("./guide/welcome.js").then(({ hasSeenWelcome, openWelcome }) => {
+  if (hasSeenWelcome() || new URLSearchParams(location.search).has("nowelcome")) return;
+  setTimeout(() => openWelcome({
+    onTour: () => {
+      try { localStorage.removeItem("awayu.guide.tour.seen.firstVisit"); } catch {}
+      if (location.hash === "#/circulo") window.dispatchEvent(new Event("awayu:start-tour"));
+      else location.hash = "#/circulo";
+    },
+    onDone: () => { try { localStorage.setItem("awayu.guide.tour.seen.firstVisit", "1"); } catch {} },
+  }), 700);
+});
 import("./custom/studio.js").then(({ applyUiPrefs }) => applyUiPrefs());
 
 // Tras un despliegue nuevo, una pestaña vieja puede pedir archivos que ya no

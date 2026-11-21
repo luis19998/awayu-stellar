@@ -132,13 +132,19 @@
         <label><span data-i18n>Estilo del aguayo</span>
           <select name="theme" id="sel-theme"></select>
         </label>
-        <div class="row3">
+        <div class="row3 custom-scene">
           <label><span data-i18n>Escenario</span> <select id="sel-scenario"></select></label>
           <label><span data-i18n>Vasija del pozo</span> <select id="sel-vessel"></select></label>
           <label><span data-i18n>Mesa</span> <select id="sel-table"></select></label>
         </div>
+        <fieldset class="custom-figs">
+          <legend data-i18n>Personajes</legend>
+          <p class="muted" data-i18n>Cada miembro tiene una figura de Alasitas. Elige entre 36 diseños con su vista previa.</p>
+          <button type="button" class="ghost" id="btn-open-figs" data-i18n>🎭 Elegir personajes</button>
+        </fieldset>
         <fieldset>
           <legend data-i18n>Círculo de demostración</legend>
+          <p class="muted" data-i18n>Cambia los datos del círculo de ejemplo para probar: no se guarda nada en la cadena.</p>
           <label><span data-i18n>Miembros (uno por línea: nombre, y si quieres, oficio · lugar)</span>
             <textarea name="people" rows="6" placeholder="Doña Rosa, Comerciante · La Cancha&#10;Don Teo, Productor de papa · Tiraque"></textarea>
           </label>
@@ -163,9 +169,15 @@
     <dialog id="dlg-figure" class="wide-dialog">
       <form method="dialog">
         <h2 data-i18n>Elige un personaje</h2>
-        <p class="muted" data-i18n>36 figuras talladas estilo Alasitas, modeladas en Blender.</p>
-        <div class="fig-grid" id="fig-grid"></div>
-        <menu><button value="close" class="primary" data-i18n>Cerrar</button></menu>
+        <p class="muted" data-i18n>36 figuras talladas estilo Alasitas, modeladas en Blender. Toca una para ponerla en la mesa.</p>
+        <label class="fig-who"><span data-i18n>¿Para quién?</span> <select id="fig-member"></select></label>
+        <div class="fig-filters" id="fig-filters" role="group"></div>
+        <div class="fig-grid" id="fig-grid" role="listbox"></div>
+        <menu>
+          <button value="none" type="button" class="ghost" id="fig-random" data-i18n>Al azar</button>
+          <button value="none" type="button" class="ghost" id="fig-clear" data-i18n>Quitar personaje</button>
+          <button value="close" class="primary" data-i18n>Listo</button>
+        </menu>
       </form>
     </dialog>
 

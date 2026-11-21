@@ -53,11 +53,23 @@ body[data-route="circulo"] .help-fab { right: 392px; }
 @media (max-width: 760px) { .help-fab { bottom: 84px; right: 14px !important; } .help-menu { right: 14px; bottom: 146px; } }
 @media (prefers-reduced-motion: reduce) { .help-fab { animation: none; } }
 
-/* Selector de personajes */
-.fig-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; max-height: 52vh; overflow-y: auto; margin-top: 12px; }
-.fig { display: grid; gap: 6px; justify-items: center; padding: 10px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.04); color: var(--ink); font-size: 12px; cursor: pointer; }
-.fig i { width: 44px; height: 44px; border-radius: 12px; display: block; }
-.fig.on { border-color: var(--gold); background: rgba(255, 209, 102, 0.12); }
+/* Selector de personajes: miniaturas 3D, filtros por oficio y miembro */
+#dlg-figure { width: min(860px, 96vw); }
+.fig-who { display: flex; gap: 10px; align-items: center; margin-top: 10px; font-weight: 700; }
+.fig-who select { padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: #ffffff10; color: var(--ink); font: inherit; }
+.fig-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.fig-chip { border: 1px solid var(--line); background: #ffffff08; color: var(--muted); border-radius: 999px; padding: 5px 10px; font-size: 12px; cursor: pointer; }
+.fig-chip[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: #1b1030; font-weight: 700; }
+.fig-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; max-height: 52vh; overflow-y: auto; margin-top: 12px; padding: 2px; }
+.fig { position: relative; display: grid; gap: 4px; justify-items: center; padding: 8px 6px; border-radius: 14px; border: 2px solid transparent; background: radial-gradient(circle at 50% 35%, #ffffff18, #ffffff05 70%); color: var(--ink); font-size: 12px; cursor: pointer; transition: transform .15s, border-color .15s; }
+.fig:hover { transform: translateY(-2px); border-color: #ffffff40; }
+.fig img { width: 90px; height: 100px; object-fit: contain; }
+.fig .fig-name { text-align: center; line-height: 1.2; }
+.fig .fig-dots { display: flex; gap: 3px; }
+.fig .fig-dots i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+.fig.on { border-color: var(--gold); background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--gold) 30%, transparent), #ffffff05 70%); }
+.fig.on::after { content: "✓"; position: absolute; top: 6px; right: 8px; width: 22px; height: 22px; border-radius: 50%; background: var(--gold); color: #1b1030; font-weight: 800; display: grid; place-items: center; }
+@media (max-width: 480px) { .fig-grid { grid-template-columns: repeat(3, 1fr); } .fig img { width: 72px; height: 80px; } }
 .person .figbtn { width: 100%; margin-top: 6px; }
 .person .reg-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
 
@@ -78,7 +90,12 @@ body[data-route="circulo"] .help-fab { right: 392px; }
 
 /* Simulador */
 dialog.wide-dialog { width: min(640px, 94vw); }
-dialog .row3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+dialog .row3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+dialog .row3 > label, dialog .row2 > label { min-width: 0; }
+dialog select, dialog input, dialog textarea { max-width: 100%; box-sizing: border-box; }
+dialog .row3 select { width: 100%; font-family: inherit; text-overflow: ellipsis; }
+#dlg-custom { width: min(620px, 94vw); overflow-x: hidden; }
+.custom-figs p { margin: 4px 0 8px; font-size: 13px; }
 .sim-out { margin-top: 14px; color: var(--ink); font-size: 14px; }
 .sim-out p { margin: 6px 0; }
 .sim-out svg { margin: 8px 0; color: var(--muted); }

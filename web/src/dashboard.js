@@ -292,6 +292,22 @@ async function renderHome(v, tk = token) {
     </div>
     <p class="muted">${t("Cada aporte, voto, hito o meta cumplida suma marcas al mismo aguayo: tu pasaporte de reputación portable en Stellar.")}</p>
   </section>
+  <section class="usos">
+    <h2>${t("¿En qué situaciones te sirve?")}</h2>
+    <p class="muted">${t("Las mismas reglas claras sirven para muchas cosas que ya hacemos en comunidad.")}</p>
+    <div class="usos-grid">
+      ${[
+        ["circulo", "🧺", "El pasanaku de la feria", "Las vendedoras ponen su cuota cada semana y el turno lo sortea la red, no el organizador."],
+        ["verificar", "🎟️", "La rifa de la junta vecinal", "Un sorteo que cualquiera puede comprobar: la lista se fija antes y el ganador sale de un dato público de Stellar."],
+        ["ayni", "🩺", "Una emergencia en la familia", "El grupo junta un fondo y vota la ayuda; quien la recibe devuelve sin intereses."],
+        ["minka", "🚰", "La obra del barrio", "Riego, una cancha o la sede: el dinero se libera por partes cuando se ve el avance."],
+        ["minka", "🎉", "La fiesta del preste", "Los aportes para la fiesta quedan claros y nadie cobra a escondidas."],
+        ["alasitas", "🎓", "El estudio de los hijos", "Una meta de ahorro con fecha, sola o con la familia, y una racha que motiva."],
+        ["circulo", "🛒", "La compra en grupo", "Un pasanaku para comprar por turnos la cocina, la moto o las herramientas."],
+        ["verificar", "🛡️", "¿Te prometen algo raro?", "Comprueba un círculo, un comprobante o un sorteo, y guarda evidencia si algo no cuadra."],
+      ].map(([r, ic, n, d], i) => `<a class="uso" href="#/${r}" style="--d:${i * 60}ms"><span class="ic" aria-hidden="true">${ic}</span><b>${t(n)}</b><span>${t(d)}</span></a>`).join("")}
+    </div>
+  </section>
   <section class="how">
     <h2>${t("Cómo funciona")}</h2>
     <div class="steps">
@@ -388,7 +404,14 @@ async function renderWallet(v, tk) {
     <p>${addr ? t("Datos en vivo de Stellar testnet (Horizon) y tu historial en todos los círculos del registro.") : t("Modo demo: conecta tu billetera para ver tus datos reales.")}</p>
     ${addr ? "" : `<button class="btn primary" id="w-connect">${t("Conectar billetera")}</button>`}
     <div class="qr-row"><button class="btn" id="w-receive">▣ ${t("Recibir con QR")}</button><button class="btn" id="w-scan">⌖ ${t("Escanear QR")}</button><button class="btn" id="w-bank">🏦 ${t("Recargar con el QR de tu banco")}</button></div></header>
-    <div class="grid2"><div class="stage-box tall" id="wallet-box"></div><div id="passport" class="passport"></div></div></section>`;
+    <div class="grid2"><div class="stage-box tall" id="wallet-box"></div><div id="passport" class="passport"></div></div>
+    <section class="planet-legend" aria-labelledby="pl-title"><h2 id="pl-title">${t("Cómo leer tu planeta")}</h2><ul>
+      <li><i class="pl pl-planet"></i><b>${t("El planeta tejido")}</b><span>${t("Eres tú: tu cuenta en Stellar, tejida con los colores del aguayo.")}</span></li>
+      <li><i class="pl pl-ring"></i><b>${t("Los anillos")}</b><span>${t("Tus monedas (XLM, USDC…). Más saldo, anillo más grueso.")}</span></li>
+      <li><i class="pl pl-moon"></i><b>${t("Las lunas")}</b><span>${t("Tus círculos (pasanaku y otros). Más aporte, luna más grande.")}</span></li>
+      <li><i class="pl pl-crown"></i><b>${t("La corona de diamantes")}</b><span>${t("Tu reputación: un diamante por cada 5 puntos del pasaporte.")}</span></li>
+      <li><i class="pl pl-comet"></i><b>${t("Los cometas")}</b><span>${t("Tus pagos recientes: los que llegan vienen por la izquierda; los que envías salen por la derecha.")}</span></li>
+    </ul><p class="muted">${t("El pasaporte de al lado resume tus marcas en todos los círculos donde te uniste: es evidencia de pagos, no una aprobación de crédito.")}</p></section></section>`;
   $("#w-connect")?.addEventListener("click", () => hooks.connectWallet?.());
   const qr = () => import("./qr/qr.js");
   $("#w-receive").onclick = async () => (await qr()).openReceive(state.address, getLang());

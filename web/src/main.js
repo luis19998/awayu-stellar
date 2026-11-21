@@ -659,33 +659,74 @@ function applyFigures(c) {
 }
 
 let figCatalog = null;
+let figFilter = "all";
+/** Selector de personajes: miniatura 3D de cada figura, filtros por oficio y miembro elegible. */
 async function openFigurePicker(i) {
-  if (i < 0) return;
-  figCatalog ??= await fetch("/models/personajes.json").then((r) => r.json()).catch(() => ({ figures: [] }));
+  if (i < 0) i = 0;
+  figCatalog ??= await fetch("/models/personajes.json?v=2").then((r) => r.json()).catch(() => ({ figures: [] }));
+  const dlg = $("#dlg-figure");
   const grid = $("#fig-grid");
-  const m = circle.members[i];
-  grid.innerHTML = "";
-  for (const f of figCatalog.figures) {
+  const who = $("#fig-member");
+  const filters = $("#fig-filters");
+  const keyOf = (m) => (m.address?.startsWith("GDEMO") ? m.name : m.address);
+  const setFig = (idx, id) => {
+    const m = circle.members[idx];
+    const map = figureMap();
+    if (id) map[keyOf(m)] = id; else delete map[keyOf(m)];
+    try { localStorage.setItem(FIG_KEY, JSON.stringify(map)); } catch {}
+    m.figure = id || undefined;
+    scene.setFigure(idx, id || null);
+  };
+  // ¿Para quién? (todos los miembros del círculo)
+  who.innerHTML = "";
+  circle.members.forEach((m, k) => who.add(new Option(m.name, String(k), false, k === i)));
+  // Filtros por oficio
+  const kinds = [...new Map(figCatalog.figures.map((f) => [f.archetype, f.label])).entries()];
+  filters.innerHTML = "";
+  for (const [id, label] of [["all", "Todos"], ...kinds]) {
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "fig" + (m.figure === f.id ? " on" : "");
-    b.innerHTML = `<i style="background:linear-gradient(135deg,${f.colors[0]} 0 45%,${f.colors[1]} 45% 75%,${f.colors[2]} 75%)"></i><span></span>`;
-    b.querySelector("span").textContent = t(f.label);
-    b.onclick = () => {
-      const map = figureMap();
-      map[m.address?.startsWith("GDEMO") ? m.name : m.address] = f.id;
-      try {
-        localStorage.setItem(FIG_KEY, JSON.stringify(map));
-      } catch {}
-      m.figure = f.id;
-      scene.setFigure(i, f.id);
-      grid.querySelectorAll(".fig").forEach((x) => x.classList.toggle("on", x === b));
-    };
-    grid.appendChild(b);
+    b.className = "fig-chip";
+    b.textContent = t(label);
+    b.setAttribute("aria-pressed", String(figFilter === id));
+    b.onclick = () => { figFilter = id; draw(); filters.querySelectorAll(".fig-chip").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); };
+    filters.appendChild(b);
   }
-  applyStatic($("#dlg-figure"));
-  $("#dlg-figure").showModal();
+  function draw() {
+    const idx = Number(who.value);
+    const m = circle.members[idx];
+    grid.innerHTML = "";
+    for (const f of figCatalog.figures) {
+      if (figFilter !== "all" && f.archetype !== figFilter) continue;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "fig" + (m.figure === f.id ? " on" : "");
+      b.setAttribute("role", "option");
+      b.setAttribute("aria-selected", String(m.figure === f.id));
+      b.innerHTML = `<img src="/models/figuras/${f.id}.webp" alt="" loading="lazy" width="90" height="100"><span class="fig-name"></span><span class="fig-dots">${f.colors.map((c) => `<i style="background:${c}"></i>`).join("")}</span>`;
+      b.querySelector(".fig-name").textContent = `${t(f.label)} · ${f.variant + 1}`;
+      b.title = `${t(f.label)} · ${t("variante")} ${f.variant + 1}`;
+      b.onclick = () => {
+        setFig(idx, f.id);
+        grid.querySelectorAll(".fig").forEach((x) => { x.classList.toggle("on", x === b); x.setAttribute("aria-selected", String(x === b)); });
+        toast(t("{n} ahora es {f}", { n: m.name, f: t(f.label) }));
+      };
+      grid.appendChild(b);
+    }
+  }
+  who.onchange = draw;
+  $("#fig-random").onclick = () => {
+    const pool = figCatalog.figures.filter((f) => figFilter === "all" || f.archetype === figFilter);
+    const f = pool[Math.floor(Math.random() * pool.length)];
+    if (f) { setFig(Number(who.value), f.id); draw(); }
+  };
+  $("#fig-clear").onclick = () => { setFig(Number(who.value), null); draw(); };
+  draw();
+  applyStatic(dlg);
+  if (!dlg.open) dlg.showModal();
 }
+window.addEventListener("awayu:pick-figure", () => openFigurePicker(selected >= 0 ? selected : 0));
+$("#btn-open-figs")?.addEventListener("click", () => openFigurePicker(selected >= 0 ? selected : 0));
 
 function saveCircle(id) {
   try {
@@ -945,11 +986,19 @@ function renderHowto() {
 renderHowto();
 
 let toured = false;
+window.addEventListener("awayu:start-tour", async () => {
+  if (location.hash !== "#/circulo") { location.hash = "#/circulo"; toured = false; return; }
+  const { startTour, TOURS } = await import("./guide/tour.js");
+  setTimeout(() => startTour(TOURS.firstVisit, { lang: getLang(), id: "firstVisit" }), 900);
+});
+
 async function maybeTour() {
   if (toured) return;
   toured = true;
-  const { startTour, TOURS, hasSeenTour } = await import("./guide/tour.js");
+  const [{ startTour, TOURS, hasSeenTour }, { hasSeenWelcome }] = await Promise.all([import("./guide/tour.js"), import("./guide/welcome.js")]);
   if (hasSeenTour("firstVisit")) return;
+  // la bienvenida va primero; ella lanza el recorrido si la persona lo pide
+  if (!hasSeenWelcome()) { toured = false; return; }
   setTimeout(() => startTour(TOURS.firstVisit, { lang: getLang(), id: "firstVisit" }), 2600);
 }
 

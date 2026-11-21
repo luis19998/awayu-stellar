@@ -18,6 +18,9 @@ const PT = {
   "Finanzas comunitarias andinas en Stellar": "Finanças comunitárias andinas na Stellar",
   "Dinero": "Dinheiro", "dinero": "dinheiro", "Nombre del círculo": "Nome do círculo", "Departamento": "Departamento",
   // Panel (textos que faltaban)
+  "Billetera": "Carteira",
+  "Billetera desconectada en este navegador": "Carteira desconectada neste navegador",
+  "Tu personaje ahora es {f}": "Seu personagem agora é {f}",
   "¿En qué situaciones te sirve?": "Em que situações ele ajuda?",
   "Las mismas reglas claras sirven para muchas cosas que ya hacemos en comunidad.": "As mesmas regras claras servem para muitas coisas que já fazemos em comunidade.",
   "Cómo leer tu planeta": "Como ler o seu planeta",

@@ -11,6 +11,9 @@ const GN = {
   "Aportar": "Eme'ẽ", "Compartir enlace": "Emboja'o joajuha", "Cerrar": "Emboty", "Abrir": "Eipe'a",
   "Pasaporte": "Pasaporte", "Billetera": "Billetera digital",
   // Panel (textos que faltaban)
+  "Billetera": "Viru ryru",
+  "Billetera desconectada en este navegador": "Billetera desconectada en este navegador",
+  "Tu personaje ahora es {f}": "Nde tapicha ko'ágã ha'e {f}",
   "¿En qué situaciones te sirve?": "¿Mamópa nepytyvõta?",
   "Las mismas reglas claras sirven para muchas cosas que ya hacemos en comunidad.": "Las mismas reglas claras sirven para muchas cosas que ya hacemos en comunidad.",
   "Cómo leer tu planeta": "Mba'éichapa emoñe'ẽ nde planeta",

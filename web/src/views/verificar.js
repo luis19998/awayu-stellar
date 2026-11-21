@@ -466,6 +466,8 @@ export function mount(container, { lang = "es", deployment = {}, address = "", s
       const latest = await client.latestLedger();
       currentDraw = { title, participants, count, hash, ledger: latest.sequence + 6, result: null, status: t("drawWaiting") };
       renderCommitment();
+      // el compromiso ya está a la vista: el aviso de "calculando" ya no corresponde
+      el(root, "#verify-draw-status").textContent = "";
       await retrieveDraw(currentDraw);
     } catch {
       if (!destroyed) el(root, "#verify-draw-status").textContent = t("drawNetworkError");

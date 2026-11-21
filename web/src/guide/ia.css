@@ -22,3 +22,4 @@ body[data-route="circulo"] .proactive-card { right: 452px; }
 .consent-dialog label input { width: 18px; height: 18px; margin: 2px 0 0; flex: none; accent-color: var(--gold); }
 /* Los consejos no tapan la bienvenida ni el recorrido guiado */
 body:has(.aw-guide-tour-card) .proactive-card, body:has(dialog.aw-welcome[open]) .proactive-card { display: none; }
+body:has(#settings-panel:not([hidden])) .proactive-card { display: none; }

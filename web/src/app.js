@@ -8,9 +8,11 @@ import { getLang, initLang, pickLang, t } from "./i18n.js";
 import { initDashboard } from "./dashboard.js";
 import { structuredData } from "./seo.js";
 import { state } from "./state.js";
+import { mountSettings } from "./settings/panel.js";
 
 initLang();
-
+state.lang = getLang();
+mountSettings();
 // Bienvenida para quien entra por primera vez (una sola vez por perfil)
 import("./guide/welcome.js").then(({ hasSeenWelcome, openWelcome }) => {
   if (hasSeenWelcome() || new URLSearchParams(location.search).has("nowelcome")) return;
@@ -23,6 +25,7 @@ import("./guide/welcome.js").then(({ hasSeenWelcome, openWelcome }) => {
     onDone: () => { try { localStorage.setItem("awayu.guide.tour.seen.firstVisit", "1"); } catch {} },
   }), 700);
 });
+
 import("./custom/studio.js").then(({ applyUiPrefs }) => applyUiPrefs());
 
 // Tras un despliegue nuevo, una pestaña vieja puede pedir archivos que ya no
@@ -47,7 +50,7 @@ try {
 // ---------- Ayuda: botón flotante con recorridos y mini tutoriales ----------
 const fab = document.querySelector("#help-fab");
 const helpMenu = document.querySelector("#help-menu");
-const TOPIC_ORDER = ["wallet", "contribute", "payout", "guarantee", "create", "studio", "qr-invite", "qr-receive", "qr-scan", "qr-bank", "customize", "simulator", "ayni-join", "ayni-contribute", "ayni-request", "ayni-vote", "minka-fund", "minka-milestone", "alasitas-create", "alasitas-save", "live-mode", "map", "passport", "risk", "games", "amawta"];
+const TOPIC_ORDER = ["wallet", "contribute", "payout", "guarantee", "create", "studio", "qr-invite", "qr-receive", "qr-scan", "qr-bank", "customize", "simulator", "ayni-join", "ayni-contribute", "ayni-request", "ayni-vote", "minka-fund", "minka-milestone", "alasitas-create", "alasitas-save", "live-mode", "map", "passport", "risk", "games", "verify-draw", "verify-check", "verify-report", "settings", "amawta"];
 async function fillHelpMenu() {
   const { HELP_TOPICS, ROUTE_TOPICS } = await import("./guide/help.js");
   const lang = getLang();
@@ -82,6 +85,15 @@ helpMenu?.addEventListener("click", async (e) => {
 
 let appPromise = null;
 const app = () => (appPromise ??= import("./main.js").then((m) => m.circleApp));
+
+// Acciones del panel de configuración: cargan el círculo si aún no está y lo piden
+for (const [name, run] of [
+  ["awayu:pick-figure", (c) => c.pickFigure({ profile: true })],
+  ["awayu:open-studio", (c) => c.openStudio()],
+  ["awayu:connect-wallet", (c) => c.connectWallet()],
+  ["awayu:disconnect-wallet", (c) => c.disconnectWallet()],
+  ["awayu:start-tour", (c) => c.startTour()],
+]) addEventListener(name, () => app().then(run).catch(() => {}));
 
 initDashboard({
   onCircleActive: (on) => {

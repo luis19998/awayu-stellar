@@ -45,6 +45,11 @@ export async function connectKit() {
 
 export const wallet = () => current;
 
+/** Olvida la billetera conectada en esta sesión (no toca nada en la cadena). */
+export function disconnect() {
+  current = null;
+}
+
 export async function connectFreighter() {
   const f = await import("@stellar/freighter-api");
   const c = await f.isConnected();

@@ -20,7 +20,7 @@ import {
   buildRegisterXdr, buildJoinXdr, buildEndorseXdr,
   readBalance,
 } from "./chain.js";
-import { pollarEnabled, connectFreighter, connectPollar, connectKit, sign, wallet } from "./wallet.js";
+import { pollarEnabled, connectFreighter, connectPollar, connectKit, disconnect as forgetWallet, sign, wallet } from "./wallet.js";
 
 const $ = (s) => document.querySelector(s);
 const fmt = (n, t) => `${n.toLocaleString("es-BO", { maximumFractionDigits: 2 })} ${t}`;
@@ -543,7 +543,7 @@ async function onConnected(w) {
   menu.hidden = true;
   const btn = $("#btn-wallet");
   btn.removeAttribute("data-i18n");
-  btn.textContent = `${w.kind === "pollar" ? "Pollar" : "Freighter"} · ${short(w.address)}`;
+  btn.textContent = `${w.kind === "pollar" ? "Pollar" : w.kind === "kit" ? t("Billetera") : "Freighter"} · ${short(w.address)}`;
   btn.classList.add("on");
   deployment ??= await loadDeployment();
   if (deployment && (await ensureFunded(deployment, w.address))) toast(t("Cuenta de testnet fondeada con Friendbot"));
@@ -660,8 +660,9 @@ function applyFigures(c) {
 
 let figCatalog = null;
 let figFilter = "all";
+let figProfile = null;
 /** Selector de personajes: miniatura 3D de cada figura, filtros por oficio y miembro elegible. */
-async function openFigurePicker(i) {
+async function openFigurePicker(i, { profile = false } = {}) {
   if (i < 0) i = 0;
   figCatalog ??= await fetch("/models/personajes.json?v=2").then((r) => r.json()).catch(() => ({ figures: [] }));
   const dlg = $("#dlg-figure");
@@ -669,7 +670,9 @@ async function openFigurePicker(i) {
   const who = $("#fig-member");
   const filters = $("#fig-filters");
   const keyOf = (m) => (m.address?.startsWith("GDEMO") ? m.name : m.address);
+  $("#dlg-figure .fig-who").hidden = profile;
   const setFig = (idx, id) => {
+    if (profile) { window.dispatchEvent(new CustomEvent("awayu:figure-selected", { detail: { id } })); return; }
     const m = circle.members[idx];
     const map = figureMap();
     if (id) map[keyOf(m)] = id; else delete map[keyOf(m)];
@@ -700,16 +703,18 @@ async function openFigurePicker(i) {
       if (figFilter !== "all" && f.archetype !== figFilter) continue;
       const b = document.createElement("button");
       b.type = "button";
-      b.className = "fig" + (m.figure === f.id ? " on" : "");
+      const chosen = profile ? figProfile === f.id : m.figure === f.id;
+      b.className = "fig" + (chosen ? " on" : "");
       b.setAttribute("role", "option");
-      b.setAttribute("aria-selected", String(m.figure === f.id));
+      b.setAttribute("aria-selected", String(chosen));
       b.innerHTML = `<img src="/models/figuras/${f.id}.webp" alt="" loading="lazy" width="90" height="100"><span class="fig-name"></span><span class="fig-dots">${f.colors.map((c) => `<i style="background:${c}"></i>`).join("")}</span>`;
       b.querySelector(".fig-name").textContent = `${t(f.label)} · ${f.variant + 1}`;
       b.title = `${t(f.label)} · ${t("variante")} ${f.variant + 1}`;
       b.onclick = () => {
         setFig(idx, f.id);
+        if (profile) figProfile = f.id;
         grid.querySelectorAll(".fig").forEach((x) => { x.classList.toggle("on", x === b); x.setAttribute("aria-selected", String(x === b)); });
-        toast(t("{n} ahora es {f}", { n: m.name, f: t(f.label) }));
+        toast(profile ? t("Tu personaje ahora es {f}", { f: t(f.label) }) : t("{n} ahora es {f}", { n: m.name, f: t(f.label) }));
       };
       grid.appendChild(b);
     }
@@ -725,7 +730,6 @@ async function openFigurePicker(i) {
   applyStatic(dlg);
   if (!dlg.open) dlg.showModal();
 }
-window.addEventListener("awayu:pick-figure", () => openFigurePicker(selected >= 0 ? selected : 0));
 $("#btn-open-figs")?.addEventListener("click", () => openFigurePicker(selected >= 0 ? selected : 0));
 
 function saveCircle(id) {
@@ -986,11 +990,11 @@ function renderHowto() {
 renderHowto();
 
 let toured = false;
-window.addEventListener("awayu:start-tour", async () => {
-  if (location.hash !== "#/circulo") { location.hash = "#/circulo"; toured = false; return; }
+async function startFirstTour() {
+  if (location.hash !== "#/circulo") { toured = false; location.hash = "#/circulo"; return; }
   const { startTour, TOURS } = await import("./guide/tour.js");
   setTimeout(() => startTour(TOURS.firstVisit, { lang: getLang(), id: "firstVisit" }), 900);
-});
+}
 
 async function maybeTour() {
   if (toured) return;
@@ -1014,6 +1018,22 @@ export const circleApp = {
   connectWallet: () => {
     menu.hidden = false;
     $("#btn-wallet").focus();
+  },
+  // Acciones que pide el panel de configuración (⚙)
+  startTour: startFirstTour,
+  pickFigure: (opts) => openFigurePicker(selected >= 0 ? selected : 0, opts),
+  openStudio: async () => (await import("./custom/studio.js")).openStudio(getLang(), studioCtx()),
+  disconnectWallet: () => {
+    forgetWallet();
+    const btn = $("#btn-wallet");
+    btn.classList.remove("on");
+    btn.setAttribute("data-i18n", "");
+    btn.dataset.i18nKey = "Conectar billetera";
+    btn.textContent = t("Conectar billetera");
+    $("#wallet-balance").hidden = true;
+    setState({ address: null });
+    render();
+    toast(t("Billetera desconectada en este navegador"));
   },
 };
 if (location.hash.startsWith("#/circulo")) circleApp.setActive(true);

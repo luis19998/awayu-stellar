@@ -11,6 +11,9 @@ const QU = {
   "Aportar": "Qullqi churay", "Compartir enlace": "Tinkina rakiy", "Cerrar": "Wichqay", "Abrir": "Kichay",
   "Pasaporte": "Pasaporte", "Billetera": "Billetera digital", "Cancel": "Sayachiy",
   // Panel (textos que faltaban)
+  "Billetera": "Qullqi wayaqa",
+  "Billetera desconectada en este navegador": "Billetera desconectada en este navegador",
+  "Tu personaje ahora es {f}": "Runaykiqa kunanqa {f}",
   "¿En qué situaciones te sirve?": "¿Imaypi yanapasunki?",
   "Las mismas reglas claras sirven para muchas cosas que ya hacemos en comunidad.": "Las mismas reglas claras sirven para muchas cosas que ya hacemos en comunidad.",
   "Cómo leer tu planeta": "Imaynatan planetaykita ñawinchanki",

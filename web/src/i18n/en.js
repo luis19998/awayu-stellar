@@ -235,6 +235,8 @@ export default {
   "Ese aguayo es tu historial crediticio: portable, verificable, tuyo.":
     "That aguayo is your payment record: portable, verifiable, yours.",
   // Panel (textos que faltaban)
+  "Billetera desconectada en este navegador": "Wallet disconnected in this browser",
+  "Tu personaje ahora es {f}": "Your character is now {f}",
   "¿En qué situaciones te sirve?": "Where does it help you?",
   "Las mismas reglas claras sirven para muchas cosas que ya hacemos en comunidad.": "The same clear rules work for many things we already do as a community.",
   "Cómo leer tu planeta": "How to read your planet",

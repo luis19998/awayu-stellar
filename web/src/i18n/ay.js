@@ -11,6 +11,9 @@ const AY = {
   "Aportar": "Qullqi churaña", "Compartir enlace": "Chinuñapa jaljaña", "Cerrar": "Jist'antaña", "Abrir": "Jist'araña",
   "Pasaporte": "Pasaporte", "Billetera": "Billetera digital",
   // Panel (textos que faltaban)
+  "Billetera": "Qullqi wayaqa",
+  "Billetera desconectada en este navegador": "Billetera desconectada en este navegador",
+  "Tu personaje ahora es {f}": "Jaqimax jichhax {f}",
   "¿En qué situaciones te sirve?": "¿Kawkinsa yanapt'ätam?",
   "Las mismas reglas claras sirven para muchas cosas que ya hacemos en comunidad.": "Las mismas reglas claras sirven para muchas cosas que ya hacemos en comunidad.",
   "Cómo leer tu planeta": "Kunjamas planetama liyt'aña",

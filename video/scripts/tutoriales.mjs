@@ -293,10 +293,64 @@ Object.assign(TOPICS, {
     await r.sleep(1800);
   },
 });
+// ---------- Verificar y configuración ----------
+const PASANAKU = "CAF7V32UXWDPFOOLMUW7BZLIMAJHMOUEA3WOCMHC76DQM7DHMGOSKGBS";
+Object.assign(TOPICS, {
+  "verify-draw": async (r) => {
+    await r.click("#verify-draw-form [name=title]");
+    await r.type("Rifa de la junta vecinal", 35);
+    await r.click("#verify-draw-form [name=participants]");
+    await r.type(["Ana", "Bruno", "Carla", "David", "Eva", "Fabio"].join(String.fromCharCode(10)), 30);
+    await r.click("#verify-draw-form [type=submit]");
+    await r.page.waitForFunction(() => /Resultado|Result/.test(document.querySelector("#view").innerText) && document.querySelector("#view svg"), null, { timeout: 90000 }).catch(() => {});
+    await r.sleep(1200);
+    await r.move("#view svg", 900);
+    await r.sleep(2500);
+  },
+  "verify-check": async (r) => {
+    await r.click("[data-tab=circle]");
+    await r.sleep(500);
+    await r.click("#verify-circle-form [name=address]");
+    await r.type(PASANAKU, 8);
+    await r.click("#verify-circle-form [type=submit]");
+    await r.sleep(7000);
+    await r.page.evaluate(() => document.querySelector("#verify-panel-circle")?.scrollIntoView({ block: "center", behavior: "smooth" }));
+    await r.sleep(2500);
+  },
+  "verify-report": async (r) => {
+    await r.click("[data-tab=report]");
+    await r.sleep(500);
+    await r.move("#verify-report-form [name=type]", 600);
+    await r.page.selectOption("#verify-report-form [name=type]", { index: 1 }).catch(() => {});
+    await r.click("#verify-report-form [name=description]");
+    await r.type("El organizador cobró el pozo de la ronda 3 y no se lo entregó a quien le tocaba.", 22);
+    await r.click("#verify-report-form [type=submit]");
+    await r.sleep(2200);
+    await r.move("#verify-report-status", 700);
+    await r.sleep(2500);
+  },
+  settings: async (r) => {
+    await r.click("#btn-settings");
+    await r.sleep(800);
+    await r.click("#settings-panel input >> nth=0");
+    await r.type("Rosa", 120);
+    await r.sleep(500);
+    for (const k of [1, 3]) {
+      await r.click(`#settings-panel .aw-settings-section >> nth=${k} >> summary`).catch(() => {});
+      await r.sleep(1300);
+    }
+    await r.sleep(1200);
+  },
+});
+const SPEED = { "verify-draw": 3, "verify-check": 1.4 };
 // En la grabación, un lector de QR simulado "lee" una invitación de ejemplo
 const FAKE_SCAN = `globalThis.BarcodeDetector = class { constructor() { this.n = 0; } async detect() { return ++this.n > 60 ? [{ rawValue: location.origin + "/?c=CCNZYPMRSWINOELDI2HGMJ5O3IVA5JW4MVQGJFT2PG3ZNDWUT6DFFSRS#/circulo" }] : []; } };`;
 const OUTNAME = { billetera: "wallet", aportar: "contribute", pozo: "payout", garantia: "guarantee", crear: "create", personalizar: "customize", simulador: "simulator", mapa: "map", pasaporte: "passport" };
 const PRE = {
+  "verify-draw": ["verificar", 3000],
+  "verify-check": ["verificar", 3000],
+  "verify-report": ["verificar", 3000],
+  settings: ["inicio", 3000],
   "ayni-join": ["ayni", 3000],
   "qr-invite": ["circulo", 5000],
   "qr-receive": ["billetera", 3000],
@@ -326,8 +380,12 @@ for (const [id, fn] of Object.entries(TOPICS)) {
       localStorage.removeItem("awayu.skin");
       localStorage.setItem("awayu.sound.muted", "true");
       localStorage.setItem("awayu.guide.tour.seen.firstVisit", "1");
+      localStorage.setItem("awayu.guide.welcome.seen", "1");
+      localStorage.setItem("awayu.proactive.muted", "1");
     } catch {}
   });
+  // Recargar para que la bienvenida ya cuente como vista desde el arranque
+  await rec.page.reload({ waitUntil: "load" });
   // Los temas nuevos empiezan ya dentro de su sección
   if (PRE[id]) await go(rec, PRE[id][0], PRE[id][1]);
   await rec.begin();
@@ -340,7 +398,7 @@ for (const [id, fn] of Object.entries(TOPICS)) {
   const mp4 = `./${id}.mp4`;
   const info = await rec.end(mp4);
   // WebM liviano para la web (sin audio) y un póster
-  spawnSync(ffmpeg, ["-y", "-hide_banner", "-loglevel", "error", "-i", mp4, "-vf", "fps=24,scale=720:-2:flags=lanczos", "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "42", "-row-mt", "1", "-an", `${OUT}/${name}.webm`], { stdio: "inherit" });
+  spawnSync(ffmpeg, ["-y", "-hide_banner", "-loglevel", "error", "-i", mp4, "-vf", `${SPEED[id] ? `setpts=PTS/${SPEED[id]},` : ""}fps=24,scale=720:-2:flags=lanczos`, "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "42", "-row-mt", "1", "-an", `${OUT}/${name}.webm`], { stdio: "inherit" });
   spawnSync(ffmpeg, ["-y", "-hide_banner", "-loglevel", "error", "-sseof", "-1.2", "-i", mp4, "-frames:v", "1", "-vf", "scale=720:-2", "-q:v", "5", `${OUT}/${name}.jpg`], { stdio: "inherit" });
   rmSync(mp4, { force: true });
   console.log(id, `${info.seconds.toFixed(1)} s`, `${Math.round(statSync(`${OUT}/${name}.webm`).size / 1024)} kB`);

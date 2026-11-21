@@ -288,6 +288,21 @@ async function renderHome(v, tk = token) {
       </div>
     </div>
   </section>
+  <section class="jueces" aria-labelledby="jueces-h">
+    <h2 id="jueces-h">${t("Pruébalo en 3 minutos, sin instalar nada")}</h2>
+    <ol>
+      <li>${t("Toca Conectar billetera y elige Cuenta de prueba instantánea.")}</li>
+      <li>${t("Crea un pasanaku en USDC de prueba; si no tienes, la web te los consigue en el DEX de Stellar.")}</li>
+      <li>${t("Aporta, deja tu garantía y paga el pozo: cada paso muestra su transacción en Stellar Expert.")}</li>
+      <li>${t("Abre el reporte para cooperativas con tu historial verificable.")}</li>
+    </ol>
+    <div class="cta">
+      <a class="btn" href="/reporte.html">${t("Reporte para cooperativas")}</a>
+      <a class="btn ghost" href="https://github.com/luis19998/awayu-stellar/blob/main/docs/EVIDENCIA.md" target="_blank" rel="noopener">${t("Transacciones reales por acción")}</a>
+      <a class="btn ghost" href="https://github.com/luis19998/awayu-stellar/blob/main/docs/PAGOS-REALES.md" target="_blank" rel="noopener">${t("Camino a pagos reales")}</a>
+    </div>
+    <p class="muted">${t("Prototipo en la red de prueba de Stellar: se usa dinero de prueba, sin valor real.")}</p>
+  </section>
   <section class="kpis" id="kpis">
     ${["Círculos registrados", "Miembros", "Reputación promedio", "Avales comunitarios", "Ledger de Stellar"].map((k, i) => `<div class="kpi" style="--d:${i * 80}ms"><span>${t(k)}</span><b data-k="${i}">–</b></div>`).join("")}
   </section>
@@ -297,7 +312,7 @@ async function renderHome(v, tk = token) {
       ${[
         ["circulo", "◎", "Pasanaku", "Ahorro rotativo: todos aportan y, por turno sorteado, alguien recibe el pozo.", "#d81b60"],
         ["ayni", "❖", "Ayni", "Ayuda mutua: un fondo común para emergencias, con votación de la comunidad.", "#13a3b0"],
-        ["minka", "✚", "Minka", "Proyectos comunitarios: la dinero se libera por hitos aprobados.", "#1f9d55"],
+        ["minka", "✚", "Minka", "Proyectos comunitarios: el dinero se libera por hitos aprobados.", "#1f9d55"],
         ["alasitas", "⌂", "Alasitas", "Metas de ahorro con miniaturas: casa, estudio, negocio, viaje.", "#f9c22e"],
       ].map(([r, ic, n, d, c], i) => `<a class="trad" href="#/${r}" style="--c:${c};--d:${i * 90}ms"><span class="ic">${ic}</span><b>${n}</b><span>${t(d)}</span><i>${t("Abrir")} →</i></a>`).join("")}
     </div>
@@ -326,7 +341,7 @@ async function renderHome(v, tk = token) {
         ["1", "Armas tu círculo", "Eliges cuota, duración de la ronda y miembros. Se despliega un contrato Soroban y se registra en la memoria colectiva on-chain.", "/img/alasitas.webp"],
         ["2", "La red sortea el turno", "El orden de cobro sale del PRNG de Stellar: nadie elige quién cobra primero.", "/img/cochabamba.webp"],
         ["3", "Cada pago teje tu aguayo", "A tiempo, tarde, faltó o cubierto por garantía: cada ronda deja una capa de tejido verificable.", "/img/aguayo.webp"],
-        ["4", "Tu historial viaja con tú", "El pasaporte junta tu cumplimiento en todos los círculos: evidencia para cooperativas, sin prometer créditos.", "/img/uyuni.webp"],
+        ["4", "Tu historial viaja contigo", "El pasaporte junta tu cumplimiento en todos los círculos: evidencia para cooperativas, sin prometer créditos.", "/img/uyuni.webp"],
       ].map(([n, h, p, img], i) => `<article class="step" style="--d:${i * 90}ms"><div class="ph" style="background-image:url('${img}')"><b>${n}</b></div><h3>${t(h)}</h3><p>${t(p)}</p></article>`).join("")}
     </div>
   </section>

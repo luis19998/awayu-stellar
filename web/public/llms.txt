@@ -1,0 +1,19 @@
+# Awayu
+
+> Pasanaku, ayni, minka y alasitas (formas bolivianas de ahorrar y ayudarse) en contratos Soroban de Stellar. Cada pago cumplido deja una marca verificable (1 a tiempo, 2 tarde, 3 faltó, 4 cubierto con garantía) que una cooperativa puede leer para evaluar un microcrédito. Prototipo público en Stellar testnet, con dinero de prueba y todavía sin usuarios externos. Proyecto del equipo Stark Neo para el National Startups Hackathon by Stellar (Bolivia, 2026).
+
+## Probar
+- [Demo](https://awayu-two.vercel.app): Conectar billetera → "Cuenta de prueba instantánea" (no hay que instalar nada) → Crear un pasanaku (cuota en USDC de prueba) → Aportar, Dejar garantía, Pagar el pozo. También funcionan Freighter, xBull, Albedo, Lobstr y Pollar.
+- [Reporte para cooperativas](https://awayu-two.vercel.app/reporte.html): historial de pagos de una cuenta, leído en vivo de los contratos, con instrucciones para verificarlo.
+
+## Evidencia
+- [Transacciones por acción en USDC de prueba](https://github.com/luis19998/awayu-stellar/blob/main/docs/EVIDENCIA.md): crear un círculo, aportar, pagar el pozo, garantía que cubre a quien no pagó, votar y resolver en Ayni, liberar un hito de Minka y depositar en Alasitas.
+- [Métricas on-chain](https://github.com/luis19998/awayu-stellar/blob/main/docs/METRICAS.md)
+- [Repositorio](https://github.com/luis19998/awayu-stellar): cinco contratos (pasanaku, registro, ayni, minka, alasitas) con 34 pruebas, compilación verificable SEP-55 y CI.
+
+## Negocio y próximos pasos
+- [Modelo de negocio](https://github.com/luis19998/awayu-stellar/blob/main/docs/MODELO-NEGOCIO.md): el comerciante usa Awayu gratis; la cooperativa o IFD paga por cada reporte verificado (hipótesis: Bs 15).
+- [De testnet a pagos reales](https://github.com/luis19998/awayu-stellar/blob/main/docs/PAGOS-REALES.md): USDC en mainnet, rampas en bolivianos, KYC, marco normativo boliviano, auditoría y nuevo método de sorteo.
+- [Validación](https://github.com/luis19998/awayu-stellar/blob/main/docs/VALIDACION.md) y [cooperativas](https://github.com/luis19998/awayu-stellar/blob/main/docs/COOPERATIVAS.md): en curso.
+- [Equipo](https://github.com/luis19998/awayu-stellar/blob/main/docs/EQUIPO.md)
+- [Pitch deck (PDF)](https://github.com/luis19998/awayu-stellar/blob/main/docs/pitch/Awayu-pitch-deck.pdf)

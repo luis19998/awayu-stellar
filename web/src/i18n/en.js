@@ -196,7 +196,7 @@ export default {
   "Cuatro tradiciones bolivianas, un solo tejido": "Four Bolivian traditions, one weave",
   "Ahorro rotativo: todos aportan y, por turno sorteado, alguien recibe el pozo.": "Rotating savings: everyone pays in and, by a drawn turn, someone receives the pot.",
   "Ayuda mutua: un fondo común para emergencias, con votación de la comunidad.": "Mutual aid: a shared emergency fund, with community voting.",
-  "Proyectos comunitarios: la dinero se libera por hitos aprobados.": "Community projects: money is released by approved milestones.",
+  "Proyectos comunitarios: el dinero se libera por hitos aprobados.": "Community projects: money is released by approved milestones.",
   "Metas de ahorro con miniaturas: casa, estudio, negocio, viaje.": "Savings goals with miniatures: home, studies, business, travel.",
   "Abrir": "Open",
   "Cada aporte, voto, hito o meta cumplida suma marcas al mismo aguayo: tu pasaporte de reputación portable en Stellar.": "Every payment, vote, milestone or goal adds marks to the same aguayo: your portable reputation passport on Stellar.",

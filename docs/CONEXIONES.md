@@ -4,13 +4,13 @@ Todo lo de esta lista necesita **tu cuenta, tu identidad, tu permiso o aceptar t
 
 Orden sugerido por impacto en el hackatón (cierre virtual: **22 de noviembre**).
 
-## Estado al 2026-11-20 (revisado en Vercel y en Claude Code)
+## Estado al 2026-11-21 (revisado en Vercel y en Claude Code)
 | Conexión | Estado | Qué falta |
 |---|---|---|
 | `GEMINI_API_KEY` | ✅ Producción y Preview; Amawta responde con Gemini | Cuota gratuita limitada: si se agota (error 429) Amawta prueba otros modelos y, si no, usa respuestas locales. Para la final, considera activar facturación en Google AI Studio o crear otra clave |
-| `VITE_POLLAR_KEY` | ⚠️ Solo en **Preview** | Agregarla también en **Production** (la web publicada dice "falta la clave publicable") |
+| `VITE_POLLAR_KEY` | ✅ Production y Preview (2026-11-21); Google y correo activos en la web publicada | En el panel de Pollar, *Domains* debe incluir `https://awayu-two.vercel.app`. Borrar en Vercel la variable de prueba `VITE_POLLAR_KEY_TEST_DUMMY` |
 | `POLLAR_KEY` | Cargada, pero la web no la usa | Puedes borrarla: la web solo lee `VITE_POLLAR_KEY` (la clave publicable `pub_testnet_…`). Nunca pongas la secreta `sec_…` en una variable `VITE_` |
-| `TRUSTLESS_API_KEY` | ⚠️ Solo en **Preview** | Agregarla en **Production** |
+| `TRUSTLESS_API_KEY` | Solo en **Preview** | Opcional: la integración figura como planificada y la web publicada no la usa |
 | `N8N_WEBHOOK_URL`, `N8N_SECRET` | ❌ Faltan | Ver sección B |
 | GitHub → Vercel (despliegue automático) | ❌ No conectado | Vercel → proyecto awayu → Settings → Git → Connect |
 | MCP de Stellar (**Raven**) | ❌ No agregado | Ver sección C |

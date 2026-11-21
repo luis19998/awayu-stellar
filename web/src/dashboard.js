@@ -18,6 +18,7 @@ export const ROUTES = [
   { id: "mapa", icon: "⬢", label: "Mapa de Bolivia" },
   { id: "billetera", icon: "◉", label: "Billetera y pasaporte" },
   { id: "riesgo", icon: "◐", label: "Probabilidades" },
+  { id: "verificar", icon: "✓", label: "Verificar" },
   { id: "juegos", icon: "✦", label: "Juegos" },
   { id: "amawta", icon: "✺", label: "Amawta (IA)" },
   { id: "legal", icon: "§", label: "Legal y privacidad" },
@@ -226,6 +227,16 @@ async function addHowto(view, id) {
 export const labUrl = (id) => `https://lab.stellar.org/smart-contracts/contract-explorer?$=network$id=testnet&label=Testnet&horizonUrl=https:////horizon-testnet.stellar.org&rpcUrl=https:////soroban-testnet.stellar.org&passphrase=Test%20SDF%20Network%20/;%20September%202015;&smartContracts$explorer$contractId=${encodeURIComponent(id)};;`;
 
 const VIEWS = {
+  verificar: async (v, tk) => {
+    const [{ mount }, chain] = await Promise.all([import("./views/verificar.js"), import("./chain.js")]);
+    const dep = state.deployment || (await chain.loadDeployment().catch(() => null));
+    if (!alive(tk)) return;
+    const sign = state.address ? async (xdr) => {
+      const { sign: walletSign } = await import("./wallet.js");
+      return chain.submit(dep, await walletSign(xdr));
+    } : null;
+    adopt(tk, mount(v, { lang: getLang(), deployment: dep, address: state.address, sign }));
+  },
   ayni: (v, tk) => renderMode(v, tk, "ayni"),
   minka: (v, tk) => renderMode(v, tk, "minka"),
   alasitas: (v, tk) => renderMode(v, tk, "alasitas"),

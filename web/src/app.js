@@ -102,6 +102,7 @@ initDashboard({
   },
   openCircle: (id) => app().then((a) => a.openCircle(id)),
   connectWallet: () => app().then((a) => a.connectWallet()),
+  getTestUsdc: (amount) => app().then((a) => a.getTestUsdc(amount)),
   ensureApp: () => app(),
 });
 

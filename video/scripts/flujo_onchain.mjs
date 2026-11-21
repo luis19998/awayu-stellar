@@ -53,6 +53,7 @@ await page.evaluate(() => {
   } catch {}
 });
 await page.goto(BASE + "/#/circulo", { waitUntil: "load" });
+await page.reload({ waitUntil: "load" }); // la bienvenida ya cuenta como vista
 await r.sleep(4500);
 await r.begin();
 await r.sleep(1500);
@@ -72,13 +73,15 @@ await r.sleep(2500);
 // 2. Crear un pasanaku en USDC (5 minutos por ronda, cuota 2 USDC)
 await r.click("#btn-create");
 await r.sleep(1200);
+await r.click("#form-create input[name=cname]");
+await r.type("Pasanaku de la feria", 45);
 await r.click("#create-token");
 await page.selectOption("#create-token", "usdc");
-await r.click("input[name=amount]");
-await page.fill("input[name=amount]", "");
+await r.click("#form-create input[name=amount]");
+await page.fill("#form-create input[name=amount]", "");
 await r.type("2", 120);
-await page.selectOption("select[name=period]", "300");
-await r.click("textarea[name=members]");
+await page.selectOption("#form-create select[name=period]", "300");
+await r.click("#form-create textarea[name=members]");
 await r.type(carla.publicKey(), 18);
 await r.sleep(800);
 // Firmar (el diálogo de consentimiento aparece la primera vez)
@@ -91,13 +94,24 @@ const acceptConsent = async () => {
 };
 await r.click("#btn-create-go");
 await r.sleep(1500);
-// Si falta USDC, la web ofrece obtenerlo: se acepta
-for (let i = 0; i < 6; i++) {
+// Si falta USDC, la web ofrece obtenerlo en el mismo diálogo; luego se firma la creación
+let gotUsdc = false;
+for (let i = 0; i < 20 && !/[?&]c=C/.test(page.url()); i++) {
   await acceptConsent();
-  const get = page.locator("#btn-usdc-get:visible, #btn-create-usdc:visible");
-  if (await get.count()) { await r.click(await get.first().evaluate((el) => "#" + el.id)); await r.sleep(2500); }
-  if (/[?&]c=C/.test(page.url())) break;
-  await r.sleep(4000);
+  const flowOpen = await page.locator("#create-usdc-flow:not([hidden])").count();
+  const getBtn = page.locator("#btn-create-usdc:visible");
+  if (flowOpen && !gotUsdc && (await getBtn.count())) {
+    await r.click("#btn-create-usdc");
+    gotUsdc = true;
+    await r.sleep(1500);
+    await acceptConsent();
+    await page.waitForFunction(() => /listo/i.test(document.querySelector("#create-usdc-message")?.textContent || ""), null, { timeout: 90000 }).catch(() => {});
+    await r.sleep(2500);
+    if (await page.locator("#dlg-create[open]").count()) await r.click("#btn-create-go");
+    await r.sleep(2000);
+    continue;
+  }
+  await r.sleep(3000);
 }
 await page.waitForURL(/[?&]c=C/, { timeout: 120000 });
 const circleId = new URL(page.url()).searchParams.get("c");
@@ -124,11 +138,13 @@ await acceptConsent();
 await page.waitForTimeout(10000);
 
 // 5. Historial del círculo y transacción en Stellar Expert
-const link = page.locator("a[href*='stellar.expert/explorer/testnet/tx/']").last();
-const href = (await link.count()) ? await link.getAttribute("href") : null;
+// El enlace del pozo pagado ("recibiste" / "recibió") en el historial del círculo
+await page.waitForFunction(() => [...document.querySelectorAll("#timeline-list a")].some((a) => /recibi/i.test(a.textContent)), null, { timeout: 60000 }).catch(() => {});
+const href = await page.evaluate(() => [...document.querySelectorAll("#timeline-list a")].find((a) => /recibi/i.test(a.textContent))?.href || null);
+console.log("pozo", href);
 if (href) {
-  await r.move("a[href*='stellar.expert/explorer/testnet/tx/'] >> nth=-1", 800);
-  await r.sleep(1200);
+  await page.locator("#timeline-list").scrollIntoViewIfNeeded().catch(() => {});
+  await r.sleep(2500);
   await page.goto(href, { waitUntil: "load" });
   await r.sleep(7000);
   await r.scroll(500, 2500);
@@ -138,7 +154,8 @@ if (href) {
 // 6. Reporte para cooperativas
 if (me) {
   await page.goto(`${BASE}/reporte.html?m=${me}`, { waitUntil: "load" });
-  await r.sleep(9000);
+  await page.waitForSelector(".r-circle", { timeout: 60000 }).catch(() => {});
+  await r.sleep(5000);
   await r.scroll(450, 3000);
   await r.sleep(4000);
 }

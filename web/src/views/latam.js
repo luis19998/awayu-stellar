@@ -27,6 +27,7 @@ const TXT = {
   simTitle: L("Prueba una simulación local", "Try a local simulation", "Experimente uma simulação local"),
   simLocal: L("Los cálculos ocurren en este navegador. No se envía dinero ni se escribe en Stellar.", "Calculations run in this browser. No money is sent and nothing is written to Stellar.", "Os cálculos acontecem neste navegador. Nenhum dinheiro é enviado nem há gravação na Stellar."),
   members: L("Personas", "Members", "Pessoas"),
+  person: L("Persona", "Member", "Pessoa"),
   amount: L("Cuota por persona", "Contribution per person", "Contribuição por pessoa"),
   rounds: L("Rondas", "Rounds", "Rodadas"),
   missing: L("Simular que alguien no aporta", "Simulate a missed contribution", "Simular uma contribuição não paga"),
@@ -205,7 +206,7 @@ export function mount(root, { lang = "es", openCreate = () => {} } = {}) {
     const shown = family === "all" ? CIRCLES : CIRCLES.filter((circle) => circle.family === family);
     countryGrid.innerHTML = shown.map((circle) =>
       '<button type="button" class="latam-country-card" data-circle="' + esc(circle.id) + '" aria-pressed="' + String(circle.id === selected.id) + '">' +
-      '<span class="latam-country-flag" aria-hidden="true">' + circle.flag + '</span><span class="latam-country-name">' + esc(pick(circle.country, lang)) + '</span>' +
+      '<span class="latam-country-flag latam-flag flag-' + esc(String(circle.countryCode || '').toLowerCase()) + '" aria-hidden="true"></span><span class="latam-country-name">' + esc(pick(circle.country, lang)) + '</span>' +
       '<span class="latam-local-name">' + esc(circle.localName) + '</span><span class="latam-card-family">' + esc(familyName(circle.family, lang)) + '</span></button>'
     ).join("");
     updateSelection();
@@ -262,7 +263,7 @@ export function mount(root, { lang = "es", openCreate = () => {} } = {}) {
     const accumulative = selected.family === "acumulativo";
     const patternText = loc(TEXTILE_NAMES[selected.textile] || "textileAguayo");
     detail.innerHTML = '<article class="latam-profile">' +
-      '<header class="latam-profile-head"><span class="latam-profile-flag" aria-hidden="true">' + selected.flag + '</span><div><p class="latam-eyebrow">' + esc(pick(selected.country, lang)) + ' · ' + esc(familyName(selected.family, lang)) + '</p><h2>' + esc(selected.localName) + '</h2></div></header>' +
+      '<header class="latam-profile-head"><span class="latam-profile-flag latam-flag flag-' + esc(String(selected.countryCode || '').toLowerCase()) + '" aria-hidden="true"></span><div><p class="latam-eyebrow">' + esc(pick(selected.country, lang)) + ' · ' + esc(familyName(selected.family, lang)) + '</p><h2>' + esc(selected.localName) + '</h2></div></header>' +
       '<p class="latam-frequency"><strong>' + esc(loc("frequency")) + ':</strong> ' + esc(pick(selected.frequency, lang)) + '</p>' +
       '<div class="latam-facts"><section><h3>' + esc(loc("order")) + '</h3><p>' + esc(pick(selected.order, lang)) + '</p></section>' +
       '<section><h3>' + esc(loc("risk")) + '</h3><p>' + esc(pick(selected.risk, lang)) + '</p></section>' +
@@ -314,7 +315,7 @@ export function mount(root, { lang = "es", openCreate = () => {} } = {}) {
       const missed = detail.querySelector(".sim-missing")?.checked ? Number(detail.querySelector(".sim-missing-round")?.value || 0) : 0;
       const simulation = simulateRotativo({ members, amount, rounds, missedRound: missed, guarantee: detail.querySelector(".sim-guarantee")?.checked });
       result = '<p class="latam-sim-summary">' + simulation.turns.filter((turn) => turn.complete).length + '/' + simulation.turns.length + ' · ' + esc(loc("complete")) + '</p><div class="latam-table-wrap"><table><thead><tr><th>' + esc(loc("round")) + '</th><th>' + esc(loc("collector")) + '</th><th>' + esc(loc("pot")) + '</th><th>' + esc(loc("marks")) + '</th></tr></thead><tbody>' +
-        simulation.turns.map((turn) => '<tr><td>' + turn.round + '</td><td>' + esc(loc("members")) + ' ' + (turn.collector + 1) + '</td><td>' + format(turn.pot, lang) + ' / ' + format(simulation.amount * simulation.members, lang) + '</td><td>' + turn.marks.map((mark, memberIndex) => '<i class="latam-mark mark-' + mark + '" aria-label="' + esc(loc("members")) + ' ' + (memberIndex + 1) + ': ' + mark + '" title="' + esc(loc("members")) + ' ' + (memberIndex + 1) + ': ' + mark + '">' + mark + '</i>').join("") + '</td></tr>').join("") +
+        simulation.turns.map((turn) => '<tr><td>' + turn.round + '</td><td>' + esc(loc("person")) + ' ' + (turn.collector + 1) + '</td><td>' + format(turn.pot, lang) + ' / ' + format(simulation.amount * simulation.members, lang) + '</td><td>' + turn.marks.map((mark, memberIndex) => '<i class="latam-mark mark-' + mark + '" aria-label="' + esc(loc("person")) + ' ' + (memberIndex + 1) + ': ' + mark + '" title="' + esc(loc("person")) + ' ' + (memberIndex + 1) + ': ' + mark + '">' + mark + '</i>').join("") + '</td></tr>').join("") +
         '</tbody></table></div><p>' + esc(loc(missed ? (detail.querySelector(".sim-guarantee")?.checked ? "coveredAmount" : "shortPot") : "complete")) + (missed && detail.querySelector(".sim-guarantee")?.checked ? ': ' + format(simulation.amount, lang) + ' USDC' : "") + '</p><p class="latam-mark-legend">' + esc(loc("markLegend")) + '</p>';
     } else if (selected.family === "acumulativo") {
       const customTotals = detail.querySelector(".sim-contributions")?.value.trim();
@@ -369,7 +370,8 @@ export function mount(root, { lang = "es", openCreate = () => {} } = {}) {
         const scene = new THREE.Scene();
         scene.background = null;
         const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 30);
-        camera.position.set(0, 1.25, 4.2);
+        camera.position.set(0, 0.9, 4.6);
+        camera.lookAt(0, -0.15, 0);
         renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
         target.appendChild(renderer.domElement);

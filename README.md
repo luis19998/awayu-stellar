@@ -36,7 +36,7 @@ Al 2026-11-21 hay 13 contratos de Awayu desplegados y 7 círculos en el registro
 ## El problema y lo que falta validar
 - En Bolivia millones de personas ahorran en pasanakus, sobre todo comerciantes y productores de la economía informal. Funcionan por confianza, se rompen cuando alguien no paga y no dejan un historial que sirva ante una cooperativa. Además, con la escasez de dólares, el ahorro en bolivianos pierde valor.
 - **Primer nicho:** comerciantes de mercados de Cochabamba que ya ahorran en pasanaku. **Primer cliente que paga:** cooperativas de ahorro y crédito e IFD, por reporte verificado (hipótesis: Bs 15 por reporte). Ver [`docs/MODELO-NEGOCIO.md`](docs/MODELO-NEGOCIO.md).
-- **Validación en curso:** entrevistas con organizadores ([`docs/VALIDACION.md`](docs/VALIDACION.md)) y consultas a cooperativas ([`docs/COOPERATIVAS.md`](docs/COOPERATIVAS.md)). Hasta tener respuestas, ambos archivos dicen "pendiente": no inventamos datos.
+- **Validación en curso:** entrevistas con organizadores ([`docs/VALIDACION.md`](docs/VALIDACION.md)) y consultas a cooperativas ([`docs/COOPERATIVAS.md`](docs/COOPERATIVAS.md)). Primera ronda informal (2026-11-22): 6 de 6 contactos cercanos al equipo dicen que un historial verificable les serviría y piden PDF y consulta en línea, que es lo que ya hace el reporte. No son todavía respuestas de cooperativas, y así lo dice el documento: no inventamos datos.
 
 ## La solución
 - Las reglas viven en contratos Soroban:

@@ -196,3 +196,100 @@ dialog .row3 select { width: 100%; font-family: inherit; text-overflow: ellipsis
 @media (prefers-reduced-motion: reduce) {
   .latam-country-card, .latam-step { transition: none; animation: none; }
 }
+
+/* ===== Movimiento y efectos ===== */
+#view.enter > * { animation: view-enter .48s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes view-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+#view .is-reveal-pending { opacity: 0; transform: translateY(8px); transition: transform .42s cubic-bezier(.2, .8, .2, 1) var(--d, 0ms), opacity .42s ease var(--d, 0ms); }
+#view .is-visible { opacity: 1; transform: none; transition: transform .42s cubic-bezier(.2, .8, .2, 1) var(--d, 0ms), opacity .42s ease var(--d, 0ms); }
+#view .trad, #view .uso, #view .card-c { transform-style: preserve-3d; transition: transform .18s ease, opacity .42s ease var(--d, 0ms); }
+#view .step, #view .kpi, #view .eco-c { transition: transform .18s ease, opacity .42s ease var(--d, 0ms); }
+#view .step::after, #view .kpi::after, #view .eco-c::after { transition: opacity .2s ease; }
+#view .uso { animation: none; }
+
+#view .pane-h h1, #view .hero h1 { position: relative; width: fit-content; max-width: 100%; background: none; color: inherit; animation: none; }
+#view h1::after { content: ""; display: block; width: min(150px, 72%); height: 4px; margin-top: 12px; border-radius: 3px;
+  background: linear-gradient(90deg, #d81b60 0 20%, #f9c22e 20% 40%, #13a3b0 40% 60%, #1f9d55 60% 80%, #5b2a86 80% 100%);
+  transform: scaleX(0); transform-origin: left center; }
+#view.enter h1::after { animation: weave-in .78s cubic-bezier(.2, .8, .2, 1) .12s both; }
+@keyframes weave-in { to { transform: scaleX(1); } }
+
+#nav { --route-indicator-x: 0px; --route-indicator-y: 0px; --route-indicator-width: calc(100% - 16px); --route-indicator-height: 42px; }
+#nav::before { content: ""; position: absolute; z-index: 0; top: 8px; left: 8px; width: var(--route-indicator-width); height: var(--route-indicator-height);
+  border-radius: 14px; pointer-events: none; background: linear-gradient(135deg, rgba(216, 27, 96, .92), rgba(91, 42, 134, .9));
+  transform: translate(var(--route-indicator-x), var(--route-indicator-y)); transition: transform .38s cubic-bezier(.22, .8, .3, 1); }
+#nav a { position: relative; z-index: 1; }
+#nav a.on { background: transparent; box-shadow: none; view-transition-name: route-active; }
+#nav a .lb { position: relative; }
+#nav a .lb::after { content: ""; position: absolute; right: 0; bottom: -3px; left: 0; height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, #d81b60 0 20%, #f9c22e 20% 40%, #13a3b0 40% 60%, #1f9d55 60% 80%, #5b2a86 80% 100%);
+  opacity: .85; transform: scaleX(0); transform-origin: left; transition: transform .24s ease, opacity .24s ease; }
+#nav a:hover .lb::after, #nav a:focus-visible .lb::after, #nav a.on .lb::after { transform: scaleX(1); }
+::view-transition-group(route-active) { animation-duration: .38s; animation-timing-function: cubic-bezier(.22, .8, .3, 1); }
+::view-transition-old(root) { animation: view-out .18s ease both; }
+::view-transition-new(root) { animation: view-in .32s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes view-out { to { opacity: 0; transform: translateY(-4px); } }
+@keyframes view-in { from { opacity: 0; transform: translateY(8px); } }
+
+#view .btn, #view button.primary { position: relative; overflow: hidden; isolation: isolate; transition: transform .18s ease, opacity .18s ease; }
+#view .btn::before, #view button.primary::before { content: ""; position: absolute; z-index: -1; width: 30px; height: 30px; left: var(--wave-x, 50%); top: var(--wave-y, 50%); border-radius: 50%;
+  background: rgba(255, 255, 255, .42); opacity: 0; transform: translate(-50%, -50%) scale(0); pointer-events: none; }
+#view .btn.is-rippling::before, #view button.primary.is-rippling::before { animation: press-wave .48s ease-out both; }
+#view .btn::after, #view button.primary::after { content: ""; position: absolute; z-index: 2; top: -30%; bottom: -30%; left: 0; width: 36%;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, .3), transparent); opacity: 0; transform: translateX(-150%) skewX(-20deg); pointer-events: none; }
+#view .btn:hover::after, #view button.primary:hover::after { animation: button-sheen .72s ease-out both; }
+@keyframes press-wave { 15% { opacity: .34; } to { opacity: 0; transform: translate(-50%, -50%) scale(8); } }
+@keyframes button-sheen { 12% { opacity: .8; } to { opacity: 0; transform: translateX(360%) skewX(-20deg); } }
+
+#toast, .toast { transition: none; }
+#toast.on, .toast.on { animation: toast-in .46s cubic-bezier(.18, .9, .24, 1.2) both; }
+#toast:not(.on), .toast:not(.on) { animation: toast-out .18s ease both; }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, -12px) scale(.96); } 78% { opacity: 1; transform: translate(-50%, 1px) scale(1.025); } to { opacity: 1; transform: translate(-50%, 0) scale(1); } }
+@keyframes toast-out { to { opacity: 0; transform: translate(-50%, -7px) scale(.98); } }
+
+dialog { opacity: 0; transform: scale(.96); transition: opacity .2s ease, transform .2s ease, display .2s allow-discrete; transition-behavior: allow-discrete; }
+dialog[open] { opacity: 1; transform: scale(1); animation: dialog-spring .42s cubic-bezier(.18, .9, .24, 1.15) both; }
+dialog::backdrop { opacity: 0; transition: opacity .24s ease, display .24s allow-discrete; transition-behavior: allow-discrete; }
+dialog[open]::backdrop { opacity: 1; animation: backdrop-in .24s ease both; }
+@keyframes dialog-spring { from { opacity: 0; transform: scale(.96); } 75% { opacity: 1; transform: scale(1.012); } to { opacity: 1; transform: scale(1); } }
+@keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+@starting-style { dialog[open] { opacity: 0; transform: scale(.96); } dialog[open]::backdrop { opacity: 0; } }
+
+#map-list:empty::before, #pulse-box:empty::before, #wallet-box:empty::before, #passport:empty::before, #mode-box:empty::before {
+  content: ""; display: block; min-height: 136px; border-radius: 16px; opacity: .7;
+  background: linear-gradient(90deg, transparent 0 4%, rgba(255,255,255,.07) 4% 96%, transparent 96%),
+    linear-gradient(90deg, transparent 0 4%, rgba(255,255,255,.05) 4% 96%, transparent 96%),
+    linear-gradient(90deg, transparent 0 4%, rgba(255,255,255,.04) 4% 96%, transparent 96%);
+  background-size: 100% 34px, 100% 34px, 100% 34px; background-position: 0 0, 0 48px, 0 96px; background-repeat: no-repeat;
+}
+#map-list:empty::after, #pulse-box:empty::after, #wallet-box:empty::after, #passport:empty::after, #mode-box:empty::after {
+  content: ""; display: block; height: 3px; margin-top: -132px; width: 35%; border-radius: 3px;
+  background: linear-gradient(90deg, transparent, rgba(249, 194, 46, .8), rgba(19, 163, 176, .65), transparent); animation: skeleton-glow 1.35s ease-in-out 1 both;
+}
+@keyframes skeleton-glow { from { opacity: .25; transform: translateX(0); } to { opacity: .8; transform: translateX(185%); } }
+.eco-c:not(.ok):not(.bad):not(.info)::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: .34;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent); transform: translateX(-110%); animation: eco-sheen 1.5s ease-in-out 1 both; }
+@keyframes eco-sheen { to { opacity: 0; transform: translateX(110%); } }
+
+@media (max-width: 760px) {
+  #nav { --route-indicator-height: 45px; }
+  #nav::before { width: var(--route-indicator-width); }
+}
+@media (pointer: coarse) { #view .trad, #view .uso, #view .card-c { transform: none !important; } }
+@media (prefers-reduced-motion: reduce) {
+  #view *, #view *::before, #view *::after, #nav::before, #nav .lb::after, .eco-c::before, #map-list:empty::after, #pulse-box:empty::after, #wallet-box:empty::after, #passport:empty::after, #mode-box:empty::after, #toast, .toast, dialog, dialog::backdrop {
+    animation: none !important; transition: none !important; scroll-behavior: auto !important;
+  }
+  #nav, #nav .lb, #nav .ic { transition: none !important; }
+  #view .is-reveal-pending, #view .is-visible { opacity: 1 !important; transform: none !important; }
+  #view h1::after { transform: scaleX(1); }
+}
+html.aw-calm #view *, html.aw-calm #view *::before, html.aw-calm #view *::after, html.aw-calm #nav::before, html.aw-calm #nav .lb::after, html.aw-calm .eco-c::before,
+html.aw-calm #map-list:empty::after, html.aw-calm #pulse-box:empty::after, html.aw-calm #wallet-box:empty::after, html.aw-calm #passport:empty::after, html.aw-calm #mode-box:empty::after,
+html.aw-calm #toast, html.aw-calm .toast, html.aw-calm dialog, html.aw-calm dialog::backdrop {
+  animation: none !important; transition: none !important; scroll-behavior: auto !important;
+}
+html.aw-calm #nav, html.aw-calm #nav .lb, html.aw-calm #nav .ic { animation: none !important; transition: none !important; }
+html.aw-calm #view .is-reveal-pending, html.aw-calm #view .is-visible { opacity: 1 !important; transform: none !important; }
+html.aw-calm #view h1::after { transform: scaleX(1); }

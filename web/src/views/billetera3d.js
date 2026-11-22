@@ -9,10 +9,11 @@ import { pickLang } from "../i18n.js";
 const COLORS = Object.values(PALETTE);
 const LANG_CODES = new Set(["es", "en", "pt", "qu", "ay", "gn"]);
 const TEXT = {
-  es: { title: "Tu billetera", demo: "Demo · datos de ejemplo", connected: "Billetera conectada", empty: "Conecta tu billetera para tejer tu planeta" },
-  en: { title: "Your wallet", demo: "Demo · sample data", connected: "Wallet connected", empty: "Connect your wallet to weave your planet" },
+  es: { title: "Tu billetera", demo: "Demo · datos de ejemplo", connected: "Billetera conectada", empty: "Conecta tu billetera para tejer tu planeta", asset: "Activo", sampleCircle: "Pasanaku de demostración" },
+  en: { title: "Your wallet", demo: "Demo · sample data", connected: "Wallet connected", empty: "Connect your wallet to weave your planet", asset: "Asset", sampleCircle: "Sample pasanaku" },
+  pt: { title: "Sua carteira", demo: "Demonstração · dados de exemplo", connected: "Carteira conectada", empty: "Conecte sua carteira para tecer seu planeta", asset: "Ativo", sampleCircle: "Pasanaku de demonstração" },
 };
-for (const code of ["pt", "qu", "ay", "gn"]) TEXT[code] = { ...TEXT.es };
+for (const code of ["qu", "ay", "gn"]) TEXT[code] = { ...TEXT.es };
 
 export function scaleBalance(value) {
   const amount = Math.max(0, Number(value) || 0);
@@ -83,12 +84,20 @@ export function mount(container, initial = {}) {
   caption.setAttribute("aria-live", "polite");
   caption.style.cssText = "position:absolute;left:20px;top:16px;color:#f3e6c8;font:500 13px system-ui;letter-spacing:.02em;text-shadow:0 2px 12px #090714;pointer-events:none";
   container.append(caption);
+  const drawCaption = () => {
+    copy = pickLang(TEXT, data.lang);
+    caption.textContent = data.address
+      ? `${copy.connected}${data.address.length > 15 ? ` · ${data.address.slice(0, 6)}…${data.address.slice(-5)}` : ` · ${data.address}`}`
+      : copy.demo;
+  };
   let renderer;
   try {
     renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
   } catch {
-    caption.textContent = data.address ? copy.empty : copy.demo;
-    return { update(next) { data = normalizeWalletData({ ...data, ...next }); }, destroy() { container.replaceChildren(); } };
+    drawCaption();
+    const onLanguage = (event) => { data = normalizeWalletData({ ...data, lang: event.detail?.lang }); drawCaption(); };
+    window.addEventListener("awayu:lang", onLanguage);
+    return { update(next) { data = normalizeWalletData({ ...data, ...next }); drawCaption(); }, destroy() { window.removeEventListener("awayu:lang", onLanguage); container.replaceChildren(); } };
   }
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
   renderer.setClearColor(0x090714, 0);
@@ -146,10 +155,10 @@ export function mount(container, initial = {}) {
       const radius = 1.78 + i * 0.23;
       const mesh = new THREE.Mesh(new THREE.TorusGeometry(radius, scaleBalance(entry.balance), 12, 220), new THREE.MeshStandardMaterial({ color: COLORS[i % COLORS.length], emissive: COLORS[i % COLORS.length], emissiveIntensity: 0.38, metalness: 0.48, roughness: 0.3 }));
       mesh.rotation.x = (i % 2 ? 0.15 : -0.12); rings.add(mesh);
-      const label = labelSprite(`${entry.asset ?? entry.code ?? "Asset"}  ${entry.balance ?? "0"}`, COLORS[i % COLORS.length]);
+      const label = labelSprite(`${entry.asset ?? entry.code ?? copy.asset}  ${entry.balance ?? "0"}`, COLORS[i % COLORS.length]);
       label.position.set(radius, 0.1 + i * 0.06, 0); rings.add(label);
     });
-    const circles = data.circles.length ? data.circles : (!data.address ? [{ name: "Pasanaku demo", contribution: 60 }] : []);
+    const circles = data.circles.length ? data.circles : (!data.address ? [{ name: copy.sampleCircle, contribution: 60 }] : []);
     circles.forEach((circle, i) => {
       const orbit = new THREE.Group(); orbit.rotation.y = i * 1.7; orbit.rotation.z = 0.3 + i * 0.6; satellites.add(orbit);
       const radius = 2.65 + (i % 3) * 0.4;
@@ -171,10 +180,7 @@ export function mount(container, initial = {}) {
       const tail = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.34, 8), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.65, toneMapped: false })); tail.rotation.x = Math.PI / 2; tail.position.z = -0.2; comet.add(tail);
       comet.position.set(incoming ? -4.5 - i * 0.03 : 4.5 + i * 0.03, (i % 3 - 1) * 0.28, -0.4); comet.userData.incoming = incoming; comet.userData.phase = i * 0.55; comets.add(comet);
     });
-    copy = pickLang(TEXT, data.lang);
-    caption.textContent = data.address
-      ? `${copy.connected}${data.address.length > 15 ? ` · ${data.address.slice(0, 6)}…${data.address.slice(-5)}` : ` · ${data.address}`}`
-      : copy.demo;
+    drawCaption();
   }
   function resize() {
     const width = Math.max(1, container.clientWidth); const height = Math.max(1, container.clientHeight || 480);
@@ -204,10 +210,13 @@ export function mount(container, initial = {}) {
   }
   if (visible) frame = requestAnimationFrame(animate);
 
+  function update(next = {}) { data = normalizeWalletData({ ...data, ...next }); rebuild(); }
+  const onLanguage = (event) => update({ lang: event.detail?.lang });
+  window.addEventListener("awayu:lang", onLanguage);
   return {
-    update(next = {}) { data = normalizeWalletData({ ...data, ...next }); rebuild(); },
+    update,
     destroy() {
-      destroyed = true; cancelAnimationFrame(frame); observer.disconnect(); document.removeEventListener("visibilitychange", visibility); reduced.removeEventListener?.("change", motion);
+      destroyed = true; window.removeEventListener("awayu:lang", onLanguage); cancelAnimationFrame(frame); observer.disconnect(); document.removeEventListener("visibilitychange", visibility); reduced.removeEventListener?.("change", motion);
       controls.dispose(); composer.dispose(); disposeTree(scene); renderer.dispose(); renderer.domElement.remove(); container.replaceChildren();
     },
   };

@@ -70,7 +70,7 @@ export function applyScenePrefs(prefs, ctx = {}) {
   ctx.setMuted?.(!prefs.sound);
 }
 
-export function openStudio(lang = "es", ctx = {}) {
+export function openStudio(lang = "es", ctx = {}, initialTab = "scene") {
   const prefs = loadStudio();
   const d = document.createElement("dialog");
   d.className = "aw-studio";
@@ -95,7 +95,9 @@ export function openStudio(lang = "es", ctx = {}) {
     panes.append(p);
     pane[id] = p;
   }
+  let activeTab = initialTab;
   function show(id) {
+    activeTab = id;
     tabBox.querySelectorAll("button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === id)));
     panes.querySelectorAll(".aw-pane").forEach((p) => { p.hidden = p.dataset.pane !== id; });
   }
@@ -182,9 +184,16 @@ export function openStudio(lang = "es", ctx = {}) {
     ctx.applyPalette?.(base); ctx.scene?.retheme?.(); ctx.rebuild?.();
     d.close();
   };
-  d.addEventListener("close", () => d.remove());
+  let nextLang = null;
+  const onLanguage = (event) => { nextLang = event.detail?.lang || lang; d.close(); };
+  window.addEventListener("awayu:lang", onLanguage);
+  d.addEventListener("close", () => {
+    window.removeEventListener("awayu:lang", onLanguage);
+    d.remove();
+    if (nextLang) openStudio(nextLang, ctx, activeTab);
+  });
   document.body.append(d);
-  show("scene");
+  show(initialTab);
   d.showModal();
   return d;
 }

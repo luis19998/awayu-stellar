@@ -96,8 +96,22 @@ function dialog(lang, title, lead) {
   d.innerHTML = `<form method="dialog"><h2></h2><p class="aw-qr-lead"></p><div class="aw-qr-body"></div><menu><button value="close" class="ghost"></button></menu></form>`;
   d.querySelector("h2").textContent = title;
   d.querySelector(".aw-qr-lead").textContent = lead;
-  d.querySelector("menu button").textContent = pick(T.close, lang);
-  d.addEventListener("close", () => { d.dispatchEvent(new Event("aw-qr-closed")); d.remove(); });
+  const heading = d.querySelector("h2");
+  const leadElement = d.querySelector(".aw-qr-lead");
+  const closeButton = d.querySelector("menu button");
+  const keyFor = (value, selected) => Object.keys(T).find((key) => !Array.isArray(T[key]) && T[key]?.[selected] === value);
+  const titleKey = keyFor(title, lang);
+  const leadKey = keyFor(lead, lang);
+  let currentLang = lang;
+  const onLanguage = (event) => {
+    currentLang = event.detail?.lang || currentLang;
+    if (titleKey) heading.textContent = pick(T[titleKey], currentLang);
+    if (leadKey) leadElement.textContent = pick(T[leadKey], currentLang);
+    closeButton.textContent = pick(T.close, currentLang);
+    d.dispatchEvent(new CustomEvent("aw-qr-language", { detail: { lang: currentLang } }));
+  };
+  window.addEventListener("awayu:lang", onLanguage);
+  d.addEventListener("close", () => { window.removeEventListener("awayu:lang", onLanguage); d.dispatchEvent(new Event("aw-qr-closed")); d.remove(); });
   document.body.append(d);
   d.showModal();
   return { d, body: d.querySelector(".aw-qr-body"), menu: d.querySelector("menu") };
@@ -142,16 +156,19 @@ function downloadPng(svg, name) {
 
 // ---------------- acciones ----------------
 export function openInvite(contractId, lang = "es") {
-  const { body } = dialog(lang, pick(T.invite, lang), pick(T.inviteLead, lang));
+  const { d, body } = dialog(lang, pick(T.invite, lang), pick(T.inviteLead, lang));
   const url = inviteUrl(contractId);
-  qrBlock(body, url, lang, { link: url });
+  const draw = (selected) => qrBlock(body, url, selected, { link: url });
+  d.addEventListener("aw-qr-language", (event) => draw(event.detail.lang));
+  draw(lang);
 }
 
 // Cuenta de demostración de testnet (Ana, del despliegue de ejemplo) para mostrar el QR sin billetera
 export const DEMO_ADDRESS = "GC6YRXEASH7XBIRAUGT3VAGJ26K7U7B2MBDHTDP4WHTYU7YBZZMRSA7I";
 
 export function openReceive(address, lang = "es") {
-  const { body } = dialog(lang, pick(T.receive, lang), pick(T.receiveLead, lang));
+  const { d, body } = dialog(lang, pick(T.receive, lang), pick(T.receiveLead, lang));
+  let currentLang = lang;
   const demo = !address;
   if (demo) address = DEMO_ADDRESS;
   const form = document.createElement("div");
@@ -164,8 +181,8 @@ export function openReceive(address, lang = "es") {
     const amount = form.querySelector("input").value;
     const asset = form.querySelector("select").value;
     const uri = sep7Pay({ destination: address, amount, assetCode: asset, assetIssuer: USDC_TESTNET_ISSUER, msg: "Awayu" });
-    qrBlock(out, uri, lang);
-    const open = button(pick(T.openWallet, lang), () => { location.href = uri; }, "primary");
+    qrBlock(out, uri, currentLang);
+    const open = button(pick(T.openWallet, currentLang), () => { location.href = uri; }, "primary");
     out.querySelector(".aw-qr-actions").prepend(open);
   };
   form.addEventListener("input", draw);
@@ -173,14 +190,23 @@ export function openReceive(address, lang = "es") {
   if (demo) {
     const note = document.createElement("p");
     note.className = "aw-qr-legal";
-    note.textContent = pick(T.demoNote, lang);
+    note.textContent = pick(T.demoNote, currentLang);
     body.prepend(note);
   }
+  d.addEventListener("aw-qr-language", (event) => {
+    currentLang = event.detail.lang;
+    l1.textContent = pick(T.amount, currentLang); l2.textContent = pick(T.asset, currentLang);
+    const note = body.querySelector(".aw-qr-legal");
+    if (note) note.textContent = pick(T.demoNote, currentLang);
+    draw();
+  });
   draw();
 }
 
 export function openScanner(lang = "es", { onCircle } = {}) {
   const { d, body } = dialog(lang, pick(T.scan, lang), pick(T.scanLead, lang));
+  let currentLang = lang;
+  let scannedText = "";
   const result = document.createElement("div");
   result.className = "aw-qr-result";
   result.setAttribute("aria-live", "polite");
@@ -190,33 +216,35 @@ export function openScanner(lang = "es", { onCircle } = {}) {
   const stop = () => { cancelAnimationFrame(raf); stream?.getTracks().forEach((t) => t.stop()); stream = null; };
   d.addEventListener("aw-qr-closed", stop);
   const show = (text) => {
+    scannedText = text;
     stop();
     const r = parseScanned(text);
     result.replaceChildren();
     const h = document.createElement("h3");
     const p = document.createElement("p");
     if (r.kind === "circle") {
-      h.textContent = pick(T.found, lang);
+      h.textContent = pick(T.found, currentLang);
       p.textContent = r.contractId;
-      result.append(h, p, button(pick(T.openCircle, lang), () => { d.close(); onCircle ? onCircle(r.contractId) : (location.href = r.url); }, "primary"));
+      result.append(h, p, button(pick(T.openCircle, currentLang), () => { d.close(); onCircle ? onCircle(r.contractId) : (location.href = r.url); }, "primary"));
     } else if (r.kind === "sep7") {
-      h.textContent = pick(T.payReq, lang);
+      h.textContent = pick(T.payReq, currentLang);
       p.textContent = [r.amount && `${r.amount} ${r.asset}`, r.destination && `→ ${r.destination.slice(0, 6)}…${r.destination.slice(-4)}`, r.msg].filter(Boolean).join(" · ");
-      result.append(h, p, button(pick(T.openWallet, lang), () => { location.href = r.uri; }, "primary"));
+      result.append(h, p, button(pick(T.openWallet, currentLang), () => { location.href = r.uri; }, "primary"));
     } else if (r.kind === "address") {
-      h.textContent = pick(T.address, lang);
+      h.textContent = pick(T.address, currentLang);
       p.textContent = r.address;
-      result.append(h, p, button(pick(T.copy, lang), () => navigator.clipboard?.writeText(r.address)));
+      result.append(h, p, button(pick(T.copy, currentLang), () => navigator.clipboard?.writeText(r.address)));
     } else {
-      h.textContent = pick(T.found, lang);
+      h.textContent = pick(T.found, currentLang);
       p.textContent = r.text;
       result.append(h, p);
     }
   };
   if (!Detector) {
     const p = document.createElement("p");
-    p.textContent = pick(T.noScanner, lang);
+    p.textContent = pick(T.noScanner, currentLang);
     body.replaceChildren(p);
+    d.addEventListener("aw-qr-language", (event) => { currentLang = event.detail.lang; p.textContent = pick(T.noScanner, currentLang); });
     return;
   }
   const detector = new Detector({ formats: ["qr_code"] });
@@ -225,7 +253,7 @@ export function openScanner(lang = "es", { onCircle } = {}) {
   const file = document.createElement("label");
   file.className = "aw-qr-file";
   file.innerHTML = `<span></span><input type="file" accept="image/*">`;
-  file.querySelector("span").textContent = pick(T.scanPhoto, lang);
+  file.querySelector("span").textContent = pick(T.scanPhoto, currentLang);
   file.querySelector("input").onchange = async (e) => {
     const f = e.target.files?.[0];
     if (!f) return;
@@ -235,6 +263,11 @@ export function openScanner(lang = "es", { onCircle } = {}) {
     } catch { /* imagen ilegible */ }
   };
   body.replaceChildren(video, file, result);
+  d.addEventListener("aw-qr-language", (event) => {
+    currentLang = event.detail.lang;
+    file.querySelector("span").textContent = pick(T.scanPhoto, currentLang);
+    if (scannedText) show(scannedText);
+  });
   navigator.mediaDevices?.getUserMedia({ video: { facingMode: "environment" } }).then((s) => {
     stream = s;
     video.srcObject = s;
@@ -253,30 +286,32 @@ export function openScanner(lang = "es", { onCircle } = {}) {
 
 /** Recarga en bolivianos con QR bancario a través de las rampas de Pollar, si están activas. */
 export async function openBankTopUp(lang = "es", { pollarClient } = {}) {
-  const { body } = dialog(lang, pick(T.bank, lang), pick(T.bankLead, lang));
-  const steps = document.createElement("ol");
-  for (const s of pick(T.bankSteps, lang)) { const li = document.createElement("li"); li.textContent = s; steps.append(li); }
+  const { d, body } = dialog(lang, pick(T.bank, lang), pick(T.bankLead, lang));
+  let currentLang = lang;
+  let routes = null;
   const status = document.createElement("div");
   status.className = "aw-qr-status";
   const legal = document.createElement("p");
   legal.className = "aw-qr-legal";
-  legal.textContent = pick(T.bankLegal, lang);
-  body.replaceChildren(steps, status, legal);
+  function draw() {
+    const steps = document.createElement("ol");
+    for (const step of pick(T.bankSteps, currentLang)) { const li = document.createElement("li"); li.textContent = step; steps.append(li); }
+    legal.textContent = pick(T.bankLegal, currentLang);
+    status.replaceChildren();
+    if (routes?.length) {
+      const p = document.createElement("p"); p.textContent = pick(T.bankLive, currentLang);
+      const ul = document.createElement("ul");
+      for (const route of routes) { const li = document.createElement("li"); li.textContent = [route.provider?.name || route.provider || "Proveedor", route.direction, route.fiat?.currency, route.crypto?.asset || route.asset].filter(Boolean).join(" · "); ul.append(li); }
+      status.append(p, ul);
+    } else if (routes) status.textContent = pick(T.bankOff, currentLang);
+    body.replaceChildren(steps, status, legal);
+  }
+  d.addEventListener("aw-qr-language", (event) => { currentLang = event.detail.lang; draw(); });
+  draw();
   let client = null;
   try { client = pollarClient ? await pollarClient() : null; } catch { client = null; }
   const { bolivianRamps } = await import("../integrations/pollar-earn.js");
   const r = client ? await bolivianRamps(client) : { available: false };
-  if (r.available && r.routes?.length) {
-    const p = document.createElement("p");
-    p.textContent = pick(T.bankLive, lang);
-    const ul = document.createElement("ul");
-    for (const route of r.routes) {
-      const li = document.createElement("li");
-      li.textContent = [route.provider?.name || route.provider || "Proveedor", route.direction, route.fiat?.currency, route.crypto?.asset || route.asset].filter(Boolean).join(" · ");
-      ul.append(li);
-    }
-    status.replaceChildren(p, ul);
-  } else {
-    status.textContent = pick(T.bankOff, lang);
-  }
+  routes = r.available && r.routes?.length ? r.routes : [];
+  draw();
 }

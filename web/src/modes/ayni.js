@@ -62,7 +62,7 @@ export function createAyniDemo() {
       item.voters ||= [];
       if (item.voters.includes(voter)) throw new Error("Ya votaste este pedido.");
       item.voters.push(voter); if (approve) item.yes++; else item.no++;
-      state.history.unshift({ kind: "vote", member: voter, amount: 0, label: `${state.members[voter].name} votó ${approve ? "a favor" : "en contra"}` });
+      state.history.unshift({ kind: "vote", member: voter, amount: 0, approve, label: `${state.members[voter].name} votó ${approve ? "a favor" : "en contra"}` });
       return item;
     },
     resolve(requestId) {

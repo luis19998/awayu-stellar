@@ -127,6 +127,7 @@ function closeHelp() {
 
 export function openHelp(topicId, { lang = activeLang, anchor } = {}) {
   if (typeof document === "undefined" || !HELP_TOPICS[topicId]) return null;
+  activeLang = lang;
   ensureStyles(); closeHelp();
   const data = HELP_TOPICS[topicId];
   const pop = document.createElement("aside"); pop.className = "aw-guide-help-pop"; pop.setAttribute("role", "dialog"); pop.setAttribute("aria-modal", "false"); pop.setAttribute("aria-labelledby", "aw-guide-help-title");
@@ -152,16 +153,23 @@ export function openHelp(topicId, { lang = activeLang, anchor } = {}) {
   place(); video.addEventListener("loadedmetadata", place, { once: true });
   const onKey = (event) => { if (event.key === "Escape") { event.preventDefault(); closeHelp(); } };
   const onOutside = (event) => { if (!pop.contains(event.target) && event.target !== anchor) closeHelp(); };
-  activePopover = { node: pop, onKey, onOutside, returnFocus: anchor };
+  activePopover = { node: pop, onKey, onOutside, returnFocus: anchor, topicId };
   document.addEventListener("keydown", onKey); document.addEventListener("pointerdown", onOutside, true); close.focus();
   return { close: closeHelp, element: pop };
 }
+
+if (typeof window !== "undefined") window.addEventListener("awayu:lang", (event) => {
+  if (!activePopover) return;
+  const { topicId, returnFocus } = activePopover;
+  closeHelp();
+  openHelp(topicId, { lang: event.detail?.lang || "es", anchor: returnFocus });
+});
 
 export function attachHelp(element, topicId) {
   if (!element || !HELP_TOPICS[topicId] || typeof document === "undefined") return () => {};
   ensureStyles();
   const button = document.createElement("button"); button.type = "button"; button.className = "aw-guide-help-trigger"; button.textContent = "?";
-  button.setAttribute("aria-label", `${HELP_TOPICS[topicId].title.es} · ${HELP_TOPICS[topicId].title.en}`);
+  button.setAttribute("aria-label", HELP_TOPICS[topicId].title[document.documentElement.lang] || HELP_TOPICS[topicId].title.es);
   button.addEventListener("click", () => openHelp(topicId, { lang: document.documentElement.lang || "es", anchor: button }));
   element.append(button);
   return () => { if (activePopover?.returnFocus === button) closeHelp(); button.remove(); };

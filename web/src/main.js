@@ -23,7 +23,8 @@ import {
 import { pollarEnabled, connectFreighter, connectPollar, connectKit, connectBurner, disconnect as forgetWallet, sign, wallet } from "./wallet.js";
 
 const $ = (s) => document.querySelector(s);
-const fmt = (n, t) => `${n.toLocaleString("es-BO", { maximumFractionDigits: 2 })} ${t}`;
+const localeForLang = () => ({ es: "es-BO", en: "en-US", pt: "pt-BR", qu: "es-BO", ay: "es-BO", gn: "es-BO" })[getLang()] || "es-BO";
+const fmt = (n, t) => `${n.toLocaleString(localeForLang(), { maximumFractionDigits: 2 })} ${t}`;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 initLang();
@@ -88,7 +89,7 @@ function render() {
   $("#s-yield").textContent = "+" + fmt(idleYield(c), c.token);
   scene.setPotLevel(pot(c) / (c.amount * n));
   scene.setDeadline(roundProgress(c));
-  scene.updateLabels(c.members, c.members.map((m) => `${score(m.history)} pts`), rec);
+  scene.updateLabels(c.members, c.members.map((m) => t("{n} puntos", { n: score(m.history) })), rec);
   scene.placeIlla(bestMember(c));
 
   const ul = $("#members");
@@ -107,7 +108,7 @@ function render() {
     li.append(
       el("b", null, m.name),
       el("span", "sc", `${score(m.history)} pts`),
-      el("span", `st ${paid ? "ok" : ""}`, `${t(paid === ON_TIME ? "Aportó" : paid === LATE ? "Aportó tarde" : "Falta aportar")} · ${m.role}`)
+      el("span", `st ${paid ? "ok" : ""}`, `${t(paid === ON_TIME ? "Aportó" : paid === LATE ? "Aportó tarde" : "Falta aportar")} · ${t(m.role)}`)
     );
     const chips = el("span", "chips");
     if (m.guarantee > 0) {
@@ -118,7 +119,7 @@ function render() {
     li.append(chips);
     if (m.history.length) {
       const img = new Image();
-      img.alt = `Aguayo de ${m.name}`;
+      img.alt = t("Aguayo de {name}", { name: m.name });
       img.src = historyStripDataURL(m.history);
       li.appendChild(img);
     }
@@ -126,7 +127,7 @@ function render() {
     li.tabIndex = 0;
     li.setAttribute("role", "button");
     li.setAttribute("aria-pressed", String(i === selected));
-    li.setAttribute("aria-label", `${m.name}, ${score(m.history)} puntos`);
+    li.setAttribute("aria-label", t("Miembro {name}, {points} puntos", { name: m.name, points: score(m.history) }));
     li.onkeydown = (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
@@ -234,22 +235,22 @@ function renderPerson() {
     <button class="ghost cert" type="button">${t("Descargar certificado del aguayo")}</button>
     <button class="ghost figbtn" type="button">${t("Elegir personaje")}</button>
     ${isTestnet() && deployment?.registro && m.address === me() ? `<div class="reg-actions"><button class="ghost join" type="button">${t("Sumar a mi pasaporte")}</button><button class="ghost endorse" type="button">${t("Avalar este círculo")}</button></div>` : ""}
-    <form class="alias" hidden><label>Tu nombre en el círculo
-      <input name="alias" maxlength="24" required placeholder="Ej.: Doña Rosa" /></label>
-      <button class="ghost">Guardar en la cadena</button></form>`;
+    <form class="alias" hidden><label>${t("Tu nombre en el círculo")}
+      <input name="alias" maxlength="24" required placeholder="${t("Ej.: Doña Rosa")}" /></label>
+      <button class="ghost">${t("Guardar en la cadena")}</button></form>`;
   box.querySelector("h3").textContent = m.name;
-  box.querySelector(".role").textContent = m.role;
+  box.querySelector(".role").textContent = t(m.role);
   box.querySelector(".figbtn").onclick = () => openFigurePicker(selected);
   box.querySelector(".join")?.addEventListener("click", () =>
     run(async () => {
       await signAndSend(() => buildJoinXdr(deployment, me(), circle.contractId), "tu pasaporte");
-      toast(t("Listo: este círculo ya suma a tu pasaporte de reputación ✓"));
+      toastTranslated("Listo: este círculo ya suma a tu pasaporte de reputación ✓");
     })
   );
   box.querySelector(".endorse")?.addEventListener("click", () =>
     run(async () => {
       await signAndSend(() => buildEndorseXdr(deployment, me(), circle.contractId), "tu aval");
-      toast(t("Aval registrado en la cadena ✓"));
+      toastTranslated("Aval registrado en la cadena ✓");
     })
   );
   box.querySelector(".cert").onclick = () =>
@@ -261,7 +262,7 @@ function renderPerson() {
       token: circle.token,
       amount: circle.amount,
       date: new Date().toISOString().slice(0, 10),
-    }).catch((e) => toast(t("No se pudo crear el certificado: {why}", { why: e.message })));
+    }).catch((e) => toastTranslated("No se pudo crear el certificado: {why}", { why: () => friendly(e) }));
   const form = box.querySelector(".alias");
   if (isTestnet() && circle.version >= 2 && m.address === me()) {
     form.hidden = false;
@@ -269,10 +270,10 @@ function renderPerson() {
     form.onsubmit = (e) => {
       e.preventDefault();
       const alias = form.alias.value.trim();
-      if (!alias || new TextEncoder().encode(alias).length > 24) return toast(t("El nombre debe tener entre 1 y 24 caracteres"));
+      if (!alias || new TextEncoder().encode(alias).length > 24) return toastTranslated("El nombre debe tener entre 1 y 24 caracteres");
       run(async () => {
         await signAndSend(() => buildAliasXdr(deployment, circle.contractId, me(), alias), "tu nombre");
-        toast(t("Nombre guardado en la cadena ✓"));
+        toastTranslated("Nombre guardado en la cadena ✓");
         await refreshChain(true);
       });
     };
@@ -337,6 +338,14 @@ function toast(msg, ms = 3200) {
   toast.h = setTimeout(() => t.classList.remove("on"), ms);
 }
 
+let lastToast = null;
+function toastTranslated(key, vars, ms = 3200) {
+  lastToast = { key, vars, ms };
+  const values = typeof vars === "function" ? vars() : vars;
+  const resolved = Object.fromEntries(Object.entries(values || {}).map(([name, value]) => [name, typeof value === "function" ? value() : value]));
+  toast(t(key, resolved), ms);
+}
+
 // ---------- Acciones: demo ----------
 
 async function animateContribution(i, mark) {
@@ -350,7 +359,7 @@ async function animatePayout(to, amount, marks, round) {
   await new Promise((r) => scene.flyPayout(to, amount / circle.amount, r));
   sfx.weave();
   marks.forEach((m, i) => scene.commitPending(i, m ?? MISSED, round));
-  toast(t("{name} recibió {amount}", { name: circle.members[to].name, amount: fmt(amount, circle.token) }));
+  toastTranslated("{name} recibió {amount}", { name: circle.members[to].name, amount: fmt(amount, circle.token) });
   await wait(500);
 }
 
@@ -379,11 +388,11 @@ async function demoPayout() {
 // ---------- Acciones: testnet (firmadas con la billetera) ----------
 
 async function signAndSend(buildXdr, what) {
-  toast(t("Preparando {what}…", { what: t(what) }));
+  toastTranslated("Preparando {what}…", { what: () => t(what) });
   const xdr = await buildXdr();
-  toast(t("Firma en tu billetera…"), 60000);
+  toastTranslated("Firma en tu billetera…", null, 60000);
   const signed = await sign(xdr);
-  toast(t("Enviando a Stellar testnet…"), 60000);
+  toastTranslated("Enviando a Stellar testnet…", null, 60000);
   return submit(deployment, signed);
 }
 
@@ -411,7 +420,7 @@ async function chainContribute() {
   await signAndSend(() => buildContributeXdr(deployment, circle.contractId, me()), "tu aporte");
   notifyEvent("aporte", circle.contractId, { round: circle.round + 1, member: me(), amount: circle.amount, token: circle.token });
   await animateContribution(i, ON_TIME);
-  toast(t("Aporte registrado en la cadena ✓"));
+  toastTranslated("Aporte registrado en la cadena ✓");
   await refreshChain();
   await updateBalance();
 }
@@ -445,7 +454,7 @@ async function run(fn) {
   } catch (e) {
     console.error(e);
     sfx.error();
-    toast(t("No se pudo: {why}", { why: friendly(e) }), 5000);
+    toastTranslated("No se pudo: {why}", { why: () => friendly(e) }, 5000);
     // Si la red aceptó la transacción pero no confirmó a tiempo, el contrato
     // puede haberla registrado igual: volvemos a leer su estado real.
     if (isTestnet()) await refreshChain(true).catch(() => {});
@@ -461,7 +470,15 @@ function friendly(e) {
   if (/Error\(Contract, #8\)/.test(m)) return t("la ronda sigue abierta");
   if (/Error\(Contract, #6\)/.test(m)) return t("ya aportaste en esta ronda");
   if (/Error\(Contract, #5\)/.test(m)) return t("no eres miembro del círculo");
-  return m.length > 140 ? m.slice(0, 140) + "…" : m;
+  if (m === "FREIGHTER_MISSING" || /Freighter.*(missing|not installed)/i.test(m)) return t("No se pudo conectar con tu billetera. Comprueba que esté instalada y desbloqueada.");
+  const known = [
+    "No se eligió ninguna billetera", "Cambia Freighter a la red Testnet", "Falta VITE_POLLAR_KEY",
+    "Debes aceptar los términos y el aviso de riesgos antes de firmar.", "Pollar rechazó la transacción",
+    "instala Freighter (se abrió su página) y elige la red Testnet", "Falta testnet.json",
+    "Dirección de destino inválida", "La red rechazó la transacción", "Friendbot no pudo fondear la cuenta",
+  ];
+  if (known.some((key) => m === key || m === t(key))) return t(known.find((key) => m === key || m === t(key)));
+  return t("No se pudo completar. Revisa tu conexión y vuelve a intentarlo.");
 }
 
 $("#btn-contribute").onclick = () => run(isTestnet() ? chainContribute : demoContribute);
@@ -470,17 +487,17 @@ $("#btn-guarantee").onclick = () =>
   run(async () => {
     const done = circle.round >= circle.order.length;
     if (!isTestnet()) {
-      if (depositGuarantee(circle, selected)) toast(t("{name} dejó una cuota de garantía", { name: circle.members[selected].name }));
+      if (depositGuarantee(circle, selected)) toastTranslated("{name} dejó una cuota de garantía", { name: circle.members[selected].name });
       return;
     }
     if (done) {
       await signAndSend(() => buildWithdrawXdr(deployment, circle.contractId, me()), "el retiro de tu garantía");
-      toast(t("Garantía devuelta a tu billetera ✓"));
+      toastTranslated("Garantía devuelta a tu billetera ✓");
     } else {
       if (!(await ensureCircleUsdc(circle.amount))) return;
       await signAndSend(() => buildGuaranteeXdr(deployment, circle.contractId, me()), "tu garantía");
       notifyEvent("garantia", circle.contractId, { member: me(), amount: circle.amount, token: circle.token });
-      toast(t("Garantía depositada: si un día no puedes pagar, cubre tu cuota ✓"));
+      toastTranslated("Garantía depositada: si un día no puedes pagar, cubre tu cuota ✓");
     }
     await refreshChain(true);
   });
@@ -492,7 +509,7 @@ async function openTestnet(contractId) {
   deployment ??= await loadDeployment();
   if (!deployment) throw new Error("Falta testnet.json");
   const id = contractId || deployment.contractId;
-  toast(t("Leyendo el contrato en Stellar testnet…"));
+  toastTranslated("Leyendo el contrato en Stellar testnet…");
   circle = await readCircle(deployment, id, me() ? { [me()]: "Tú" } : {});
   activity = await readActivity(deployment, id, circle.start).catch(() => []);
   setModeButton("testnet");
@@ -502,7 +519,7 @@ async function openTestnet(contractId) {
   if (id !== deployment.contractId) url.searchParams.set("c", id);
   else url.searchParams.delete("c");
   history.replaceState(null, "", url);
-  toast(t("Datos reales del contrato en testnet"));
+  toastTranslated("Datos reales del contrato en testnet");
   await updateBalance();
 }
 
@@ -538,7 +555,7 @@ document.querySelectorAll(".modes button").forEach((b) => {
     selected = -1;
     rebuild();
     history.replaceState(null, "", location.pathname);
-    toast(t("Modo demo"));
+    toastTranslated("Modo demo");
     updateBalance();
   };
 });
@@ -552,14 +569,14 @@ setInterval(async () => {
   scene.setDeadline(roundProgress(circle));
   try {
     await refreshChain();
-    if (rpcFailures) toast(t("Conexión con Stellar recuperada"));
+    if (rpcFailures) toastTranslated("Conexión con Stellar recuperada");
     rpcFailures = 0;
     $(".panel").classList.remove("stale");
   } catch {
     rpcFailures += 1;
     nextRefresh = Date.now() + Math.min(5 * 60_000, 20_000 * 2 ** rpcFailures);
     $(".panel").classList.add("stale");
-    if (rpcFailures === 1) toast(t("No se pudo actualizar desde Stellar; se muestran los últimos datos y se reintentará"), 5000);
+    if (rpcFailures === 1) toastTranslated("No se pudo actualizar desde Stellar; se muestran los últimos datos y se reintentará", null, 5000);
   }
 }, 20000);
 
@@ -569,7 +586,7 @@ const menu = $("#wallet-menu");
 if (!pollarEnabled) {
   menu.querySelectorAll("[data-w=google],[data-w=email]").forEach((x) => {
     x.disabled = true;
-    x.title = "Falta la clave publicable de Pollar (VITE_POLLAR_KEY)";
+    x.title = t("Falta la clave publicable de Pollar (VITE_POLLAR_KEY)");
   });
 }
 $("#btn-wallet").onclick = () => (menu.hidden = !menu.hidden);
@@ -581,18 +598,29 @@ try {
 
 async function onConnected(w) {
   menu.hidden = true;
+  renderWalletButton(w);
+  deployment ??= await loadDeployment();
+  if (deployment && (await ensureFunded(deployment, w.address))) toastTranslated("Cuenta de testnet fondeada con Friendbot");
+  else toastTranslated("Billetera conectada");
+  if (isTestnet()) await refreshChain(true);
+  render();
+  await updateBalance();
+}
+
+function renderWalletButton(w = wallet()) {
   const btn = $("#btn-wallet");
+  if (!w) {
+    btn.setAttribute("data-i18n", "");
+    btn.dataset.i18nKey = "Conectar billetera";
+    btn.textContent = t("Conectar billetera");
+    btn.classList.remove("on");
+    return;
+  }
   btn.removeAttribute("data-i18n");
   btn.textContent = w.kind === "burner"
     ? `${t("Cuenta de prueba")} · G…${w.address.slice(-4)}`
     : `${w.kind === "pollar" ? "Pollar" : w.kind === "kit" ? t("Billetera") : "Freighter"} · ${short(w.address)}`;
   btn.classList.add("on");
-  deployment ??= await loadDeployment();
-  if (deployment && (await ensureFunded(deployment, w.address))) toast(t("Cuenta de testnet fondeada con Friendbot"));
-  else toast(t("Billetera conectada"));
-  if (isTestnet()) await refreshChain(true);
-  render();
-  await updateBalance();
 }
 
 /** Muestra el saldo de la billetera en el token del círculo (XLM en testnet). */
@@ -620,7 +648,7 @@ menu.querySelectorAll("button").forEach((b) => {
         } catch (e) {
           if (e.message === "FREIGHTER_MISSING") {
             window.open("https://www.freighter.app/", "_blank", "noopener");
-            throw new Error("instala Freighter (se abrió su página) y elige la red Testnet");
+            throw new Error(t("instala Freighter (se abrió su página) y elige la red Testnet"));
           }
           throw e;
         }
@@ -641,11 +669,16 @@ function askEmail() {
     const d = document.createElement("dialog");
     d.className = "ask-email";
     d.innerHTML = `<form method="dialog"><h2></h2><label><span></span><input type="email" name="email" required autocomplete="email" inputmode="email" /></label><menu><button value="cancel" formnovalidate class="ghost"></button><button value="ok" class="primary"></button></menu></form>`;
-    d.querySelector("h2").textContent = t("Entrar con tu correo");
-    d.querySelector("label span").textContent = t("Tu correo para recibir el código de Pollar:");
-    d.querySelector("[value=cancel]").textContent = t("Cancelar");
-    d.querySelector("[value=ok]").textContent = t("Enviar código");
-    const done = (v) => { d.close(); d.remove(); resolve(v); };
+    const render = () => {
+      d.querySelector("h2").textContent = t("Entrar con tu correo");
+      d.querySelector("label span").textContent = t("Tu correo para recibir el código de Pollar:");
+      d.querySelector("[value=cancel]").textContent = t("Cancelar");
+      d.querySelector("[value=ok]").textContent = t("Enviar código");
+    };
+    const onLanguage = () => render();
+    const done = (v) => { window.removeEventListener("awayu:lang", onLanguage); d.close(); d.remove(); resolve(v); };
+    render();
+    window.addEventListener("awayu:lang", onLanguage);
     d.querySelector("form").addEventListener("submit", (e) => {
       e.preventDefault();
       if (e.submitter?.value !== "ok") return done(null);
@@ -673,6 +706,26 @@ const createUsdcButton = $("#btn-create-usdc");
 const createError = $("#create-err");
 let pendingCreate = null;
 let usdcFundingAmount = 20;
+let createErrorCopy = null;
+let createUsdcCopy = null;
+let createUsdcTransactions = [];
+let usdcDialogCopy = null;
+let usdcDialogTransactions = [];
+
+function setCreateError(key, vars = {}) {
+  createErrorCopy = { key, vars };
+  createError.textContent = t(key, vars);
+}
+
+function setCreateUsdcMessage(key, vars = {}) {
+  createUsdcCopy = { key, vars };
+  createUsdcMessage.textContent = t(key, vars);
+}
+
+function setUsdcDialogMessage(key, vars = {}) {
+  usdcDialogCopy = { key, vars };
+  $("#usdc-flow-message").textContent = t(key, vars);
+}
 
 function updateCreateTokenLabel() {
   const usdc = tokenSelect.value === "usdc";
@@ -704,7 +757,8 @@ async function acquireTestUsdc(amount) {
 
 function showUsdcDialog(amount) {
   usdcFundingAmount = amount;
-  $("#usdc-flow-message").textContent = t("Obtener {amount} USDC de prueba para continuar.", { amount: amount.toLocaleString("es-BO", { maximumFractionDigits: 2 }) });
+  usdcDialogTransactions = [];
+  setUsdcDialogMessage("Obtener {amount} USDC de prueba para continuar.", { amount: amount.toLocaleString(localeForLang(), { maximumFractionDigits: 2 }) });
   $("#usdc-flow-result").textContent = "";
   $("#btn-usdc-get").hidden = false;
   $("#dlg-usdc button[value=cancel]").textContent = t("Cancelar");
@@ -716,8 +770,9 @@ $("#btn-usdc-get").onclick = () => run(async () => {
   button.disabled = true;
   try {
     const txs = await acquireTestUsdc(usdcFundingAmount);
+    usdcDialogTransactions = txs;
     $("#usdc-flow-result").innerHTML = transactionLinks(txs);
-    $("#usdc-flow-message").textContent = t("USDC de prueba recibido. Puedes continuar.");
+    setUsdcDialogMessage("USDC de prueba recibido. Puedes continuar.");
     button.hidden = true;
     $("#dlg-usdc button[value=cancel]").textContent = t("Cerrar");
   } finally { button.disabled = false; }
@@ -739,24 +794,26 @@ async function createCircle(data) {
       await signAndSend(() => buildRegisterXdr(deployment, me(), id, data.cname, data.region), "el registro del círculo");
       await signAndSend(() => buildJoinXdr(deployment, me(), id), "tu pasaporte");
     } catch (e) {
-      toast(t("El círculo se creó, pero no se pudo registrar: {why}", { why: friendly(e) }), 5000);
+      toastTranslated("El círculo se creó, pero no se pudo registrar: {why}", { why: () => friendly(e) }, 5000);
     }
   }
-  toast(t("¡Pasanaku creado! Comparte el enlace con los miembros"));
+  toastTranslated("¡Pasanaku creado! Comparte el enlace con los miembros");
   await openTestnet(id);
 }
 
 createUsdcButton.onclick = () => run(async () => {
   createUsdcButton.disabled = true;
-  createUsdcMessage.textContent = t("Primero se firmará la línea de confianza, si hace falta, y luego el cambio de XLM a USDC.");
+  setCreateUsdcMessage("Primero se firmará la línea de confianza, si hace falta, y luego el cambio de XLM a USDC.");
   createUsdcResult.textContent = "";
+  createUsdcTransactions = [];
   try {
     const txs = await acquireTestUsdc(pendingCreate.amount * 2);
+    createUsdcTransactions = txs;
     createUsdcResult.innerHTML = transactionLinks(txs);
-    createUsdcMessage.textContent = t("USDC de prueba listo. Selecciona Crear y firmar para continuar.");
+    setCreateUsdcMessage("USDC de prueba listo. Selecciona Crear y firmar para continuar.");
     createUsdcButton.hidden = true;
   } catch (error) {
-    createUsdcMessage.textContent = t("No se pudieron obtener los USDC de prueba: {why}", { why: friendly(error) });
+    setCreateUsdcMessage("No se pudieron obtener los USDC de prueba: {why}", { why: friendly(error) });
     throw error;
   } finally { createUsdcButton.disabled = false; }
 });
@@ -764,11 +821,14 @@ createUsdcButton.onclick = () => run(async () => {
 $("#btn-create").onclick = () => {
   if (!me()) {
     menu.hidden = false;
-    return toast(t("Primero conecta tu billetera"));
+    return toastTranslated("Primero conecta tu billetera");
   }
+  createErrorCopy = null;
   createError.textContent = "";
   createUsdcFlow.hidden = true;
   createUsdcResult.textContent = "";
+  createUsdcTransactions = [];
+  createUsdcCopy = null;
   createUsdcButton.hidden = false;
   updateCreateTokenLabel();
   applyStatic(dlg);
@@ -781,10 +841,9 @@ $("#form-create").addEventListener("submit", (ev) => {
   const f = new FormData(ev.target);
   const others = String(f.get("members")).split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
   const bad = others.find((a) => !StrKey.isValidEd25519PublicKey(a));
-  const err = createError;
-  if (bad) return void (err.textContent = `Dirección inválida: ${short(bad)}`);
+  if (bad) return void setCreateError("Dirección inválida: {address}", { address: short(bad) });
   const members = [...new Set([me(), ...others])];
-  if (members.length < 2) return void (err.textContent = "Hacen falta al menos 2 miembros");
+  if (members.length < 2) return void setCreateError("Hacen falta al menos 2 miembros");
   const amount = Number(f.get("amount"));
   const periodSeconds = Number(f.get("period"));
   const cname = String(f.get("cname") || "").trim().slice(0, 40) || "Pasanaku";
@@ -798,7 +857,7 @@ $("#form-create").addEventListener("submit", (ev) => {
       if (!status.hasTrustline || status.balance < amount) {
         createUsdcFlow.hidden = false;
         createUsdcButton.hidden = false;
-        createUsdcMessage.textContent = t("Para crear el círculo con USDC, obtén {amount} USDC de prueba para la primera cuota y la garantía.", { amount: (amount * 2).toLocaleString("es-BO", { maximumFractionDigits: 2 }) });
+        setCreateUsdcMessage("Para crear el círculo con USDC, obtén {amount} USDC de prueba para la primera cuota y la garantía.", { amount: (amount * 2).toLocaleString(localeForLang(), { maximumFractionDigits: 2 }) });
         createUsdcResult.textContent = "";
         return;
       }
@@ -829,6 +888,7 @@ function applyFigures(c) {
 let figCatalog = null;
 let figFilter = "all";
 let figProfile = null;
+let figurePickerRelabel = () => {};
 /** Selector de personajes: miniatura 3D de cada figura, filtros por oficio y miembro elegible. */
 async function openFigurePicker(i, { profile = false } = {}) {
   if (i < 0) i = 0;
@@ -882,11 +942,14 @@ async function openFigurePicker(i, { profile = false } = {}) {
         setFig(idx, f.id);
         if (profile) figProfile = f.id;
         grid.querySelectorAll(".fig").forEach((x) => { x.classList.toggle("on", x === b); x.setAttribute("aria-selected", String(x === b)); });
-        toast(profile ? t("Tu personaje ahora es {f}", { f: t(f.label) }) : t("{n} ahora es {f}", { n: m.name, f: t(f.label) }));
+        if (profile) toastTranslated("Tu personaje ahora es {f}", { f: () => t(f.label) });
+        else toastTranslated("{n} ahora es {f}", { n: m.name, f: () => t(f.label) });
       };
       grid.appendChild(b);
     }
   }
+  figurePickerRelabel = draw;
+  dlg.addEventListener("close", () => { figurePickerRelabel = () => {}; }, { once: true });
   who.onchange = draw;
   $("#fig-random").onclick = () => {
     const pool = figCatalog.figures.filter((f) => figFilter === "all" || f.archetype === figFilter);
@@ -912,9 +975,9 @@ $("#btn-share").onclick = async () => {
   url.searchParams.set("c", circle.contractId);
   try {
     await navigator.clipboard.writeText(url.toString());
-    toast(t("Enlace copiado: cualquiera puede ver el círculo; los miembros aportan con su billetera"));
+    toastTranslated("Enlace copiado: cualquiera puede ver el círculo; los miembros aportan con su billetera");
   } catch {
-    prompt("Copia este enlace:", url.toString());
+    prompt(t("Copia este enlace:"), url.toString());
   }
 };
 
@@ -999,7 +1062,7 @@ $("#form-custom").addEventListener("submit", (ev) => {
     const people = parsePeople(f.people.value);
     if (people.length < 2) {
       ev.preventDefault();
-      return toast(t("Hacen falta al menos 2 miembros"));
+      return toastTranslated("Hacen falta al menos 2 miembros");
     }
     demoOpts = { people, amount: Math.max(1, Number(f.amount.value) || 100), played: Number(f.played.value) || 0 };
   } else return;
@@ -1008,7 +1071,7 @@ $("#form-custom").addEventListener("submit", (ev) => {
     circle = demoCircle(demoOpts);
     selected = -1;
     rebuild();
-    toast(t(demoOpts ? "Círculo de demostración personalizado" : "Demo original"));
+    toastTranslated(demoOpts ? "Círculo de demostración personalizado" : "Demo original");
   }
 });
 
@@ -1054,7 +1117,7 @@ formSim.addEventListener("input", renderSim);
 const btnSound = $("#btn-sound");
 const syncSound = () => {
   btnSound.textContent = sfx.isMuted() ? "🔇" : "🔊";
-  btnSound.setAttribute("aria-label", sfx.isMuted() ? "Activar sonido" : "Silenciar");
+  btnSound.setAttribute("aria-label", t(sfx.isMuted() ? "Activar sonido" : "Silenciar"));
 };
 syncSound();
 btnSound.onclick = () => {
@@ -1070,12 +1133,51 @@ addEventListener("pointerdown", () => sfx.initSound(), { once: true });
 
 const selLang = $("#sel-lang");
 selLang.value = getLang();
-selLang.onchange = () => {
-  setLang(selLang.value);
+selLang.onchange = () => setLang(selLang.value);
+
+function refreshCustomDialog() {
+  const theme = selTheme.value || themeId;
+  fillThemes();
+  selTheme.value = theme;
+  fillSelect($("#sel-scenario"), SCENARIOS, skin.scenario, (value) => saveSkin({ scenario: value }));
+  fillSelect($("#sel-vessel"), VESSELS, skin.vessel, (value) => saveSkin({ vessel: value }));
+  fillSelect($("#sel-table"), TABLES, skin.table, (value) => saveSkin({ table: value }));
+  applyStatic(dlgCustom);
+}
+
+addEventListener("awayu:lang", (event) => {
+  const lang = event.detail?.lang || getLang();
+  state.lang = lang;
+  selLang.value = lang;
   render();
   relabel();
   renderHowto();
-};
+  syncSound();
+  renderWalletButton();
+  menu.querySelectorAll("[data-w=google],[data-w=email]").forEach((button) => { if (!pollarEnabled) button.title = t("Falta la clave publicable de Pollar (VITE_POLLAR_KEY)"); });
+  if (dlg.open) {
+    applyStatic(dlg);
+    updateCreateTokenLabel();
+    if (createErrorCopy) setCreateError(createErrorCopy.key, createErrorCopy.vars);
+    if (createUsdcCopy) setCreateUsdcMessage(createUsdcCopy.key, createUsdcCopy.vars);
+    if (createUsdcTransactions.length) createUsdcResult.innerHTML = transactionLinks(createUsdcTransactions);
+  }
+  const usdcDialog = $("#dlg-usdc");
+  if (usdcDialog.open) {
+    applyStatic(usdcDialog);
+    if (usdcDialogCopy) setUsdcDialogMessage(usdcDialogCopy.key, usdcDialogCopy.vars);
+    if (usdcDialogTransactions.length) $("#usdc-flow-result").innerHTML = transactionLinks(usdcDialogTransactions);
+    $("#dlg-usdc button[value=cancel]").textContent = t(usdcDialogTransactions.length ? "Cerrar" : "Cancelar");
+  }
+  if (dlgCustom.open) refreshCustomDialog();
+  if (dlgSim.open) renderSim();
+  figurePickerRelabel();
+  if (lastToast && $("#toast").classList.contains("on")) {
+    const values = Object.fromEntries(Object.entries(lastToast.vars || {}).map(([key, value]) => [key, typeof value === "function" ? value() : value]));
+    $("#toast").textContent = t(lastToast.key, values);
+  }
+  if (captionCopy) $("#caption").textContent = t(captionCopy.text);
+});
 
 // ---------- Recorrido guiado para el pitch ----------
 
@@ -1088,13 +1190,19 @@ const STORY = [
   ["Ese aguayo es tu historial crediticio: portable, verificable, tuyo.", "person"],
 ];
 
+let captionCopy = null;
 async function caption(text, ms = 3200) {
+  const current = { text };
+  captionCopy = current;
   const el = $("#caption");
   el.textContent = t(text);
   el.classList.add("on");
   await wait(ms);
-  el.classList.remove("on");
-  await wait(400);
+  if (captionCopy === current) {
+    el.classList.remove("on");
+    captionCopy = null;
+    await wait(400);
+  }
 }
 
 $("#btn-story").onclick = async () => {
@@ -1207,7 +1315,7 @@ export const circleApp = {
     $("#wallet-balance").hidden = true;
     setState({ address: null });
     render();
-    toast(t("Billetera desconectada en este navegador"));
+    toastTranslated("Billetera desconectada en este navegador");
   },
 };
 if (location.hash.startsWith("#/circulo")) circleApp.setActive(true);

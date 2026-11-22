@@ -77,12 +77,14 @@ export function openWelcome({ onTour, onDone } = {}) {
   if (typeof document === "undefined" || document.querySelector(".aw-welcome")) return null;
   let lang = getLang();
   let i = 0;
+  let onLanguage = () => {};
   const d = document.createElement("dialog");
   d.className = "aw-welcome";
   const close = (tour) => {
     try { localStorage.setItem(WELCOME_KEY, "1"); } catch { /* sin almacenamiento */ }
     d.close();
     d.remove();
+    window.removeEventListener("awayu:lang", onLanguage);
     if (tour) onTour?.(); else onDone?.();
   };
   d.addEventListener("cancel", (e) => { e.preventDefault(); close(false); });
@@ -109,10 +111,8 @@ export function openWelcome({ onTour, onDone } = {}) {
         b.onclick = () => {
           lang = code;
           setLang(code);
-          // el selector de la cabecera repinta el círculo; el panel se repinta aquí
           const sel = document.querySelector("#sel-lang");
-          if (sel) { sel.value = code; sel.dispatchEvent(new Event("change")); }
-          import("../dashboard.js").then((m) => m.relabel?.()).catch(() => {});
+          if (sel) sel.value = code;
           draw();
         };
         g.append(b);
@@ -153,6 +153,8 @@ export function openWelcome({ onTour, onDone } = {}) {
     d.querySelector(".aw-w-skip").onclick = () => close(false);
     main.focus();
   };
+  onLanguage = (event) => { lang = event.detail?.lang || getLang(); draw(); };
+  window.addEventListener("awayu:lang", onLanguage);
   document.body.append(d);
   draw();
   d.showModal();

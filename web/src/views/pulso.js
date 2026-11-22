@@ -7,6 +7,8 @@ const COPY = {
 };
 for (const code of ["pt", "qu", "ay", "gn"]) COPY[code] = { ...COPY.es };
 COPY.pt = { ...COPY.es, title: "Pulso da Stellar", subtitle: "Ledgers da testnet fechando ao vivo", average: "Tempo médio entre ledgers", operations: "operações", transactions: "transações", listening: "Aguardando o próximo ledger…" };
+COPY.pt.rate = "Ledgers / min";
+COPY.pt.unavailable = "Fluxo ao vivo indisponível · consultando a cada 5 segundos";
 
 export function normalizeLedger(record = {}) {
   const rawTime = record.closed_at ?? record.closedAt ?? record.timestamp;

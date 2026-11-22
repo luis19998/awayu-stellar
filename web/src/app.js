@@ -62,6 +62,10 @@ async function fillHelpMenu() {
     (here.length ? `<div class="grp" role="presentation">${t("En esta sección")}</div>${here.map(item).join("")}<div class="grp" role="presentation">${t("Todos los tutoriales")}</div>` : "") +
     rest.map(item).join("");
 }
+addEventListener("awayu:lang", () => {
+  state.lang = getLang();
+  if (!helpMenu?.hidden) void fillHelpMenu();
+});
 fab?.addEventListener("click", async () => {
   const open = helpMenu.hidden;
   if (open) await fillHelpMenu();

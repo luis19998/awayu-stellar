@@ -130,7 +130,7 @@ export function startTour(steps, { lang = "es", onEnd, id = "firstVisit" } = {})
   };
   const finish = (completed = false) => {
     if (ended) return;
-    ended = true; resizeObserver?.disconnect(); window.removeEventListener("resize", position); window.removeEventListener("scroll", position, true); document.removeEventListener("keydown", keydown);
+    ended = true; resizeObserver?.disconnect(); window.removeEventListener("resize", position); window.removeEventListener("scroll", position, true); document.removeEventListener("keydown", keydown); window.removeEventListener("awayu:lang", onLanguage);
     shade.remove(); spot.remove(); card.remove();
     try { localStorage.setItem(`${TOUR_SEEN_KEY}.${id}`, "1"); } catch {}
     if (previousFocus?.isConnected) previousFocus.focus();
@@ -162,12 +162,13 @@ export function startTour(steps, { lang = "es", onEnd, id = "firstVisit" } = {})
     if (resizeObserver) resizeObserver.disconnect();
     if (typeof ResizeObserver !== "undefined") { resizeObserver = new ResizeObserver(position); resizeObserver.observe(target); }
   };
+  const onLanguage = (event) => { lang = event.detail?.lang || "es"; render(); };
   function keydown(event) {
     if (event.key === "Escape") { event.preventDefault(); finish(false); }
     else if (event.key === "ArrowRight") { event.preventDefault(); buttons().at(-1)?.click(); }
     else if (event.key === "ArrowLeft" && index > 0) { event.preventDefault(); buttons().at(-2)?.click(); }
     else if (event.key === "Tab") { const items = buttons(); const first = items[0], last = items.at(-1); if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); } }
   }
-  document.addEventListener("keydown", keydown); window.addEventListener("resize", position); window.addEventListener("scroll", position, true); render();
+  document.addEventListener("keydown", keydown); window.addEventListener("resize", position); window.addEventListener("scroll", position, true); window.addEventListener("awayu:lang", onLanguage); render();
   return { end: () => finish(false) };
 }

@@ -15,12 +15,28 @@ const STYLE = `
 `;
 
 const COPY = {
-  es: { title: "Tus miniaturas, tus metas", intro: "En Alasitas soñamos en pequeño. Aquí cada miniatura representa un ahorro real, propio o compartido.", add: "Nueva meta", save: "Ahorrar", withdraw: "Retirar", exit: "Retirar mi aporte", saved: "ahorrado", goal: "Meta", people: "Personas", week: "semanas seguidas", ready: "Meta alcanzada", unlock: "Disponible", closed: "Meta cerrada", empty: "Todavía no hay metas. Crea la primera miniatura para empezar.", depositTitle: "¿Cuánto quieres ahorrar?", amount: "Monto", createTitle: "Arma una miniatura", titleLabel: "Nombre de la meta", kindLabel: "Miniatura", targetLabel: "Meta de ahorro", dateLabel: "Retirar desde", membersLabel: "Participantes (separados por coma)", cancel: "Volver", create: "Crear meta", savedOk: "Aporte guardado.", withdrawn: "Aportes repartidos según lo que puso cada persona.", exited: "Tu aporte volvió a tu billetera.", created: "Tu meta ya está en la feria.", currency: "XLM", types: { casa: "Casita", auto: "Auto", estudio: "Birrete", negocio: "Tienda", viaje: "Viaje", salud: "Salud", otro: "Otra meta" } },
-  en: { title: "Your miniatures, your goals", intro: "At Alasitas we dream small. Here, each miniature stands for real savings, shared or personal.", add: "New goal", save: "Save", withdraw: "Withdraw", exit: "Withdraw my share", saved: "saved", goal: "Goal", people: "People", week: "weeks in a row", ready: "Goal reached", unlock: "Available", closed: "Goal closed", empty: "No goals yet. Create your first miniature to get started.", depositTitle: "How much would you like to save?", amount: "Amount", createTitle: "Make a miniature", titleLabel: "Goal name", kindLabel: "Miniature", targetLabel: "Savings target", dateLabel: "Withdraw from", membersLabel: "Participants (comma-separated)", cancel: "Back", create: "Create goal", savedOk: "Savings added.", withdrawn: "Savings returned according to each person's contributions.", exited: "Your contribution was returned to your wallet.", created: "Your goal is now at the fair.", currency: "XLM", types: { casa: "Little house", auto: "Car", estudio: "Graduation cap", negocio: "Shop", viaje: "Trip", salud: "Health", otro: "Other goal" } },
+  es: { title: "Tus miniaturas, tus metas", intro: "En Alasitas soñamos en pequeño. Aquí cada miniatura representa un ahorro real, propio o compartido.", add: "Nueva meta", save: "Ahorrar", withdraw: "Retirar", exit: "Retirar mi aporte", saved: "ahorrado", goal: "Meta", people: "Personas", week: "semanas seguidas", ready: "Meta alcanzada", unlock: "Disponible", closed: "Meta cerrada", empty: "Todavía no hay metas. Crea la primera miniatura para empezar.", depositTitle: "¿Cuánto quieres ahorrar?", amount: "Monto", createTitle: "Arma una miniatura", titleLabel: "Nombre de la meta", kindLabel: "Miniatura", targetLabel: "Meta de ahorro", dateLabel: "Retirar desde", membersLabel: "Participantes (separados por coma)", cancel: "Volver", create: "Crear meta", savedOk: "Aporte guardado.", withdrawn: "Aportes repartidos según lo que puso cada persona.", exited: "Tu aporte volvió a tu billetera.", created: "Tu meta ya está en la feria.", error: "No se pudo completar la acción.", currency: "XLM", types: { casa: "Casita", auto: "Auto", estudio: "Birrete", negocio: "Tienda", viaje: "Viaje", salud: "Salud", otro: "Otra meta" } },
+  en: { title: "Your miniatures, your goals", intro: "At Alasitas we dream small. Here, each miniature stands for real savings, shared or personal.", add: "New goal", save: "Save", withdraw: "Withdraw", exit: "Withdraw my share", saved: "saved", goal: "Goal", people: "People", week: "weeks in a row", ready: "Goal reached", unlock: "Available", closed: "Goal closed", empty: "No goals yet. Create your first miniature to get started.", depositTitle: "How much would you like to save?", amount: "Amount", createTitle: "Make a miniature", titleLabel: "Goal name", kindLabel: "Miniature", targetLabel: "Savings target", dateLabel: "Withdraw from", membersLabel: "Participants (comma-separated)", cancel: "Back", create: "Create goal", savedOk: "Savings added.", withdrawn: "Savings returned according to each person's contributions.", exited: "Your contribution was returned to your wallet.", created: "Your goal is now at the fair.", error: "The action could not be completed.", currency: "XLM", types: { casa: "Little house", auto: "Car", estudio: "Graduation cap", negocio: "Shop", viaje: "Trip", salud: "Health", otro: "Other goal" } },
 };
-for (const code of ["pt", "qu", "ay", "gn"]) COPY[code] = { ...COPY.es };
+COPY.pt = {
+  title: "Suas miniaturas, suas metas", intro: "Nas Alasitas, sonhamos pequeno. Aqui, cada miniatura representa uma poupança real, individual ou compartilhada.",
+  add: "Nova meta", save: "Poupar", withdraw: "Retirar", exit: "Retirar minha contribuição",
+  saved: "poupado", goal: "Meta", people: "Pessoas", week: "semanas seguidas", ready: "Meta alcançada",
+  unlock: "Disponível", closed: "Meta encerrada", empty: "Ainda não há metas. Crie a primeira miniatura para começar.",
+  depositTitle: "Quanto você quer poupar?", amount: "Valor", createTitle: "Monte uma miniatura",
+  titleLabel: "Nome da meta", kindLabel: "Miniatura", targetLabel: "Meta de poupança",
+  dateLabel: "Retirar a partir de", membersLabel: "Participantes (separados por vírgula)",
+  cancel: "Voltar", create: "Criar meta", savedOk: "Contribuição salva.",
+  withdrawn: "Poupança distribuída conforme a contribuição de cada pessoa.",
+  exited: "Sua contribuição foi devolvida à sua carteira.", created: "Sua meta já está na feira.",
+  error: "Não foi possível concluir a ação.",
+  currency: "XLM",
+  types: { casa: "Casinha", auto: "Carro", estudio: "Capelo", negocio: "Loja", viaje: "Viagem", salud: "Saúde", otro: "Outra meta" },
+};
+for (const code of ["qu", "ay", "gn"]) COPY[code] = { ...COPY.es };
 const TYPES = ["casa", "auto", "estudio", "negocio", "viaje", "salud", "otro"];
-const money = (n) => new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(n || 0);
+const numberLocale = (lang) => ({ es: "es-BO", en: "en-US", pt: "pt-BR", qu: "es-BO", ay: "es-BO", gn: "es-BO" })[lang] || "es-BO";
+const money = (n, lang) => new Intl.NumberFormat(numberLocale(lang), { maximumFractionDigits: 2 }).format(n || 0);
 
 function material(color, extra = {}) { return new THREE.MeshStandardMaterial({ color, roughness: 0.68, ...extra }); }
 function block(parent, color, position, scale, radius = 0.04) {
@@ -83,7 +99,7 @@ function makeMini(canvas, goal, reduced) {
 export function mount(container, opts = {}) {
   if (!container) throw new TypeError("alasitas.mount necesita un contenedor");
   let lang = opts.lang || "es"; let t = pickLang(COPY, lang);
-  const localText = (es, en) => pickLang({ es, en }, lang);
+  const localText = (es, en, pt) => pickLang({ es, en, pt: pt ?? es }, lang);
   let isChain = opts.mode === "testnet" && opts.deployment?.alasitasContractId;
   let address = opts.address || "";
   let goals = createDemoGoals(); let stopped = false; let busy = false; let renderVersion = 0;
@@ -102,7 +118,9 @@ export function mount(container, opts = {}) {
   const reduced = matchMedia?.("(prefers-reduced-motion: reduce)") || { matches: true };
   let resizeObserver;
 
-  function setStatus(message) { status.textContent = message; }
+  let statusKey = null;
+  let activeFormRefresh = null;
+  function setStatus(message, key = null) { status.textContent = message; statusKey = key; }
   function disposeMinis() { miniDisposers.forEach((dispose) => dispose()); miniDisposers = []; }
   function render() {
     if (stopped) return; renderVersion++; disposeMinis(); grid.replaceChildren();
@@ -113,12 +131,12 @@ export function mount(container, opts = {}) {
       const name = document.createElement("h2"); name.className = "awayu-alasitas__name"; name.textContent = goal.title;
       const meta = document.createElement("div"); meta.className = "awayu-alasitas__meta"; const type = document.createElement("span"); type.textContent = t.types[goal.kind] || t.types.otro; const memberLabel = document.createElement("span"); memberLabel.textContent = `${goal.members?.length || 1} ${t.people.toLowerCase()}`; meta.append(type, memberLabel);
       const bar = document.createElement("div"); bar.className = "awayu-alasitas__bar"; bar.setAttribute("role", "progressbar"); bar.setAttribute("aria-label", `${t.goal}: ${goal.title}`); bar.setAttribute("aria-valuemin", "0"); bar.setAttribute("aria-valuemax", String(goal.target)); bar.setAttribute("aria-valuenow", String(goal.saved)); const fill = document.createElement("div"); fill.className = "awayu-alasitas__fill"; fill.style.width = `${progressOf(goal).ratio * 100}%`; bar.append(fill);
-      const numbers = document.createElement("div"); numbers.className = "awayu-alasitas__numbers"; const saved = document.createElement("span"); saved.textContent = `${money(goal.saved)} ${goal.token || t.currency} ${t.saved}`; const target = document.createElement("span"); target.textContent = `${t.goal}: ${money(goal.target)}`; numbers.append(saved, target);
+      const numbers = document.createElement("div"); numbers.className = "awayu-alasitas__numbers"; const saved = document.createElement("span"); saved.textContent = `${money(goal.saved, lang)} ${goal.token || t.currency} ${t.saved}`; const target = document.createElement("span"); target.textContent = `${t.goal}: ${money(goal.target, lang)}`; numbers.append(saved, target);
       const people = document.createElement("p"); people.className = "awayu-alasitas__members"; const me = isChain ? address : "Tú"; const streak = streakOf(goal, me) || streakOf(goal, "Tú"); people.append(document.createTextNode(`${goal.members?.map(shortName).join(", ") || shortName(me)} · `)); const flames = document.createElement("span"); flames.className = "awayu-alasitas__flames"; flames.setAttribute("aria-label", `${streak} ${t.week}`); flames.textContent = `${"🔥".repeat(Math.min(streak, 7))} ${streak} ${t.week}`; people.append(flames);
       const actions = document.createElement("div"); actions.className = "awayu-alasitas__buttons";
       const deposit = document.createElement("button"); deposit.type = "button"; deposit.className = "awayu-alasitas__action"; deposit.textContent = t.save; deposit.disabled = Boolean(goal.closed) || (isChain && !address);
       const eligible = progressOf(goal).ratio >= 1 || Date.now() / 1000 >= goal.unlockAt;
-      const withdraw = document.createElement("button"); withdraw.type = "button"; withdraw.className = "awayu-alasitas__secondary"; withdraw.textContent = goal.closed ? t.closed : progressOf(goal).ratio >= 1 ? t.ready : t.withdraw; withdraw.disabled = Boolean(goal.closed) || !eligible; withdraw.title = `${t.unlock}: ${new Date(goal.unlockAt * 1000).toLocaleDateString(lang)}`;
+      const withdraw = document.createElement("button"); withdraw.type = "button"; withdraw.className = "awayu-alasitas__secondary"; withdraw.textContent = goal.closed ? t.closed : progressOf(goal).ratio >= 1 ? t.ready : t.withdraw; withdraw.disabled = Boolean(goal.closed) || !eligible; withdraw.title = `${t.unlock}: ${new Date(goal.unlockAt * 1000).toLocaleDateString(numberLocale(lang))}`;
       const exit = document.createElement("button"); exit.type = "button"; exit.className = "awayu-alasitas__secondary"; exit.textContent = t.exit; exit.hidden = Boolean(goal.closed) || eligible; exit.disabled = isChain && !address;
       deposit.addEventListener("click", () => openAmount(goal, "deposit")); withdraw.addEventListener("click", () => runAction(goal, "withdraw")); exit.addEventListener("click", () => runAction(goal, "exit"));
       actions.append(deposit, withdraw, exit); card.append(canvas, name, meta, bar, numbers, people, actions); grid.append(card);
@@ -126,39 +144,46 @@ export function mount(container, opts = {}) {
     }
   }
 
-  function showForm(titleText, fields, onSubmit) {
+  function showForm(titleText, fields, onSubmit, values = {}, refresh = null) {
+    if (dialog.open) dialog.close();
+    activeFormRefresh = refresh;
     form.replaceChildren(); const heading = document.createElement("h2"); heading.textContent = titleText; form.append(heading);
     for (const field of fields) {
       const label = document.createElement("label"); label.append(document.createTextNode(field.label));
       const input = document.createElement(field.tag || "input"); input.name = field.name; input.required = field.required !== false;
       if (field.tag === "select") for (const [value, text] of field.options) { const option = document.createElement("option"); option.value = value; option.textContent = text; input.append(option); }
       else { input.type = field.type || "text"; if (field.min != null) input.min = String(field.min); if (field.step) input.step = String(field.step); if (field.value) input.value = field.value; if (field.maxLength) input.maxLength = field.maxLength; }
+      if (Object.hasOwn(values, field.name)) input.value = values[field.name];
       label.append(input); form.append(label);
     }
-    const menu = document.createElement("menu"); const cancel = document.createElement("button"); cancel.type = "button"; cancel.textContent = t.cancel; cancel.addEventListener("click", () => dialog.close()); const submitButton = document.createElement("button"); submitButton.type = "submit"; submitButton.textContent = t.create; menu.append(cancel, submitButton); form.append(menu);
-    form.onsubmit = (event) => { event.preventDefault(); if (!form.reportValidity()) return; const data = Object.fromEntries(new FormData(form)); dialog.close(); onSubmit(data); };
+    const menu = document.createElement("menu"); const cancel = document.createElement("button"); cancel.type = "button"; cancel.textContent = t.cancel; cancel.addEventListener("click", () => { activeFormRefresh = null; dialog.close(); }); const submitButton = document.createElement("button"); submitButton.type = "submit"; submitButton.textContent = t.create; menu.append(cancel, submitButton); form.append(menu);
+    form.onsubmit = (event) => { event.preventDefault(); if (!form.reportValidity()) return; const data = Object.fromEntries(new FormData(form)); activeFormRefresh = null; dialog.close(); onSubmit(data); };
     dialog.showModal(); form.querySelector("input,select")?.focus();
   }
-  function openAmount(goal, action) {
-    showForm(t.depositTitle, [{ name: "amount", label: t.amount, type: "number", min: 0.0000001, step: "any", value: "10" }], (data) => runAction(goal, action, Number(data.amount)));
+  function openAmount(goal, action, values = {}) {
+    showForm(t.depositTitle, [{ name: "amount", label: t.amount, type: "number", min: 0.0000001, step: "any", value: "10" }], (data) => runAction(goal, action, Number(data.amount)), values, (next) => openAmount(goal, action, next));
   }
-  addButton.addEventListener("click", () => showForm(t.createTitle, [
-    { name: "title", label: t.titleLabel, maxLength: 80 },
-    { name: "kind", label: t.kindLabel, tag: "select", options: TYPES.map((kind) => [kind, t.types[kind]]) },
-    { name: "target", label: t.targetLabel, type: "number", min: 0.0000001, step: "any", value: "100" },
-    { name: "unlock", label: t.dateLabel, type: "date", value: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10) },
-    { name: "members", label: t.membersLabel, required: false },
-  ], (data) => createGoal(data)));
+  function openCreateGoalForm(values = {}) {
+    showForm(t.createTitle, [
+      { name: "title", label: t.titleLabel, maxLength: 80 },
+      { name: "kind", label: t.kindLabel, tag: "select", options: TYPES.map((kind) => [kind, t.types[kind]]) },
+      { name: "target", label: t.targetLabel, type: "number", min: 0.0000001, step: "any", value: "100" },
+      { name: "unlock", label: t.dateLabel, type: "date", value: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10) },
+      { name: "members", label: t.membersLabel, required: false },
+    ], (data) => createGoal(data), values, (next) => openCreateGoalForm(next));
+  }
+  addButton.addEventListener("click", () => openCreateGoalForm());
 
   // Las direcciones de Stellar son largas: G…ABCD, o el nombre si lo conocemos
   function shortName(who) {
     const known = opts.deployment?.ayni?.memberNames?.[who];
     if (known) return known;
-    if (who === address) return localText("Tú", "You");
+    if (who === "Tú") return localText("Tú", "You", "Você");
+    if (who === address) return localText("Tú", "You", "Você");
     return /^G[A-Z2-7]{55}$/.test(who) ? `${who.slice(0, 4)}…${who.slice(-4)}` : who;
   }
   async function signAndSubmit(build) {
-    if (typeof opts.sign !== "function") throw new Error(localText("Conecta una billetera para firmar esta acción.", "Connect a wallet to sign this action."));
+    if (typeof opts.sign !== "function") throw new Error(localText("Conecta una billetera para firmar esta acción.", "Connect a wallet to sign this action.", "Conecte uma carteira para assinar esta ação."));
     return submit(opts.deployment, await opts.sign(await build()));
   }
   async function loadChainGoals() {
@@ -185,9 +210,10 @@ export function mount(container, opts = {}) {
       } else if (action === "deposit") goals = depositDemo(goals, goal.id, "Tú", amount);
       else if (action === "exit") { const result = earlyExitDemo(goals, goal.id, "Tú"); goals = result.goals; }
       else { const result = withdrawDemo(goals, goal.id); goals = result.goals; }
-      setStatus(action === "deposit" ? t.savedOk : action === "exit" ? t.exited : t.withdrawn); render();
+      const key = action === "deposit" ? "savedOk" : action === "exit" ? "exited" : "withdrawn";
+      setStatus(t[key], key); render();
       if (action === "deposit" && progressOf(goals.find((item) => item.id === goal.id)).ratio >= 1) celebrate();
-    } catch (error) { setStatus(error?.message || localText("No se pudo completar la acción.", "The action could not be completed.")); }
+    } catch { setStatus(t.error, "error"); }
     finally { busy = false; }
   }
   async function createGoal(data) {
@@ -204,8 +230,8 @@ export function mount(container, opts = {}) {
         const members = ["Tú", ...participants];
         goals = [...goals, { id, title: data.title.trim(), kind: data.kind, target: Number(data.target), saved: 0, unlockAt, token: t.currency, members, contributions: Object.fromEntries(members.map((member) => [member, 0])), streaks: Object.fromEntries(members.map((member) => [member, 0])), closed: false }];
       }
-      setStatus(t.created); render();
-    } catch (error) { setStatus(error?.message || localText("No se pudo crear la meta.", "The goal could not be created.")); }
+      setStatus(t.created, "created"); render();
+    } catch { setStatus(t.error, "error"); }
     finally { busy = false; }
   }
   function celebrate() {
@@ -215,7 +241,21 @@ export function mount(container, opts = {}) {
     const colors = Object.values(PALETTE); const pieces = Array.from({ length: 80 }, () => ({ x: Math.random() * rect.width, y: -Math.random() * rect.height * 0.35, vy: 1.5 + Math.random() * 3, vx: (Math.random() - 0.5) * 1.3, color: colors[Math.floor(Math.random() * colors.length)], size: 3 + Math.random() * 5 }));
     let frame = 0; const start = performance.now(); const draw = (now) => { ctx.clearRect(0, 0, rect.width, rect.height); for (const p of pieces) { p.x += p.vx; p.y += p.vy; ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.size, p.size * 1.6); } if (now - start < 1700 && !stopped) frame = requestAnimationFrame(draw); else { cancelAnimationFrame(frame); canvas.remove(); } }; frame = requestAnimationFrame(draw);
   }
-  async function load() { if (!isChain) return; try { goals = await loadChainGoals(); if (!stopped) render(); } catch (error) { setStatus(error?.message || localText("No se pudieron cargar las metas.", "Savings goals could not be loaded.")); } }
+  async function load() { if (!isChain) return; try { goals = await loadChainGoals(); if (!stopped) render(); } catch { setStatus(t.error, "error"); } }
+  function repaintLanguage(nextLang) {
+    if (stopped) return;
+    const wasOpen = dialog.open;
+    const values = wasOpen ? Object.fromEntries(new FormData(form)) : null;
+    const refresh = wasOpen ? activeFormRefresh : null;
+    lang = nextLang || opts.lang || "es"; opts.lang = lang; t = pickLang(COPY, lang);
+    title.textContent = t.title; description.textContent = t.intro; addButton.textContent = t.add;
+    root.setAttribute("aria-label", t.title);
+    if (statusKey) setStatus(t[statusKey], statusKey);
+    render();
+    if (wasOpen && refresh) refresh(values);
+  }
+  const onLanguageChange = (event) => repaintLanguage(event.detail?.lang);
+  window.addEventListener("awayu:lang", onLanguageChange);
   render(); load();
   return {
     update(next = {}) {
@@ -224,9 +264,8 @@ export function mount(container, opts = {}) {
       lang = opts.lang || "es"; t = pickLang(COPY, lang);
       isChain = opts.mode === "testnet" && Boolean(opts.deployment?.alasitasContractId); address = opts.address || "";
       if (oldChain !== isChain || oldAddress !== address || next.deployment) { goals = isChain ? [] : createDemoGoals(); load(); }
-      setStatus(""); title.textContent = t.title; description.textContent = t.intro; addButton.textContent = t.add;
-      root.setAttribute("aria-label", t.title); render();
+      setStatus(""); repaintLanguage(lang);
     },
-    destroy() { if (stopped) return; stopped = true; disposeMinis(); dialog.close(); root.remove(); },
+    destroy() { if (stopped) return; stopped = true; window.removeEventListener("awayu:lang", onLanguageChange); disposeMinis(); dialog.close(); root.remove(); },
   };
 }

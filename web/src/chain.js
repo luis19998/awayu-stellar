@@ -322,7 +322,7 @@ export async function submit(dep, { signedXdr, hash }) {
     const sent = await server.sendTransaction(tx);
     if (sent.status === "ERROR") {
       tell({ ...call, status: "rechazada" });
-      throw new Error("La red rechazó la transacción");
+      throw new Error(t("La red rechazó la transacción"));
     }
     hash = sent.hash;
   }
@@ -331,7 +331,7 @@ export async function submit(dep, { signedXdr, hash }) {
   const res = await server.pollTransaction(hash, { attempts: 30 });
   if (res.status !== "SUCCESS") {
     tell({ ...call, hash, status: "fallida" });
-    throw new Error("La transacción falló (" + res.status + ")");
+    throw new Error(t("La transacción falló ({status})", { status: res.status }));
   }
   tell({ ...call, hash, status: "confirmada" });
   return { hash, value: res.returnValue ? scValToNative(res.returnValue) : null };
@@ -344,7 +344,7 @@ export async function ensureFunded(dep, address) {
     return false;
   } catch {
     const r = await fetch(`https://friendbot.stellar.org/?addr=${encodeURIComponent(address)}`);
-    if (!r.ok) throw new Error("Friendbot no pudo fondear la cuenta");
+    if (!r.ok) throw new Error(t("Friendbot no pudo fondear la cuenta"));
     return true;
   }
 }

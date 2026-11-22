@@ -46,6 +46,7 @@ const COPY = {
   usd: tr("USD · dólar estadounidense", "USD · US dollar", "USD · dólar americano"),
   bob: tr("BOB · boliviano", "BOB · Bolivian boliviano", "BOB · boliviano"),
   activeProfile: tr("Perfil activo", "Active profile", "Perfil ativo", "Kunan kikin", "Jichha perfil", "Perfil ko'ág̃agua"),
+  defaultProfile: tr("Principal", "Default", "Principal"),
   create: tr("Crear perfil", "Create profile", "Criar perfil", "Musuq perfil", "Musuq perfil", "Ejapo perfil pyahu"),
   rename: tr("Renombrar", "Rename", "Renomear", "Suti tikray", "Suti mayjt'ayaña", "Emoambue téra"),
   delete: tr("Eliminar perfil", "Delete profile", "Excluir perfil", "Perfil pichay", "Perfil chhaqtayaña", "Embogue perfil"),
@@ -144,6 +145,7 @@ function renderContent(panel) {
   const profile = getProfile();
   const profiles = getProfiles();
   const active = getActiveProfile();
+  const profileName = (item) => item.id === "principal" && item.name === "Principal" ? trPick(COPY.defaultProfile, lang) : item.name;
   const studio = readStudioPrefs();
   const address = state.address;
   const selectedLanguage = lang;
@@ -156,9 +158,9 @@ function renderContent(panel) {
       <button class="aw-settings-secondary aw-figure" type="button">${trPick(COPY.chooseFigure, lang)}</button>
       <label><span>${trPick(COPY.currency, lang)}</span><select name="currency"><option value="USD" ${profile.currency !== "BOB" ? "selected" : ""}>${trPick(COPY.usd, lang)}</option><option value="BOB" ${profile.currency === "BOB" ? "selected" : ""}>${trPick(COPY.bob, lang)}</option></select></label>
     </div><button class="aw-settings-primary aw-save-profile" type="button">${trPick(COPY.saveProfile, lang)}</button>`, 0, lang),
-    section("users", 1, `<label><span>${trPick(COPY.activeProfile, lang)}</span><select name="activeProfile" aria-label="${trPick(COPY.activeProfile, lang)}">${profiles.list.map((item) => `<option value="${esc(item.id)}" ${item.id === profiles.active ? "selected" : ""}>${esc(item.name)}</option>`).join("")}</select></label>
+    section("users", 1, `<label><span>${trPick(COPY.activeProfile, lang)}</span><select name="activeProfile" aria-label="${trPick(COPY.activeProfile, lang)}">${profiles.list.map((item) => `<option value="${esc(item.id)}" ${item.id === profiles.active ? "selected" : ""}>${esc(profileName(item))}</option>`).join("")}</select></label>
       <div class="aw-settings-actions"><button class="aw-settings-secondary aw-create-profile" type="button">${trPick(COPY.create, lang)}</button><button class="aw-settings-secondary aw-rename-profile" type="button">${trPick(COPY.rename, lang)}</button><button class="aw-settings-danger aw-delete-profile" type="button" ${profiles.list.length <= 1 ? "disabled" : ""}>${trPick(COPY.delete, lang)}</button></div>
-      <p class="aw-settings-note">${esc(active.name)}</p>`, 1, lang),
+      <p class="aw-settings-note">${esc(profileName(active))}</p>`, 1, lang),
     section("language", 2, `<p class="aw-settings-note">${trPick(COPY.languageLead, lang)}</p><label><span>${trPick(COPY.sections[2], lang)}</span><select id="sel-lang" name="language" aria-label="${trPick(COPY.sections[2], lang)}">${LANGS.map(({ code, name }) => `<option value="${code}" ${code === selectedLanguage ? "selected" : ""}>${name}</option>`).join("")}</select></label>`, 2, lang),
     section("appearance", 3, `<label class="aw-settings-range"><span>${trPick(COPY.textSize, lang)} <output>${Math.round((studio.text || 1) * 100)}%</output></span><input name="textSize" type="range" min="0.85" max="1.3" step="0.05" value="${Number(studio.text || 1)}"></label>
       <div class="aw-toggle-row"><span>${trPick(COPY.contrast, lang)}</span>${check(studio.contrast, lang, "contrast", COPY.contrast)}</div>
@@ -284,6 +286,8 @@ export function mountSettings({ root = document.querySelector(".wallet") } = {})
     if (!wasOpen) panel.hidden = true;
     updateGreeting();
   };
+  const onLanguage = () => { state.lang = getLang(); refresh(); };
+  window.addEventListener("awayu:lang", onLanguage);
 
   trigger.onclick = () => isOpen() ? close(true) : open();
   panel.addEventListener("click", async (event) => {
@@ -452,6 +456,7 @@ export function mountSettings({ root = document.querySelector(".wallet") } = {})
       document.removeEventListener("keydown", outsideKeydown);
       window.removeEventListener("awayu:figure-selected", figureSelected);
       window.removeEventListener("awayu:proactive-muted", proactiveMuted);
+      window.removeEventListener("awayu:lang", onLanguage);
       window.removeEventListener("hashchange", updateGreeting);
       soundButton?.removeEventListener("click", soundClick);
       unsubscribeState();

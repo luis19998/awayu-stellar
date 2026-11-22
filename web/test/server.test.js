@@ -65,10 +65,33 @@ describe("eventos a n8n", () => {
     const raw = '{"type":"plazo_cerca","circle":"C123","data":{"ronda":2}}';
     const response = await handleEvent(new Request("https://awayu.test/api/eventos", { method: "POST", body: raw }));
     expect(response.status).toBe(202);
-    expect(await response.json()).toEqual({ accepted: true, forwarded: true });
+    expect(await response.json()).toEqual({ accepted: true, forwarded: true, delivered: 1, webhooks: 1 });
     const [, options] = fetchMock.mock.calls[0];
     expect(options.body).toBe(raw);
     expect(options.headers["x-awayu-signature"]).toBe(`sha256=${signWebhookPayload(raw, "secreto")}`);
+  });
+
+  it("el ping solo informa la configuración y nunca se reenvía", async () => {
+    vi.stubEnv("N8N_WEBHOOK_URL", "https://n8n.test/a, https://n8n.test/b");
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const response = await handleEvent(new Request("https://awayu.test/api/eventos", {
+      method: "POST", body: JSON.stringify({ type: "ping", circle: "demo", data: {} }),
+    }));
+    expect(await response.json()).toEqual({ accepted: true, forwarded: false, configured: true, webhooks: 2 });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("reenvía a cada flujo cuando hay varias URL", async () => {
+    vi.stubEnv("N8N_WEBHOOK_URL", "https://n8n.test/a,https://n8n.test/b");
+    vi.stubEnv("N8N_SECRET", "");
+    const fetchMock = vi.fn(async () => new Response("ok", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const response = await handleEvent(new Request("https://awayu.test/api/eventos", {
+      method: "POST", body: JSON.stringify({ type: "circulo_creado", circle: "C1", data: { name: "Feria" } }),
+    }));
+    expect(await response.json()).toEqual({ accepted: true, forwarded: true, delivered: 2, webhooks: 2 });
+    expect(fetchMock.mock.calls.map(([u]) => String(u))).toEqual(["https://n8n.test/a", "https://n8n.test/b"]);
   });
 
   it("rechaza tipos de evento no admitidos", async () => {

@@ -154,6 +154,7 @@ function render() {
   if (c.contractId) link.href = explorerUrl(c.contractId);
   $("#btn-share").hidden = !tn;
   setState({ circle: c, deployment, address: me() || null });
+  maybeNotifyDeadline(c);
   renderPerson();
   renderTimeline();
 }
@@ -386,10 +387,29 @@ async function signAndSend(buildXdr, what) {
   return submit(deployment, signed);
 }
 
+/** Si te falta aportar y quedan menos de 24 horas, avisa una sola vez por ronda (recordatorio de n8n). */
+function maybeNotifyDeadline(c) {
+  if (!isTestnet() || !c.contractId || !me() || !c.deadline) return;
+  const i = c.members.findIndex((m) => m.address === me());
+  const left = c.deadline - Date.now() / 1000;
+  if (i < 0 || c.paid.has(i) || left <= 0 || left > 86400) return;
+  const key = `awayu.n8n.plazo.${c.contractId}.${c.round}`;
+  try { if (localStorage.getItem(key)) return; localStorage.setItem(key, "1"); } catch { return; }
+  notifyEvent("plazo_cerca", c.contractId, { round: c.round + 1, member: me(), hoursLeft: Math.round(left / 3600), amount: c.amount, token: c.token, link: `${location.origin}/?c=${c.contractId}` });
+}
+
+/** Avisa a n8n (vía /api/eventos) sin bloquear ni mostrar errores: es solo para automatizaciones. */
+function notifyEvent(type, circleId, data = {}) {
+  try {
+    fetch("/api/eventos", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type, circle: circleId, data }), keepalive: true }).catch(() => {});
+  } catch { /* sin red */ }
+}
+
 async function chainContribute() {
   if (!(await ensureCircleUsdc(circle.amount))) return;
   const i = myIndex();
   await signAndSend(() => buildContributeXdr(deployment, circle.contractId, me()), "tu aporte");
+  notifyEvent("aporte", circle.contractId, { round: circle.round + 1, member: me(), amount: circle.amount, token: circle.token });
   await animateContribution(i, ON_TIME);
   toast(t("Aporte registrado en la cadena ✓"));
   await refreshChain();
@@ -409,6 +429,7 @@ async function chainPayout() {
   const marks = circle.members.map((_, i) => circle.paid.get(i));
   const amount = pot(circle);
   const res = await signAndSend(() => buildPayoutXdr(deployment, circle.contractId, me()), "el pago del pozo");
+  notifyEvent("pozo", circle.contractId, { round: round + 1, to: String(res?.value || ""), amount, token: circle.token });
   const to = circle.members.findIndex((m) => m.address === String(res?.value));
   await animatePayout(to < 0 ? recipientOf(circle) : to, amount, marks, round);
   await refreshChain(true);
@@ -458,6 +479,7 @@ $("#btn-guarantee").onclick = () =>
     } else {
       if (!(await ensureCircleUsdc(circle.amount))) return;
       await signAndSend(() => buildGuaranteeXdr(deployment, circle.contractId, me()), "tu garantía");
+      notifyEvent("garantia", circle.contractId, { member: me(), amount: circle.amount, token: circle.token });
       toast(t("Garantía depositada: si un día no puedes pagar, cubre tu cuota ✓"));
     }
     await refreshChain(true);
@@ -711,6 +733,7 @@ async function createCircle(data) {
   }), "el nuevo círculo");
   const id = String(res.value);
   saveCircle(id);
+  notifyEvent("circulo_creado", id, { name: data.cname, region: data.region, members: data.members.length, amount: data.amount, token: data.tokenChoice === "usdc" ? "USDC" : "XLM", periodSeconds: data.periodSeconds, link: `${location.origin}/?c=${id}` });
   if (deployment.registro) {
     try {
       await signAndSend(() => buildRegisterXdr(deployment, me(), id, data.cname, data.region), "el registro del círculo");

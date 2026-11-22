@@ -684,6 +684,6 @@ async function renderEcosystem(v) {
   mark("trustless", null, t("planificado: escrow de garantías"));
   fetch("/api/amawta", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question: "¿Qué es Awayu?" }) })
     .then((r) => r.json()).then((j) => mark("amawta", true, j.source === "gemini" ? "Gemini" : t("respuesta local"))).catch(() => mark("amawta", null, t("sin servidor: respaldo local en el navegador")));
-  fetch("/api/eventos", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "plazo_cerca", circle: dep?.contractId || "demo", data: { prueba: true } }) })
-    .then((r) => r.json()).then((j) => mark("n8n", j.forwarded ? true : null, j.forwarded ? t("conectado") : t("falta N8N_WEBHOOK_URL"))).catch(() => mark("n8n", null, t("sin servidor")));
+  fetch("/api/eventos", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "ping", circle: dep?.contractId || "demo", data: {} }) })
+    .then((r) => r.json()).then((j) => mark("n8n", j.configured ? true : null, j.configured ? t("conectado") : t("falta N8N_WEBHOOK_URL"))).catch(() => mark("n8n", null, t("sin servidor")));
 }

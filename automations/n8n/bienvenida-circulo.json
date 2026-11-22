@@ -1,18 +1,186 @@
 {
   "name": "Awayu · Bienvenida al crear círculo",
   "nodes": [
-    { "parameters": { "httpMethod": "POST", "path": "awayu-circulo-creado", "responseMode": "onReceived", "options": {} }, "id": "bienvenida-webhook", "name": "Webhook círculo creado", "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [220, 300], "webhookId": "awayu-circulo-creado" },
-    { "parameters": { "conditions": { "options": { "caseSensitive": true, "typeValidation": "strict", "version": 2 }, "conditions": [{ "id": "tipo-creado", "leftValue": "={{ $json.body.type }}", "rightValue": "circulo_creado", "operator": { "type": "string", "operation": "equals" } }], "combinator": "and" }, "options": {} }, "id": "validar-creado", "name": "¿Círculo creado?", "type": "n8n-nodes-base.if", "typeVersion": 2.2, "position": [440, 300] },
-    { "parameters": { "operation": "append", "documentId": { "__rl": true, "value": "REEMPLAZAR_ID_HOJA", "mode": "id" }, "sheetName": { "__rl": true, "value": "Circulos", "mode": "name" }, "columns": { "mappingMode": "defineBelow", "value": { "contrato": "={{ typeof $json.body.circle === 'string' ? $json.body.circle : JSON.stringify($json.body.circle) }}", "fecha": "={{ $now.toISO() }}", "evento": "={{ $json.body.type }}", "datos": "={{ JSON.stringify($json.body.data) }}" }, "matchingColumns": [], "schema": [{ "id": "contrato", "displayName": "contrato", "required": false, "display": true, "type": "string" }, { "id": "fecha", "displayName": "fecha", "required": false, "display": true, "type": "string" }, { "id": "evento", "displayName": "evento", "required": false, "display": true, "type": "string" }, { "id": "datos", "displayName": "datos", "required": false, "display": true, "type": "string" }], "attemptToConvertTypes": false, "convertFieldsToString": true }, "options": {} }, "id": "guardar-hoja", "name": "Guardar en Google Sheets", "type": "n8n-nodes-base.googleSheets", "typeVersion": 4.5, "position": [700, 220], "credentials": { "googleSheetsOAuth2Api": { "id": "REEMPLAZAR", "name": "Awayu Google Sheets" } } },
-    { "parameters": { "chatId": "={{ $env.AWAYU_TELEGRAM_CHAT_ID }}", "text": "=¡Se creó un círculo de Awayu! Contrato: {{ typeof $json.body.circle === 'string' ? $json.body.circle : JSON.stringify($json.body.circle) }}", "additionalFields": {} }, "id": "telegram-bienvenida", "name": "Avisar por Telegram", "type": "n8n-nodes-base.telegram", "typeVersion": 1.2, "position": [700, 400], "credentials": { "telegramApi": { "id": "REEMPLAZAR", "name": "Awayu Telegram" } } }
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "awayu-circulo-creado",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "bienvenida-webhook",
+      "name": "Webhook círculo creado",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "webhookId": "awayu-circulo-creado"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "tipo-creado",
+              "leftValue": "={{ $json.body.type }}",
+              "rightValue": "circulo_creado",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "validar-creado",
+      "name": "¿Círculo creado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "REEMPLAZAR_ID_HOJA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Circulos",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "contrato": "={{ typeof $json.body.circle === 'string' ? $json.body.circle : JSON.stringify($json.body.circle) }}",
+            "fecha": "={{ $now.toISO() }}",
+            "evento": "={{ $json.body.type }}",
+            "datos": "={{ JSON.stringify($json.body.data) }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "contrato",
+              "displayName": "contrato",
+              "required": false,
+              "display": true,
+              "type": "string"
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "display": true,
+              "type": "string"
+            },
+            {
+              "id": "evento",
+              "displayName": "evento",
+              "required": false,
+              "display": true,
+              "type": "string"
+            },
+            {
+              "id": "datos",
+              "displayName": "datos",
+              "required": false,
+              "display": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "guardar-hoja",
+      "name": "Guardar en Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        700,
+        220
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REEMPLAZAR",
+          "name": "Awayu Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.AWAYU_TELEGRAM_CHAT_ID }}",
+        "text": "=¡Se creó un círculo en Awayu! {{ $json.body.data.name ?? 'Pasanaku' }} ({{ $json.body.data.region ?? '' }}): {{ $json.body.data.members ?? '?' }} miembros, cuota {{ $json.body.data.amount ?? '?' }} {{ $json.body.data.token ?? '' }}. Enlace: {{ $json.body.data.link ?? $json.body.circle }}",
+        "additionalFields": {}
+      },
+      "id": "telegram-bienvenida",
+      "name": "Avisar por Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        700,
+        400
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REEMPLAZAR",
+          "name": "Awayu Telegram"
+        }
+      }
+    }
   ],
   "connections": {
-    "Webhook círculo creado": { "main": [[{ "node": "¿Círculo creado?", "type": "main", "index": 0 }]] },
-    "¿Círculo creado?": { "main": [[{ "node": "Guardar en Google Sheets", "type": "main", "index": 0 }, { "node": "Avisar por Telegram", "type": "main", "index": 0 }], []] }
+    "Webhook círculo creado": {
+      "main": [
+        [
+          {
+            "node": "¿Círculo creado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Círculo creado?": {
+      "main": [
+        [
+          {
+            "node": "Guardar en Google Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Avisar por Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
   },
   "active": false,
-  "settings": { "executionOrder": "v1" },
+  "settings": {
+    "executionOrder": "v1"
+  },
   "versionId": "e2644cd3-dd55-4134-8803-4af9d59ca202",
-  "meta": { "templateCredsSetupCompleted": false },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
   "tags": []
 }

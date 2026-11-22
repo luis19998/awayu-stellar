@@ -1,5 +1,5 @@
 import { createAyniDemo, buildContributeXdr, buildRequestXdr, buildVoteXdr, buildResolveXdr, buildRepayXdr, buildJoinXdr, readFund, readRequests, readMembers } from "../modes/ayni.js";
-import { pickLang } from "../i18n.js";
+import { pickLang, t } from "../i18n.js";
 
 const COPY = {
   es: { title: "Ayni · fondo de ayuda mutua", sub: "Hoy te ayudo, mañana me ayudas.", pot: "Fondo común", contribute: "Aportar", ask: "Pedir ayuda", vote: "Votar", yes: "A favor", no: "En contra", reason: "¿Para qué necesitas ayuda?", amount: "Monto", send: "Enviar pedido", empty: "Todavía no hay pedidos.", open: "En votación", approved: "Aprobado", rejected: "Rechazado", by: "pidió ayuda", votes: "votos a favor", history: "Lo que va pasando", people: "vecinas y vecinos", demo: "Demo local", askHint: "Cuéntanos brevemente qué pasó", repay: "Devolver ayuda", close: "Cerrar resultado", error: "No se pudo completar", success: "Listo, quedó registrado en esta demo.", monthly: "Aporte mensual", against: "en contra", back: "Volver", you: "Tú", neighbor: "Vecina/o", noDebt: "Todavía no tienes ayuda pendiente por devolver.", repayAmount: "Monto que quieres devolver", historyContribute: "aportó al fondo", historyAsk: "pidió ayuda", historyVoteFor: "votó a favor", historyVoteAgainst: "votó en contra", historyRepay: "devolvió su ayuda", historyApproved: "La comunidad aprobó un pedido", historyRejected: "La comunidad rechazó un pedido" },
@@ -98,7 +98,7 @@ export function mount(container, opts = {}) {
       const card = node("article", "ayni-card"); const top = node("div", "ayni-card-top");
       const h = node("h3", "", `${memberName(request.member)} ${copy.by}`);
       const badge = node("span", "ayni-badge", request.resolved ? (request.approved ? copy.approved : copy.rejected) : copy.open); top.append(h, badge);
-      const desc = node("p", "ayni-desc", request.reason); const amountLine = node("div", "ayni-small", `${request.amount} ${state.token || "XLM"}`);
+      const desc = node("p", "ayni-desc", t(request.reason)); const amountLine = node("div", "ayni-small", `${request.amount} ${state.token || "XLM"}`);
       const eligible = Math.max(1, state.members.length - 1); const needed = Math.ceil(eligible * Number(state.quorumBps || 5000) / 10_000);
       const meter = node("div", "ayni-meter"); meter.setAttribute("role", "progressbar"); meter.setAttribute("aria-label", `${request.yes} ${copy.votes}`); meter.setAttribute("aria-valuemin", "0"); meter.setAttribute("aria-valuemax", String(needed)); meter.setAttribute("aria-valuenow", String(request.yes));
       const fill = node("span"); fill.style.width = `${Math.min(100, request.yes / needed * 100)}%`; meter.append(fill);

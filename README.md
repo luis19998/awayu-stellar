@@ -89,6 +89,7 @@ Antes de mainnet usaremos **compromiso y revelación**: cada miembro aporta un s
 | Historial de pozos y garantías leído de los eventos, con enlaces a Stellar Expert | «Historial del círculo» |
 | Pasaporte: reputación sumada de todos tus círculos | «Billetera» |
 | Reporte de historial para cooperativas, imprimible en PDF | `/reporte.html` |
+| Círculos de Latinoamérica: tanda, cundina, cuchubal, junta, san, cadena, sol y sou-sou (misma mecánica del pasanaku, con garantía), natillera y caixinha (con Ayni y Alasitas), y la junta con remate o el consórcio (simulación). Cada uno trae explicación, escena 3D con su tejido, simulador y botón para crearlo en testnet | «Círculos de Latinoamérica» |
 | Verificar un sorteo, un comprobante o un círculo, y guardar evidencia | «Verificar» |
 | Seis idiomas: español, inglés, portugués, quechua, aymara y guaraní | ⚙ Configuración |
 | Bienvenida, recorrido guiado y videos cortos de cada paso | Botón ? |

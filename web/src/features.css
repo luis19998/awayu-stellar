@@ -367,3 +367,211 @@ html.aw-calm #view h1::after { transform: scaleX(1); }
   .bo-tabs button { flex: 1 1 auto; }
 }
 @media (max-width: 420px) { .bo-grid { grid-template-columns: 1fr; } }
+
+/* ===== Pulido final ===== */
+:root {
+  --surface-radius: 18px;
+  --control-radius: 12px;
+  --surface-gap: clamp(12px, 1.3vw, 16px);
+  --surface-shadow: 0 5px 16px -8px rgb(5 3 15 / .48);
+  --focus-thread: color-mix(in srgb, var(--ink) 64%, var(--gold));
+  --thread-pattern: linear-gradient(90deg, var(--gold) 0 18%, var(--magenta) 18% 41%,
+    var(--ink) 41% 46%, var(--teal) 46% 72%, var(--night) 72% 78%, var(--gold) 78%);
+  --weave-ease: cubic-bezier(.22, .78, .26, 1);
+}
+html:not(.aw-contrast) { --muted: #cdc2dd; }
+#view {
+  background-image: radial-gradient(ellipse at 85% 0%, rgb(216 27 96 / .13), transparent 56%),
+    radial-gradient(ellipse at 4% 90%, rgb(19 163 176 / .12), transparent 52%);
+  background-size: 130% 114%;
+  background-repeat: no-repeat;
+  background-color: var(--night);
+}
+#panel { background-color: color-mix(in srgb, var(--glass) 68%, var(--night)); }
+#panel #btn-contribute { color: #fff; }
+#panel .yield small { display: block; margin-top: 3px; }
+#view .hero {
+  background-image: linear-gradient(95deg, rgb(11 8 32 / .86), rgb(11 8 32 / .62) 48%, rgb(11 8 32 / .12) 85%),
+    linear-gradient(0deg, var(--night), transparent 76%), var(--bg);
+  background-position: center;
+  background-size: cover;
+}
+#view .hero-in .howto { margin-top: 16px; }
+@media (min-width: 761px) {
+  body[data-route="circulo"] .modes { top: 108px; left: calc(var(--nav-w) + 28px); transform: none; }
+}
+@media (min-width: 761px) and (max-width: 1200px) {
+  body[data-route="circulo"] .wallet { left: calc(var(--nav-w) + 28px); }
+  body[data-route="circulo"] .modes { top: auto; bottom: 68px; }
+}
+@media (max-width: 760px) {
+  #view .hero {
+    background-image: linear-gradient(150deg, rgb(11 8 32 / .72), rgb(11 8 32 / .82) 66%, var(--night)), var(--bg);
+  }
+  #view .hero-in { max-width: 100%; }
+  body .wallet { gap: 5px; max-width: calc(100vw - 28px); }
+  body .wallet select.lang { width: clamp(74px, 22vw, 130px); min-width: 0; padding-inline: 8px 2px; }
+  body .wallet .balance { position: absolute; right: 0; top: calc(100% + 4px); }
+  body .wallet-menu { z-index: 1; }
+}
+#view :is(.steps, .kpis, .cards, .grid2, .eco, .usos-grid, .latam-country-grid) { gap: var(--surface-gap); }
+#view :is(.card, .passport, .step, .kpi, .eco-c, .trad, .uso, .card-c, .planet-legend, .msgs,
+  .mode-box, .stage-box, .latam-profile, .ayni-card, .awayu-alasitas__stall, .verify-form, .verify-result, .verify-guidance) {
+  border-radius: var(--surface-radius);
+  box-shadow: var(--surface-shadow);
+}
+#view :is(.card, .passport) > h2:first-child { margin-block: 0 12px; }
+#view .legal :is(nav, section) { max-width: 76ch; line-height: 1.6; }
+#view .legal > section { padding-block: 4px 12px; border-top: 1px solid var(--card-b); }
+#view .legal a { color: var(--focus-thread); text-underline-offset: .18em; }
+#view .trad i { color: color-mix(in srgb, var(--c) 56%, var(--ink)); }
+#view .latam-mark:is(.mark-1, .mark-2) { color: var(--night); }
+
+#view :is(.btn, .ayni-btn, .awayu-alasitas__action, .awayu-alasitas__secondary, .awayu-alasitas__new,
+  .awayu-minka__actions button, .verify-button), #panel :is(.actions button, .ghost) {
+  border-radius: var(--control-radius);
+}
+:is(#view, #panel) :is(.chip, .howto-chip, .latam-family-tab, .verify-tabs button, .sugg button) {
+  border-radius: 999px;
+  line-height: 1.35;
+}
+@media (hover: hover) {
+  :is(#view, #panel) :is(button, .btn, .trad, .uso, summary, [role="button"]):not(:disabled):hover {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 38%, transparent), var(--surface-shadow);
+  }
+}
+:is(#view, #panel) :is(button, .btn, .trad, .uso, [role="button"]):not(:disabled):active {
+  box-shadow: inset 0 2px 5px rgb(5 3 15 / .38);
+}
+body :is(button, a[href], summary, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--focus-thread);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--night);
+}
+#view .awayu-minka :focus-visible { outline-color: var(--mk-blue); }
+#panel #members li:focus-visible, #nav a:focus-visible { outline-offset: -3px; }
+#view .latam-family-tabs { padding: 5px 5px 8px; }
+
+/* La posición se mide en el grupo, por lo que sigue al botón incluso al desplazar la fila. */
+:is(.verify-tabs, .latam-family-tabs) { position: relative; }
+.has-tab-indicator::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0 auto auto 0;
+  width: var(--tab-width);
+  height: 2px;
+  border-radius: 2px;
+  pointer-events: none;
+  background: var(--gold);
+  transform: translate(var(--tab-x), var(--tab-y));
+}
+.verify-tabs.has-tab-indicator::after { background: var(--verify-teal); }
+#view .verify-tabs.has-tab-indicator [aria-selected="true"] {
+  border-color: var(--verify-teal);
+  background: color-mix(in srgb, var(--verify-teal) 15%, var(--night));
+  color: var(--verify-ink);
+}
+#view .latam-country-card { position: relative; border-radius: var(--control-radius); }
+#view .latam-country-card[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--night) 88%, var(--gold));
+  box-shadow: var(--surface-shadow);
+}
+@supports (mask-composite: exclude) {
+  .latam-country-card::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 2px;
+    pointer-events: none;
+    background: var(--thread-pattern) 0 0 / 36px 100% repeat-x;
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+  }
+  .latam-country-card[aria-pressed="true"]::after { opacity: 1; }
+}
+
+/* Los indicadores ocupan el lugar del contenido y desaparecen en cuanto llega. */
+:is(#view[aria-busy="true"], #map-list, #mode-box, #wallet-box, #pulse-box, #passport,
+  body[data-route="circulo"] #stage):empty::before {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 16px;
+  min-height: 0;
+  margin: clamp(24px, 8vh, 76px) auto;
+  border-radius: 2px;
+  background: repeating-linear-gradient(45deg, transparent 0 3px, var(--night) 3px 4px) 0 0 / 12px 12px,
+    var(--thread-pattern) 0 0 / 32px 100%;
+  opacity: 1;
+}
+:is(#map-list, #mode-box, #wallet-box, #pulse-box, #passport):empty::after { content: none; }
+.payout-threads {
+  position: absolute;
+  z-index: 1;
+  bottom: calc(100% - 24px);
+  left: 0;
+  width: 100%;
+  height: 140px;
+  pointer-events: none;
+}
+#panel .actions { position: relative; }
+
+@keyframes awayu-background { to { background-position: 100% 70%, 80% 100%; } }
+@keyframes awayu-weaving { to { background-position: 12px 0, 32px 0; } }
+@keyframes awayu-loader-in { from { opacity: 0; } }
+@keyframes awayu-selected-weave { from { background-position-x: -36px; } }
+@keyframes awayu-row-in { from { opacity: .5; transform: translateY(3px); } }
+@keyframes awayu-round { 25% { background-color: color-mix(in srgb, var(--gold) 27%, var(--night)); } }
+@keyframes awayu-mark { from { clip-path: inset(0 var(--mark-start) 0 0); } to { clip-path: inset(0 var(--mark-end) 0 0); } }
+@keyframes awayu-contribute { 50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 26%, transparent); } }
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.aw-calm) {
+    & #view:not([hidden]) { animation: awayu-background 90s ease-in-out infinite alternate; }
+    & .has-tab-indicator::after { transition: transform .28s var(--weave-ease), width .28s var(--weave-ease); }
+    & .latam-country-card::after { transition: opacity .2s; }
+    & .latam-country-card[aria-pressed="true"]::after { animation: awayu-selected-weave .55s var(--weave-ease); }
+    & :is(#view[aria-busy="true"], #map-list, #mode-box, #wallet-box, #pulse-box, #passport,
+      body[data-route="circulo"] #stage):empty::before {
+      animation: awayu-loader-in .16s .18s backwards, awayu-weaving 1.8s linear infinite;
+    }
+    & :is(.latam-table-wrap, .sim-out) tbody tr {
+      animation: awayu-row-in .24s var(--weave-ease) var(--row-delay, 0ms) backwards;
+    }
+    & :is(.latam-table-wrap, .sim-out) tr:nth-child(2) { --row-delay: 30ms; }
+    & :is(.latam-table-wrap, .sim-out) tr:nth-child(3) { --row-delay: 60ms; }
+    & :is(.latam-table-wrap, .sim-out) tr:nth-child(4) { --row-delay: 90ms; }
+    & :is(.latam-table-wrap, .sim-out) tr:nth-child(5) { --row-delay: 120ms; }
+    & :is(.latam-table-wrap, .sim-out) tr:nth-child(n+6) { --row-delay: 150ms; }
+    @supports (animation-delay: calc(sibling-index() * 1ms)) {
+      & :is(.latam-table-wrap, .sim-out) tbody tr { animation-delay: calc(min(sibling-index() - 1, 24) * 24ms); }
+    }
+    & #panel .round-changed { animation: awayu-round .65s ease-out; }
+    & #panel .mark-added { animation: awayu-mark .58s var(--weave-ease) var(--mark-delay); }
+    & #btn-contribute.contribution-due:enabled { animation: awayu-contribute 2.6s ease-in-out 2; }
+
+    /* Mejora progresiva: los navegadores anteriores conservan la apertura nativa. */
+    @supports (interpolate-size: allow-keywords) {
+      & :is(.aw-settings-section, .awayu-minka__state)::details-content {
+        interpolate-size: allow-keywords;
+        block-size: 0;
+        overflow: clip;
+        transition: block-size .23s var(--weave-ease), content-visibility .23s allow-discrete;
+      }
+      & :is(.aw-settings-section, .awayu-minka__state)[open]::details-content { block-size: auto; }
+      & :is(#person, .verify-commit, .verify-panel):not([hidden]) {
+        interpolate-size: allow-keywords;
+        block-size: auto;
+        overflow: clip;
+        overflow-clip-margin: 6px;
+        transition: block-size .23s var(--weave-ease);
+      }
+      @starting-style {
+        & :is(#person, .verify-commit, .verify-panel):not([hidden]) { block-size: 0; }
+      }
+    }
+  }
+}

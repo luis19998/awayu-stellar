@@ -125,12 +125,15 @@ describe("adaptadores y flujos", () => {
     expect(netlify.config).toEqual({ path: "/api/amawta" });
   });
 
-  it.each(["recordatorio-plazo.json", "resumen-semanal.json", "bienvenida-circulo.json"])("tiene nodos y conexiones válidos en %s", async (filename) => {
+  it.each(["01-awayu-eventos.json", "02-awayu-resumen-semanal.json", "03-awayu-monitor-web.json"])("tiene nodos y conexiones válidos en %s", async (filename) => {
     const { readFile } = await import("node:fs/promises");
     const { resolve } = await import("node:path");
-    const flow = JSON.parse(await readFile(resolve(process.cwd(), "../automations/n8n", filename), "utf8"));
+    const raw = await readFile(resolve(process.cwd(), "../automations/n8n/flujos", filename), "utf8");
+    const flow = JSON.parse(raw);
     const names = new Set(flow.nodes.map((node) => node.name));
     expect(flow.nodes.length).toBeGreaterThan(0);
+    // Sin cuentas personales: ni Telegram, ni correo, ni Google
+    expect(raw).not.toMatch(/telegram|emailSend|googleSheets/i);
     for (const [source, groups] of Object.entries(flow.connections)) {
       expect(names.has(source)).toBe(true);
       for (const target of groups.main.flat()) expect(names.has(target.node)).toBe(true);

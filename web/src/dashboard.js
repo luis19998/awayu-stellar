@@ -1,5 +1,5 @@
 // Panel de Awayu: navegación por secciones (#/inicio, #/circulo, #/mapa,
-// #/billetera, #/riesgo, #/juegos, #/amawta, #/ecosistema, #/pulso).
+// #/billetera, #/riesgo, #/latam, #/amawta, #/ecosistema, #/pulso).
 // La vista del círculo 3D vive en main.js; el resto se monta acá bajo demanda.
 import { state, subscribe } from "./state.js";
 import { t, getLang, pickLang } from "./i18n.js";
@@ -8,6 +8,9 @@ import { score } from "./model.js";
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (x) => String(x ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const fmtN = (n, d = 0) => Number(n || 0).toLocaleString(({ es: "es-BO", en: "en-US", pt: "pt-BR", qu: "es-BO", ay: "es-BO", gn: "es-BO" })[getLang()] || "es-BO", { maximumFractionDigits: d });
+const routeLabel = (route) => route.id === "latam"
+  ? pickLang({ es: "Círculos de Latinoamérica", en: "Savings circles across Latin America", pt: "Círculos da América Latina" }, getLang())
+  : t(route.label);
 
 export const ROUTES = [
   { id: "inicio", icon: "◆", label: "Inicio" },
@@ -19,7 +22,7 @@ export const ROUTES = [
   { id: "billetera", icon: "◉", label: "Billetera y pasaporte" },
   { id: "riesgo", icon: "◐", label: "Probabilidades" },
   { id: "verificar", icon: "✓", label: "Verificar" },
-  { id: "juegos", icon: "✦", label: "Juegos" },
+  { id: "latam", icon: "🌎", label: "Círculos de Latinoamérica" },
   { id: "amawta", icon: "✺", label: "Amawta (IA)" },
   { id: "legal", icon: "§", label: "Legal y privacidad" },
   { id: "ecosistema", icon: "⬡", label: "Ecosistema" },
@@ -45,12 +48,12 @@ function adopt(tk, instance) {
 }
 let hooks = {};
 
-/** hooks: { onCircleActive(bool), openCircle(contractId), connectWallet() } */
+/** hooks: { onCircleActive(bool), openCircle(contractId), openCreate(preset), connectWallet() } */
 export function initDashboard(h) {
   hooks = h;
   const nav = $("#nav");
   nav.innerHTML = ROUTES.map(
-    (r) => `<a href="#/${r.id}" data-route="${r.id}" title="${esc(t(r.label))}"><span class="ic" aria-hidden="true">${r.icon}</span><span class="lb">${esc(t(r.label))}</span></a>`
+    (r) => `<a href="#/${r.id}" data-route="${r.id}" title="${esc(routeLabel(r))}"><span class="ic" aria-hidden="true">${r.icon}</span><span class="lb">${esc(routeLabel(r))}</span></a>`
   ).join("");
   addEventListener("hashchange", route);
   route();
@@ -68,14 +71,18 @@ export function initDashboard(h) {
 export function relabel() {
   document.querySelectorAll("#nav a").forEach((a) => {
     const r = ROUTES.find((x) => x.id === a.dataset.route);
-    a.title = t(r.label);
-    a.querySelector(".lb").textContent = t(r.label);
+    a.title = routeLabel(r);
+    a.querySelector(".lb").textContent = routeLabel(r);
   });
   if (current && current !== "circulo") show(current, true);
 }
 
 function route() {
-  const id = (location.hash.match(/^#\/([a-z]+)/) || [])[1] || (new URLSearchParams(location.search).get("c") ? "circulo" : "inicio");
+  let id = (location.hash.match(/^#\/([a-z]+)/) || [])[1] || (new URLSearchParams(location.search).get("c") ? "circulo" : "inicio");
+  if (id === "juegos") {
+    history.replaceState(null, "", location.pathname + location.search + "#/latam");
+    id = "latam";
+  }
   show(id);
 }
 
@@ -243,6 +250,11 @@ const VIEWS = {
     } : null;
     adopt(tk, mount(v, { lang: getLang(), deployment: dep, address: state.address, sign }));
   },
+  latam: async (v, tk) => {
+    const { mount } = await import("./views/latam.js");
+    if (!alive(tk)) return;
+    adopt(tk, mount(v, { lang: getLang(), openCreate: (preset) => hooks.openCreate?.(preset) }));
+  },
   ayni: (v, tk) => renderMode(v, tk, "ayni"),
   minka: (v, tk) => renderMode(v, tk, "minka"),
   alasitas: (v, tk) => renderMode(v, tk, "alasitas"),
@@ -265,7 +277,6 @@ const VIEWS = {
     hooks.ensureApp?.();
     renderRisk();
   },
-  juegos: renderGames,
   amawta: renderAmawta,
   legal: async (v, tk) => { const m = await import("./views/legal.js"); if (alive(tk)) adopt(tk, m.mount(v, { lang: getLang() })); },
   ecosistema: renderEcosystem,
@@ -506,55 +517,11 @@ function renderRisk() {
       <div class="card"><h2>${t("Sorteo justo del turno")}</h2>
         <p>${t("Cada persona tiene la misma probabilidad de cobrar en cada posición: {p}.", { p: `1/${c.order.length} ≈ ${(tp[0] || 0).toFixed(3)}` })}</p>
         <p class="muted">${t("El orden lo fija el PRNG de la red al crear el contrato; nadie lo elige.")}</p>
-        <a class="btn" href="#/juegos">${t("Pruébalo en el juego del sorteo")}</a></div>
+        <a class="btn" href="#/verificar">${t("Comprueba un sorteo verificable")}</a></div>
     </div>`;
   });
 }
 
-async function renderGames(v) {
-  const games = [
-    ["tejido", "Teje tu aguayo"],
-    ["quiz", "Pasanaku y Stellar"],
-    ["ruleta", "El sorteo justo"],
-  ];
-  v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t("Juegos para aprender")}</h1>
-    <p>${t("Sin apuestas ni dinero real: memoria, finanzas y probabilidades.")}</p>
-    <div class="tabs">${games.map(([id, l], i) => `<button data-g="${id}" class="${i ? "" : "on"}">${t(l)}</button>`).join("")}</div>
-    <p class="best">${t("Mejor puntaje")}: <b id="best">0</b></p></header>
-    <div class="game-box" id="game-box"></div></section>`;
-  const tk = token;
-  let gameSeq = 0;
-  const load = async (id) => {
-    const seq = ++gameSeq;
-    mounted?.destroy?.();
-    mounted = null;
-    $("#game-box").innerHTML = "";
-    const m = await import(`./games/${id}.js`);
-    if (!alive(tk) || seq !== gameSeq) return;
-    mounted = m.mount($("#game-box"), {
-      lang: getLang(),
-      onScore: (s) => {
-        const val = typeof s === "number" ? s : s?.score ?? 0;
-        let best = 0;
-        try {
-          best = Math.max(Number(localStorage.getItem("awayu.best." + id) || 0), val);
-          localStorage.setItem("awayu.best." + id, String(best));
-        } catch {}
-        $("#best").textContent = fmtN(best);
-      },
-    });
-    try {
-      $("#best").textContent = localStorage.getItem("awayu.best." + id) || "0";
-    } catch {}
-  };
-  v.querySelector(".tabs").onclick = (e) => {
-    const b = e.target.closest("[data-g]");
-    if (!b) return;
-    v.querySelectorAll(".tabs button").forEach((x) => x.classList.toggle("on", x === b));
-    load(b.dataset.g);
-  };
-  load("tejido");
-}
 
 function circleContext() {
   const c = state.circle;

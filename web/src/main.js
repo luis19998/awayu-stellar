@@ -761,10 +761,22 @@ createUsdcButton.onclick = () => run(async () => {
   } finally { createUsdcButton.disabled = false; }
 });
 
-$("#btn-create").onclick = () => {
+function openCreate(preset = {}) {
   if (!me()) {
     menu.hidden = false;
     return toast(t("Primero conecta tu billetera"));
+  }
+  const form = $("#form-create");
+  if (preset.cname !== undefined) form.elements.cname.value = preset.cname;
+  if (preset.amount !== undefined) amountInput.value = String(preset.amount);
+  if (preset.tokenChoice && ["usdc", "xlm"].includes(preset.tokenChoice)) tokenSelect.value = preset.tokenChoice;
+  if (preset.region) form.elements.region.value = preset.region;
+  else if (preset.countryCode && preset.countryCode !== "BO") form.elements.region.value = "otro";
+  if (preset.periodSeconds !== undefined) {
+    const desired = Number(preset.periodSeconds);
+    const options = [...form.elements.period.options];
+    const nearest = options.reduce((best, option) => Math.abs(Number(option.value) - desired) < Math.abs(Number(best.value) - desired) ? option : best, options[0]);
+    if (nearest) form.elements.period.value = nearest.value;
   }
   createError.textContent = "";
   createUsdcFlow.hidden = true;
@@ -773,7 +785,9 @@ $("#btn-create").onclick = () => {
   updateCreateTokenLabel();
   applyStatic(dlg);
   dlg.showModal();
-};
+}
+
+$("#btn-create").onclick = () => openCreate();
 
 $("#form-create").addEventListener("submit", (ev) => {
   if (ev.submitter?.value !== "ok") return;
@@ -1183,6 +1197,7 @@ export const circleApp = {
     location.hash = "#/circulo";
     run(() => openTestnet(id));
   },
+  openCreate,
   connectWallet: () => {
     menu.hidden = false;
     $("#btn-wallet").focus();

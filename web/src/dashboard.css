@@ -129,7 +129,7 @@ body:not([data-route="circulo"]) .brand { display: none; }
 .tabs button { border: 1px solid var(--line); background: var(--card); color: var(--ink); padding: 10px 14px; border-radius: 12px; font-weight: 700; cursor: pointer; }
 .tabs button.on { background: var(--gold); color: #1b1030; border-color: transparent; }
 .best { color: var(--muted); font-size: 13px; }
-.game-box { background: var(--card); border: 1px solid var(--card-b); border-radius: 22px; padding: 18px; min-height: 380px; }
+#dev-box { background: var(--card); border: 1px solid var(--card-b); border-radius: 22px; padding: 18px; min-height: 380px; }
 
 .chat { display: flex; flex-direction: column; height: calc(100vh - 120px); max-width: 900px; }
 .msgs { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 12px; background: var(--card); border: 1px solid var(--card-b); border-radius: 20px; }

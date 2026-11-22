@@ -41,9 +41,11 @@ export async function handleEvent(request) {
   }
   const headers = { "content-type": "application/json" };
   if (process.env.N8N_SECRET) headers["x-awayu-signature"] = `sha256=${signWebhookPayload(raw, process.env.N8N_SECRET)}`;
-  const results = await Promise.all(parsed.map((url) =>
-    fetch(url, { method: "POST", headers, body: raw, signal: AbortSignal.timeout(5_000) }).then((r) => r.ok).catch(() => false)));
-  const ok = results.filter(Boolean).length;
-  if (!ok) return Response.json({ accepted: false, forwarded: false }, { status: 502 });
+  // Para diagnosticar sin exponer la URL: código HTTP de cada webhook (0 = sin conexión) y si es la URL de prueba de n8n
+  const statuses = await Promise.all(parsed.map((url) =>
+    fetch(url, { method: "POST", headers, body: raw, signal: AbortSignal.timeout(5_000) }).then((r) => r.status).catch(() => 0)));
+  const ok = statuses.filter((code) => code >= 200 && code < 300).length;
+  const testUrl = parsed.some((url) => url.pathname.includes("/webhook-test/"));
+  if (!ok) return Response.json({ accepted: false, forwarded: false, statuses, testUrl }, { status: 502 });
   return Response.json({ accepted: true, forwarded: true, delivered: ok, webhooks: parsed.length }, { status: 202 });
 }

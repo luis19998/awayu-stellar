@@ -32,6 +32,17 @@ Probados el 2026-11-21 en n8n 2.48.7: se importan sin errores, guardan eventos s
    - Suscríbete al tema general y crea un pasanaku en testnet: debe llegar "Nuevo pasanaku en Awayu".
    - Abre `https://<tu-instancia>.app.n8n.cloud/webhook/awayu-registro` para ver los eventos guardados, o en n8n: **Overview → Data tables → awayu_eventos**.
 
+## Si no llegan los eventos
+Haz esta prueba en una terminal (guarda un evento de prueba, sin avisos):
+```
+curl -X POST https://awayu-two.vercel.app/api/eventos -H "content-type: application/json" -d "{\"type\":\"aporte\",\"circle\":\"PRUEBA\",\"data\":{}}"
+```
+- `"forwarded":true`: todo está conectado.
+- `"statuses":[404]`: n8n no tiene ese webhook activo. Publica el flujo 01 (**Publish**) y revisa que la URL sea la **Production URL** del nodo **Evento de Awayu** y que termine en `/webhook/awayu-eventos`.
+- `"testUrl":true`: pegaste la URL de prueba (`/webhook-test/`). Cámbiala por la de producción.
+- `"statuses":[0]`: n8n no responde. Revisa que la instancia esté encendida y que la dirección sea correcta.
+- Cada vez que cambies `N8N_WEBHOOK_URL` en Vercel, vuelve a publicar la web.
+
 ## Cómo llegan los eventos
 1. La web publica cada evento en `POST https://awayu-two.vercel.app/api/eventos` (código en `web/server/notify.js` y `web/api/eventos.js`).
 2. El servidor reenvía el JSON a `N8N_WEBHOOK_URL`, firmado con `x-awayu-signature` si hay `N8N_SECRET`. Admite varias URL separadas por coma.

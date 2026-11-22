@@ -74,8 +74,11 @@ export function relabel() {
     a.title = routeLabel(r);
     a.querySelector(".lb").textContent = routeLabel(r);
   });
+  if (["ayni", "minka", "alasitas"].includes(current)) return;
   if (current && current !== "circulo") show(current, true);
 }
+
+addEventListener("awayu:lang", () => relabel());
 
 function route() {
   let id = (location.hash.match(/^#\/([a-z]+)/) || [])[1] || (new URLSearchParams(location.search).get("c") ? "circulo" : "inicio");
@@ -585,7 +588,7 @@ function renderAmawta(v) {
       res = { answer: localAnswer(q), source: "local" };
     }
     wait.classList.remove("typing");
-    wait.textContent = res.answer || res.error || "…";
+    wait.textContent = res.answer || (res.error ? t("No se pudo obtener una respuesta. Inténtalo de nuevo.") : "…");
     const tag = document.createElement("small");
     tag.textContent = res.source === "gemini" ? "Gemini" : t("respuesta local");
     wait.appendChild(tag);
@@ -626,7 +629,7 @@ async function renderEcosystem(v) {
   ];
   v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t("Ecosistema integrado")}</h1>
     <p>${t("Estado en vivo de cada pieza que usa Awayu.")}</p></header>
-    <div class="eco">${items.map(([id, name, desc, url]) => `<article class="eco-c" data-id="${id}"><i class="dot"></i><h3>${esc(name)}</h3><p>${esc(t(desc))}</p><small class="st">${t("comprobando…")}</small>${url && url.startsWith("C") ? `<a href="https://stellar.expert/explorer/testnet/contract/${esc(url)}" target="_blank" rel="noopener">${esc(url.slice(0, 6))}…${esc(url.slice(-4))} ↗</a> · <a href="${labUrl(url)}" target="_blank" rel="noopener">${t("Probar en Stellar Lab")} ↗</a>` : ""}</article>`).join("")}</div></section>`;
+    <div class="eco">${items.map(([id, name, desc, url]) => `<article class="eco-c" data-id="${id}"><i class="dot"></i><h3>${esc(t(name))}</h3><p>${esc(t(desc))}</p><small class="st">${t("comprobando…")}</small>${url && url.startsWith("C") ? `<a href="https://stellar.expert/explorer/testnet/contract/${esc(url)}" target="_blank" rel="noopener">${esc(url.slice(0, 6))}…${esc(url.slice(-4))} ↗</a> · <a href="${labUrl(url)}" target="_blank" rel="noopener">${t("Probar en Stellar Lab")} ↗</a>` : ""}</article>`).join("")}</div></section>`;
   const mark = (id, ok, text) => {
     const c = v.querySelector(`[data-id="${id}"]`);
     if (!c) return;

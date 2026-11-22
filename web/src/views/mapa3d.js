@@ -137,9 +137,9 @@ export function mount(container, { circles = [], lang = "es", onSelect, theme } 
   if (!container) throw new TypeError("mapa3d.mount necesita un contenedor");
   const root = document.createElement("div");
   root.className = "awayu-mapa3d";
-  const copy = (es, en) => pickLang({ es, en }, lang);
+  const copy = (es, en, pt) => pickLang({ es, en, pt: pt ?? es }, lang);
   root.setAttribute("role", "region");
-  root.setAttribute("aria-label", copy("Mapa de círculos de ahorro de Bolivia", "Savings circles map of Bolivia"));
+  root.setAttribute("aria-label", copy("Mapa de círculos de ahorro de Bolivia", "Savings circles map of Bolivia", "Mapa de círculos de poupança da Bolívia"));
   const style = document.createElement("style");
   style.textContent = STYLE;
   const tooltip = document.createElement("div");
@@ -330,7 +330,7 @@ export function mount(container, { circles = [], lang = "es", onSelect, theme } 
     const title = document.createElement("strong");
     title.textContent = dep.feature.properties?.name || dep.iso;
     const info = document.createElement("span");
-    info.textContent = `${matching.length} ${copy("círculos", "savings circles")} · ${members} ${copy("miembros", "members")}`;
+    info.textContent = `${matching.length} ${copy("círculos", "savings circles", "círculos de poupança")} · ${members} ${copy("miembros", "members", "participantes")}`;
     tooltip.replaceChildren(title, info);
     tooltip.classList.add("is-visible");
     if (event) {
@@ -388,7 +388,7 @@ export function mount(container, { circles = [], lang = "es", onSelect, theme } 
 
   const empty = document.createElement("div");
   empty.className = "awayu-mapa3d__empty";
-  empty.textContent = copy("Todavía no hay círculos registrados", "No circles registered yet");
+  empty.textContent = copy("Todavía no hay círculos registrados", "No circles registered yet", "Ainda não há círculos cadastrados");
   root.append(empty);
 
   async function loadMap() {
@@ -402,7 +402,7 @@ export function mount(container, { circles = [], lang = "es", onSelect, theme } 
       buildPinsAndArcs();
     } catch (error) {
       if (!disposed) {
-        empty.textContent = copy("No se pudo cargar el mapa de Bolivia", "Could not load the Bolivia map");
+        empty.textContent = copy("No se pudo cargar el mapa de Bolivia", "Could not load the Bolivia map", "Não foi possível carregar o mapa da Bolívia");
         console.error("Awayu: no se pudo cargar el GeoJSON del mapa", error);
       }
     }

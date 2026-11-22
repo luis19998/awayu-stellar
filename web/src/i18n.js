@@ -31,9 +31,22 @@ export function t(key, vars) {
 
 /** Traduce los elementos con data-i18n (su texto original es la clave). */
 export function applyStatic(root = document) {
-  root.querySelectorAll("[data-i18n]").forEach((el) => {
+  const elements = [...(root.matches?.("[data-i18n]") ? [root] : []), ...root.querySelectorAll("[data-i18n]")];
+  elements.forEach((el) => {
     if (!el.dataset.i18nKey) el.dataset.i18nKey = el.textContent.trim();
     el.textContent = t(el.dataset.i18nKey);
+  });
+
+  const attrs = ["title", "placeholder", "aria-label", "alt"];
+  const all = [...(root.nodeType === 1 ? [root] : []), ...root.querySelectorAll("*")];
+  all.forEach((el) => {
+    const enabled = (el.getAttribute("data-i18n-attr") || "").split(/\s+/);
+    for (const attr of [...attrs, ...(enabled.includes("content") ? ["content"] : [])]) {
+      if (!el.hasAttribute(attr)) continue;
+      const key = `i18n${attr[0].toUpperCase()}${attr.slice(1).replace(/-([a-z])/g, (_, c) => c.toUpperCase())}`;
+      if (!el.dataset[key]) el.dataset[key] = el.getAttribute(attr);
+      el.setAttribute(attr, t(el.dataset[key]));
+    }
   });
   if (typeof document !== "undefined") document.documentElement.lang = lang;
 }
@@ -44,6 +57,9 @@ export function setLang(next) {
     localStorage.setItem("awayu.lang", lang);
   } catch {}
   if (typeof document !== "undefined") applyStatic();
+  if (typeof globalThis.dispatchEvent === "function" && typeof CustomEvent !== "undefined") {
+    globalThis.dispatchEvent(new CustomEvent("awayu:lang", { detail: { lang } }));
+  }
 }
 
 export function initLang() {

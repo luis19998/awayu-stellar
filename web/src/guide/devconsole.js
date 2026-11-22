@@ -24,12 +24,25 @@ const SNIPPETS = [
     code: `pub fn round_info(env: Env) -> RoundInfo {\n    let cfg = config(&env);\n    let round = current_round(&env);\n    let paid = paid_map(&env, round);\n    let mut covered = 0u32;\n    if round < cfg.members.len() {\n        for member in cfg.members.iter() {\n            if !paid.contains_key(member.clone())\n                && guarantee_of(&env, &member) >= cfg.amount\n            {\n                covered += 1;\n            }\n        }\n    }\n    RoundInfo {\n        round,\n        recipient: cfg.members.get(round),\n        deadline: deadline(&cfg, round),\n        paid: paid.len(),\n        pot: cfg.amount * paid.len() as i128,\n        covered,\n    }\n}`,
   },
 ];
-for (const snippet of SNIPPETS) snippet.title = { ...snippet.title, pt: snippet.title.es, qu: snippet.title.es, ay: snippet.title.es, gn: snippet.title.es };
+const snippetTitlesPt = ["Ler round_info e members", "Preparar uma contribuição", "Invocar com Stellar CLI", "Visão do contrato em Rust"];
+SNIPPETS.forEach((snippet, index) => { snippet.title = { ...snippet.title, pt: snippetTitlesPt[index], qu: snippet.title.es, ay: snippet.title.es, gn: snippet.title.es }; });
+
+const PT = {
+  "Consola de desarrollador": "Console do desenvolvedor", "Secciones de consola": "Seções do console",
+  "En vivo": "Ao vivo", "Integra Awayu": "Integre a Awayu", "Contratos": "Contratos",
+  "Las llamadas de contrato aparecerán aquí cuando la web emita awayu:tx.": "As chamadas de contrato aparecerão aqui quando o site emitir awayu:tx.",
+  "Ver transacción ↗": "Ver transação ↗",
+  "Ejemplos de lectura e invocación. Las escrituras requieren firma de una persona.": "Exemplos de leitura e invocação. As gravações exigem a assinatura de uma pessoa.",
+  "Copiar": "Copiar", "Copiado": "Copiado", "No se pudo copiar": "Não foi possível copiar",
+  "No se encontró /testnet.json o todavía está cargando.": "Não foi possível encontrar /testnet.json ou ele ainda está carregando.",
+  "Contrato": "Contrato", "Red": "Rede", "Dirección": "Endereço", "Pasanaku": "Pasanaku",
+  "Registro": "Registro", "Token": "Token",
+};
 
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
 
 /** Pure formatter used by the live feed and tests. The returned HTML is escaped. */
-export function formatConsoleCall(detail = {}) {
+export function formatConsoleCall(detail = {}, lang = "es") {
   const contract = String(detail.contract || "(sin contrato)");
   const fn = String(detail.fn || "(sin función)");
   const args = Array.isArray(detail.args) ? detail.args : [];
@@ -42,7 +55,12 @@ export function formatConsoleCall(detail = {}) {
     `<span class="aw-guide-code-key">status</span>: <span class="aw-guide-code-status">${escapeHtml(status)}</span>`,
     `<span class="aw-guide-code-key">network</span>: <span class="aw-guide-code-string">"${escapeHtml(network)}"</span>`,
   ];
-  return lines.join("\n");
+  let formatted = lines.join("\n");
+  const labels = lang === "en"
+    ? { contrato: "contract", fn: "function", args: "arguments", status: "status", network: "network" }
+    : lang === "pt" ? { contrato: "contrato", fn: "função", args: "argumentos", status: "status", network: "rede" } : {};
+  for (const [source, translated] of Object.entries(labels)) formatted = formatted.replace(">" + source + "</span>", ">" + translated + "</span>");
+  return formatted;
 }
 
 function addStyles() {
@@ -64,7 +82,7 @@ function addStyles() {
 }
 
 import { pickLang } from "../i18n.js";
-const langText = (lang, es, en) => pickLang({ es, en, pt: es, qu: es, ay: es, gn: es }, lang);
+const langText = (lang, es, en) => pickLang({ es, en, pt: PT[es] ?? es, qu: es, ay: es, gn: es }, lang);
 
 export function mount(container, { lang = "es" } = {}) {
   if (!container || typeof document === "undefined") return { destroy() {} };
@@ -89,7 +107,7 @@ export function mount(container, { lang = "es" } = {}) {
       const meta = document.createElement("div"); meta.className = "aw-guide-console-meta";
       const fn = document.createElement("strong"); fn.textContent = `${detail.fn || "call"} · ${detail.status || "pending"}`; meta.append(fn);
       if (detail.hash) { const link = document.createElement("a"); link.href = `https://stellar.expert/explorer/${detail.network === "pubnet" ? "public" : "testnet"}/tx/${encodeURIComponent(detail.hash)}`; link.target = "_blank"; link.rel = "noopener noreferrer"; link.textContent = langText(lang, "Ver transacción ↗", "View transaction ↗"); meta.append(link); }
-      entry.append(meta); const pre = document.createElement("pre"); pre.innerHTML = formatConsoleCall(detail); entry.append(pre); list.append(entry);
+      entry.append(meta); const pre = document.createElement("pre"); pre.innerHTML = formatConsoleCall(detail, lang); entry.append(pre); list.append(entry);
     });
     panel.append(list);
   };

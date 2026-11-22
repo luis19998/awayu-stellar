@@ -15,9 +15,15 @@
       <header class="r-head">
         <div class="r-brand"><span class="r-weave" aria-hidden="true"></span><b>Awayu</b></div>
         <div class="r-actions">
-          <label class="r-field">Cuenta <input id="r-addr" spellcheck="false" placeholder="G…" /></label>
+          <label class="r-field"><span id="r-account-label">Cuenta</span> <input id="r-addr" spellcheck="false" placeholder="G…" /></label>
           <button id="r-load" type="button">Ver reporte</button>
           <button id="r-print" type="button">Imprimir o guardar PDF</button>
+          <label class="r-lang-field"><span id="r-lang-label">Idioma</span>
+            <select id="r-lang" aria-label="Idioma">
+              <option value="es">Español</option><option value="en">English</option><option value="pt">Português</option>
+              <option value="qu">Runa Simi</option><option value="ay">Aymar aru</option><option value="gn">Avañe’ẽ</option>
+            </select>
+          </label>
         </div>
       </header>
       <section id="r-body"><p class="r-muted">Leyendo los contratos en Stellar…</p></section>

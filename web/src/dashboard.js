@@ -4,6 +4,7 @@
 import { state, subscribe } from "./state.js";
 import { t, getLang, pickLang } from "./i18n.js";
 import { score } from "./model.js";
+import { mountTabIndicator } from "./motion/tabs.js";
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (x) => String(x ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -38,6 +39,7 @@ addEventListener("awayu:tx", (e) => {
 
 let current = null;
 let mounted = null; // { destroy }
+let stopTabIndicator;
 let token = 0; // cambia con cada navegación: lo que llega tarde de otra sección se descarta
 const alive = (tk) => tk === token;
 /** Guarda la vista montada solo si su sección sigue a la vista; si no, la destruye. */
@@ -107,6 +109,8 @@ function show(id, force = false) {
     nav.style.setProperty("--route-indicator-width", `${activeLink.offsetWidth}px`);
     nav.style.setProperty("--route-indicator-height", `${activeLink.offsetHeight}px`);
   }
+  stopTabIndicator?.();
+  stopTabIndicator = null;
   mounted?.destroy?.();
   mounted = null;
   const isCircle = id === "circulo";
@@ -114,12 +118,14 @@ function show(id, force = false) {
   hooks.onCircleActive?.(isCircle);
   const view = $("#view");
   view.hidden = isCircle;
+  view.setAttribute("aria-busy", String(!isCircle));
   if (isCircle) {
     import("./motion/reveal.js").then(({ revealView }) => revealView(null));
     return;
   }
   const tk = token;
   const swap = () => {
+    if (!alive(tk)) return;
     view.innerHTML = "";
     view.scrollTop = 0;
     view.classList.remove("enter");
@@ -151,8 +157,11 @@ function show(id, force = false) {
       }
     });
   } else rendered = Promise.resolve(swap());
-  rendered.then(async () => {
+  rendered.finally(() => {
+    if (alive(tk)) view.setAttribute("aria-busy", "false");
+  }).then(async () => {
     if (!alive(tk)) return;
+    stopTabIndicator = mountTabIndicator(view.querySelector(".verify-tabs, .latam-family-tabs"));
     await addHowto(view, id);
     if (!alive(tk)) return;
     const { revealView } = await import("./motion/reveal.js");

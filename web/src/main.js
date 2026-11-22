@@ -1,5 +1,6 @@
 // Vista del círculo 3D y billetera. Se carga bajo demanda desde app.js.
 import { relabel } from "./dashboard.js";
+import { createCircleFeedback, playPayoutThreads } from "./motion/circle.js";
 import { setState } from "./state.js";
 import { StrKey } from "@stellar/stellar-sdk";
 import { createScene, VESSELS, TABLES } from "./scene.js";
@@ -23,6 +24,8 @@ import {
 import { pollarEnabled, connectFreighter, connectPollar, connectKit, connectBurner, disconnect as forgetWallet, sign, wallet } from "./wallet.js";
 
 const $ = (s) => document.querySelector(s);
+const updateCircleFeedback = createCircleFeedback($("#panel"));
+window.addEventListener("awayu:pozo", () => playPayoutThreads($("#panel .actions")));
 const localeForLang = () => ({ es: "es-BO", en: "en-US", pt: "pt-BR", qu: "es-BO", ay: "es-BO", gn: "es-BO" })[getLang()] || "es-BO";
 const fmt = (n, t) => `${n.toLocaleString(localeForLang(), { maximumFractionDigits: 2 })} ${t}`;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -147,6 +150,7 @@ function render() {
     bC.disabled = busy || done || (selected >= 0 && c.paid.has(selected));
     bC.textContent = selected >= 0 ? t("Aportar como {name}", { name: c.members[selected].name }) : t("Aportar (todos)");
   }
+  bC.classList.toggle("contribution-due", !bC.disabled && (tn || selected >= 0));
   $("#btn-payout").disabled = busy || !canPayout(c);
   renderGuarantee(c, done);
   $(".late").style.display = tn ? "none" : "";
@@ -158,6 +162,7 @@ function render() {
   maybeNotifyDeadline(c);
   renderPerson();
   renderTimeline();
+  updateCircleFeedback(c);
 }
 
 /** Qué parte de la ronda ya pasó (0 a 1); en demo, según cuántos aportaron. */
@@ -360,6 +365,7 @@ async function animatePayout(to, amount, marks, round) {
   sfx.weave();
   marks.forEach((m, i) => scene.commitPending(i, m ?? MISSED, round));
   toastTranslated("{name} recibió {amount}", { name: circle.members[to].name, amount: fmt(amount, circle.token) });
+  window.dispatchEvent(new Event("awayu:pozo"));
   await wait(500);
 }
 

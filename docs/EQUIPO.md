@@ -3,7 +3,7 @@
 | Integrante | Rol | Qué aporta en esta etapa | Enlace verificable | Relación con el problema |
 |---|---|---|---|---|
 | Luis (`luis19998`) | Líder técnico: contratos Soroban, web, 3D | Arquitectura, contratos, web, despliegues y CI | [GitHub](https://github.com/luis19998) | _(completar: ¿participó u organizó pasanakus? ¿en qué grupo?)_ |
-| Richard Carvajal | Datos, modelo de negocio y producto | Entrevistas de validación (`docs/VALIDACION.md`) y modelo de negocio (`docs/MODELO-NEGOCIO.md`) | _(LinkedIn o GitHub)_ | _(completar)_ |
+| Richard Carvajal | Datos, modelo de negocio y producto | Entrevistas de validación (`docs/VALIDACION.md`) y modelo de negocio (`docs/MODELO-NEGOCIO.md`) | _([GITHUB](https://github.com/carichicraft-jpg)_ | _(completar)_ |
 | Liam Camacho | Diseño UX/UI | Pruebas de uso de la demo con comerciantes y mejoras de diseño | _(GitHub, Behance o LinkedIn)_ | _(completar)_ |
 | natalyfer2709 | Go-to-market y pitch | Contacto con cooperativas (`docs/COOPERATIVAS.md`), pitch deck y video | _(crear GitHub y enlazarlo)_ | _(completar)_ |
 

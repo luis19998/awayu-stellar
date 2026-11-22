@@ -18,6 +18,7 @@ const PT = {
   "Finanzas comunitarias andinas en Stellar": "Finanças comunitárias andinas na Stellar",
   "Dinero": "Dinheiro", "dinero": "dinheiro", "Nombre del círculo": "Nome do círculo", "Departamento": "Departamento",
   // Panel (textos que faltaban)
+  "Video del flujo completo (2:43)": "Vídeo do fluxo completo (2:43)",
   "Entrar con tu correo": "Entrar com seu e-mail",
   "Tu correo para recibir el código de Pollar:": "Seu e-mail para receber o código da Pollar:",
   "Enviar código": "Enviar código",

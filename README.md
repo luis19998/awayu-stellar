@@ -2,7 +2,7 @@
 
 Pasanaku, ayni, minka y alasitas en contratos **Soroban**: cada pago cumplido deja una marca verificable que una cooperativa puede leer. Proyecto para el **National Startups Hackathon by Stellar** (Bolivia, 2026).
 
-**Demo pública:** https://awayu-two.vercel.app · **Reporte para cooperativas:** https://awayu-two.vercel.app/reporte.html · **Estado:** prototipo público en Stellar testnet (dinero de prueba), todavía sin usuarios externos.
+**Demo pública:** https://awayu-two.vercel.app · **Video del flujo on-chain (2:43):** https://youtu.be/9UXoV_NVNvA · **Reporte para cooperativas:** https://awayu-two.vercel.app/reporte.html · **Estado:** prototipo público en Stellar testnet (dinero de prueba), todavía sin usuarios externos.
 
 ## Prueba en 3 minutos (para jueces)
 1. Abre https://awayu-two.vercel.app y toca **Conectar billetera → ⚡ Cuenta de prueba instantánea**. No hay que instalar nada: la web crea una cuenta de testnet en tu navegador y Friendbot la fondea. También funcionan Freighter, xBull, Albedo, Lobstr y Pollar (Google o correo).

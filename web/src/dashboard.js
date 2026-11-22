@@ -304,6 +304,7 @@ async function renderHome(v, tk = token) {
     </ol>
     <div class="cta">
       <a class="btn" href="/reporte.html">${t("Reporte para cooperativas")}</a>
+      <a class="btn ghost" href="https://youtu.be/9UXoV_NVNvA" target="_blank" rel="noopener">▶ ${t("Video del flujo completo (2:43)")}</a>
       <a class="btn ghost" href="https://github.com/luis19998/awayu-stellar/blob/main/docs/EVIDENCIA.md" target="_blank" rel="noopener">${t("Transacciones reales por acción")}</a>
       <a class="btn ghost" href="https://github.com/luis19998/awayu-stellar/blob/main/docs/PAGOS-REALES.md" target="_blank" rel="noopener">${t("Camino a pagos reales")}</a>
     </div>

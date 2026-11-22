@@ -235,6 +235,7 @@ export default {
   "Ese aguayo es tu historial crediticio: portable, verificable, tuyo.":
     "That aguayo is your payment record: portable, verifiable, yours.",
   // Panel (textos que faltaban)
+  "Video del flujo completo (2:43)": "Video of the full flow (2:43)",
   "Entrar con tu correo": "Sign in with your email",
   "Tu correo para recibir el código de Pollar:": "Your email to receive the Pollar code:",
   "Enviar código": "Send code",

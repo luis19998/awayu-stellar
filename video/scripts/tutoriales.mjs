@@ -11,6 +11,16 @@ const OUT = "C:/Users/luisc/Documents/stellar-hackathon/web/public/tutoriales";
 mkdirSync(OUT, { recursive: true });
 
 const TOPICS = {
+  bolivia: async (r) => {
+    await r.page.evaluate(() => { location.hash = "#/bolivia"; });
+    await r.sleep(3500);
+    await r.click('[data-form="cacho"] button[type=submit]');
+    await r.sleep(9000);
+    await r.click('[role="tab"]:nth-child(2)');
+    await r.sleep(2500);
+    await r.click('[role="tab"]:nth-child(3)');
+    await r.sleep(3000);
+  },
   latam: async (r) => {
     await r.page.evaluate(() => { location.hash = "#/latam"; });
     await r.sleep(3000);

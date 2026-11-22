@@ -90,6 +90,7 @@ Antes de mainnet usaremos **compromiso y revelación**: cada miembro aporta un s
 | Pasaporte: reputación sumada de todos tus círculos | «Billetera» |
 | Reporte de historial para cooperativas, imprimible en PDF | `/reporte.html` |
 | Círculos de Latinoamérica: tanda, cundina, cuchubal, junta, san, cadena, sol y sou-sou (misma mecánica del pasanaku, con garantía), natillera y caixinha (con Ayni y Alasitas), y la junta con remate o el consórcio (simulación). Cada uno trae explicación, escena 3D con su tejido, simulador y botón para crearlo en testnet | «Círculos de Latinoamérica» |
+| Juegos y costumbres de Bolivia: cacho verificable con dados 3D (sin dinero; los dados salen de un ledger público de Stellar), rifa solidaria con números pagados por QR SEP-7 y sorteo verificable, y simulador de anticrético con el plan de escrow en Stellar (Trustless Work, planificado) | «Juegos y costumbres de Bolivia» |
 | Verificar un sorteo, un comprobante o un círculo, y guardar evidencia | «Verificar» |
 | Seis idiomas: español, inglés, portugués, quechua, aymara y guaraní | ⚙ Configuración |
 | Bienvenida, recorrido guiado y videos cortos de cada paso | Botón ? |

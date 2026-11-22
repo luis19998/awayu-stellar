@@ -101,7 +101,7 @@ function markup() {
       ${tr("p", "cachoLead")}
       <div class="bo-columns"><div class="bo-card"><h2 data-bo-text="people"></h2>
         <form data-form="cacho"><label for="bo-names" data-bo-text="onePerLine"></label>
-        <textarea id="bo-names" name="names" rows="4" required maxlength="60000" placeholder="Ana&#10;Luz&#10;Diego"></textarea>
+        <textarea id="bo-names" name="names" rows="4" required maxlength="60000" placeholder="Ana&#10;Luz&#10;Diego">Ana&#10;Luz&#10;Diego&#10;Mateo</textarea>
         ${submit("lock")}</form>
         <div data-round="cacho"></div></div>
         <figure class="bo-table"><div class="bo-stage"><div class="bo-faces" aria-hidden="true"></div></div>
@@ -159,6 +159,10 @@ export function mount(container, { lang = getLang(), getAddress = () => "", clie
   const tickets = form("ticket");
   const sim = form("simulation");
   const value = (f, name) => f.elements.namedItem(name).value.trim();
+  // Ejemplos para probar sin escribir nada
+  const example = (f, name, text) => { const el = f?.elements.namedItem(name); if (el && !el.value) el.value = text; };
+  example(setup, "title", pickLang(L("Rifa para la cancha del barrio", "Raffle for the neighborhood field", "Rifa para a quadra do bairro"), lang));
+  example(setup, "prize", pickLang(L("Una canasta familiar", "A family food basket", "Uma cesta básica"), lang));
   const horizon = client || createHorizonClient({
     fetchImpl: (url, init) => fetch(url, { ...init, signal: AbortSignal.any([life.signal, AbortSignal.timeout(8000)]) }),
   });

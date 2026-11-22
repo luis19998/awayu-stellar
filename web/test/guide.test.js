@@ -48,7 +48,7 @@ import { ROUTE_TOPICS } from "../src/guide/help.js";
 describe("tutoriales por sección", () => {
   it("cada sección ofrece temas existentes y cada tema tiene su video y póster", () => {
     for (const ids of Object.values(ROUTE_TOPICS)) for (const id of ids) expect(HELP_TOPICS[id]).toBeTruthy();
-    const tutorialAssetsPending = new Set(["bolivia"]); // lo graba Claude Code
+    const tutorialAssetsPending = new Set(); // todos los temas tienen su video
     for (const id of Object.keys(HELP_TOPICS)) {
       if (tutorialAssetsPending.has(id)) continue;
       expect(existsSync(new URL(`../public/tutoriales/${id}.webm`, import.meta.url))).toBe(true);

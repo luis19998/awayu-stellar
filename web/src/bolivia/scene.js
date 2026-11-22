@@ -70,8 +70,8 @@ export function mountDice(host) {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-3, 3, 2, -2, .1, 30);
-    camera.position.set(0, 6.7, 4.1);
-    camera.lookAt(0, .45, .05);
+    camera.position.set(0, 7.4, 5.2);
+    camera.lookAt(0, .7, -.15);
     scene.add(new THREE.HemisphereLight(0xfff4e3, 0x977497, 2.4));
     const key = new THREE.DirectionalLight(0xffdfb5, 2.6);
     key.position.set(-3, 7, 4);

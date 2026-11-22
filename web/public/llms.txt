@@ -6,6 +6,7 @@
 - [Video del flujo on-chain, 2:43](https://youtu.be/9UXoV_NVNvA): cuenta de prueba, USDC de prueba, crear un círculo, garantía, aporte, pago del pozo, transacción en Stellar Expert y reporte para cooperativas.
 - [Demo](https://awayu-two.vercel.app): Conectar billetera → "Cuenta de prueba instantánea" (no hay que instalar nada) → Crear un pasanaku (cuota en USDC de prueba) → Aportar, Dejar garantía, Pagar el pozo. También funcionan Freighter, xBull, Albedo, Lobstr y Pollar.
 - [Círculos de Latinoamérica](https://awayu-two.vercel.app/#/latam): las formas de ahorro rotativo de la región (tanda, cundina, cuchubal, junta, pandero, san, cadena, sol, sou-sou) usan el mismo contrato con garantía; natillera y caixinha se arman con Ayni y Alasitas; la junta con remate y el consórcio se muestran como simulación.
+- [Juegos y costumbres de Bolivia](https://awayu-two.vercel.app/#/bolivia): cacho verificable (sin apuestas de dinero; los dados salen del hash de un ledger de Stellar), rifa solidaria con pagos SEP-7 y sorteo verificable, y simulador de anticrético con el plan de escrow.
 - [Reporte para cooperativas](https://awayu-two.vercel.app/reporte.html): historial de pagos de una cuenta, leído en vivo de los contratos, con instrucciones para verificarlo.
 
 ## Evidencia

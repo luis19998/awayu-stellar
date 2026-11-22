@@ -99,15 +99,19 @@ export function mountLoom(canvas, { rowH = 26, speed = 1 } = {}) {
 }
 
 /** Inclinación 3D suave de tarjetas al pasar el mouse. */
-export function tilt(root, selector = ".step, .kpi, .eco-c, .card-c") {
-  if (matchMedia?.("(prefers-reduced-motion: reduce)").matches || matchMedia?.("(pointer: coarse)").matches) return () => {};
+export function tilt(root, selector = ".trad, .uso, .card-c") {
+  const reduced = () => root.ownerDocument.documentElement.classList.contains("aw-calm")
+    || (() => { try { return Boolean(JSON.parse(localStorage.getItem("awayu.studio") || "{}").calm); } catch { return false; } })()
+    || matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  if (reduced() || matchMedia?.("(pointer: coarse)").matches) return () => {};
   const move = (e) => {
+    if (reduced()) return;
     const el = e.target.closest?.(selector);
     if (!el) return;
     const r = el.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width - 0.5;
-    const y = (e.clientY - r.top) / r.height - 0.5;
-    el.style.transform = `perspective(700px) rotateX(${(-y * 7).toFixed(2)}deg) rotateY(${(x * 9).toFixed(2)}deg) translateY(-3px)`;
+    const x = Math.max(-0.5, Math.min(0.5, (e.clientX - r.left) / Math.max(1, r.width) - 0.5));
+    const y = Math.max(-0.5, Math.min(0.5, (e.clientY - r.top) / Math.max(1, r.height) - 0.5));
+    el.style.transform = `perspective(700px) rotateX(${(-y * 12).toFixed(2)}deg) rotateY(${(x * 12).toFixed(2)}deg) translateY(-2px)`;
     el.style.setProperty("--gx", `${((x + 0.5) * 100).toFixed(1)}%`);
     el.style.setProperty("--gy", `${((y + 0.5) * 100).toFixed(1)}%`);
   };
@@ -115,10 +119,16 @@ export function tilt(root, selector = ".step, .kpi, .eco-c, .card-c") {
     const el = e.target.closest?.(selector);
     if (el && !el.contains(e.relatedTarget)) el.style.transform = "";
   };
+  const motionChange = () => {
+    if (reduced()) root.querySelectorAll(selector).forEach((el) => { el.style.transform = ""; });
+  };
+  const settingsObserver = new MutationObserver(motionChange);
+  settingsObserver.observe(root.ownerDocument.documentElement, { attributes: true, attributeFilter: ["class"] });
   root.addEventListener("pointermove", move);
   root.addEventListener("pointerout", leave);
   return () => {
     root.removeEventListener("pointermove", move);
     root.removeEventListener("pointerout", leave);
+    settingsObserver.disconnect();
   };
 }

@@ -53,11 +53,18 @@ function wovenTexture() {
 function labelSprite(text, color = "#fff") {
   const canvas = document.createElement("canvas"); canvas.width = 512; canvas.height = 96;
   const ctx = canvas.getContext("2d");
+  const drawLabel = (label) => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = "600 34px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.shadowColor = color; ctx.shadowBlur = 18; ctx.fillStyle = color; ctx.fillText(String(label).slice(0, 26), 256, 48);
+    texture.needsUpdate = true;
+  };
   ctx.font = "600 34px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
   ctx.shadowColor = color; ctx.shadowBlur = 18; ctx.fillStyle = color; ctx.fillText(String(text).slice(0, 26), 256, 48);
   const texture = new THREE.CanvasTexture(canvas);
   const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false }));
   sprite.scale.set(1.8, 0.34, 1);
+  sprite.userData.setLabel = drawLabel;
   return sprite;
 }
 
@@ -131,23 +138,34 @@ export function mount(container, initial = {}) {
   composer.addPass(new RenderPass(scene, camera));
   const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.52, 0.5, 0.82); composer.addPass(bloom);
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  const userReduced = () => {
+    if (document.documentElement.classList.contains("aw-calm")) return true;
+    try { return Boolean(JSON.parse(localStorage.getItem("awayu.studio") || "{}").calm); } catch { return false; }
+  };
+  const motionReduced = () => reduced.matches || userReduced();
   let frame = 0;
   let visible = !document.hidden;
   let destroyed = false;
   let last = 0;
+  let balanceCounters = [];
 
   function clearGroup(group) {
     for (const child of [...group.children]) { group.remove(child); disposeTree(child); }
   }
   function rebuild() {
     clearGroup(rings); clearGroup(satellites); clearGroup(crown); clearGroup(comets);
+    balanceCounters = [];
     const balances = data.balances.length ? data.balances : (data.address ? [] : [{ asset: "XLM", balance: "1250" }, { asset: "USDC", balance: "86" }]);
     balances.forEach((entry, i) => {
       const radius = 1.78 + i * 0.23;
       const mesh = new THREE.Mesh(new THREE.TorusGeometry(radius, scaleBalance(entry.balance), 12, 220), new THREE.MeshStandardMaterial({ color: COLORS[i % COLORS.length], emissive: COLORS[i % COLORS.length], emissiveIntensity: 0.38, metalness: 0.48, roughness: 0.3 }));
       mesh.rotation.x = (i % 2 ? 0.15 : -0.12); rings.add(mesh);
-      const label = labelSprite(`${entry.asset ?? entry.code ?? "Asset"}  ${entry.balance ?? "0"}`, COLORS[i % COLORS.length]);
+      const asset = entry.asset ?? entry.code ?? "Asset";
+      const amount = Number(entry.balance);
+      const numeric = String(entry.balance ?? "").trim() !== "" && Number.isFinite(amount);
+      const label = labelSprite(`${asset}  ${numeric ? Number(0).toLocaleString(data.lang, { maximumFractionDigits: 7 }) : entry.balance ?? "0"}`, COLORS[i % COLORS.length]);
       label.position.set(radius, 0.1 + i * 0.06, 0); rings.add(label);
+      if (numeric) balanceCounters.push({ label, asset, amount, start: null, updatedAt: null, display: null });
     });
     const circles = data.circles.length ? data.circles : (!data.address ? [{ name: "Pasanaku demo", contribution: 60 }] : []);
     circles.forEach((circle, i) => {
@@ -188,17 +206,45 @@ export function mount(container, initial = {}) {
     else if (!visible && frame) { cancelAnimationFrame(frame); frame = 0; }
   };
   document.addEventListener("visibilitychange", visibility);
-  const motion = () => { controls.autoRotate = !reduced.matches; };
+  const finishBalanceCounters = () => {
+    balanceCounters.forEach(({ label, asset, amount }) => label.userData.setLabel?.(`${asset}  ${amount.toLocaleString(data.lang, { maximumFractionDigits: 7 })}`));
+    balanceCounters = [];
+  };
+  const motion = () => {
+    controls.autoRotate = !motionReduced();
+    if (motionReduced()) finishBalanceCounters();
+  };
   reduced.addEventListener?.("change", motion); motion();
+  const settingsMotion = new MutationObserver(motion);
+  settingsMotion.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
   function animate(time) {
     frame = 0;
     if (!visible || destroyed) return;
-    if (reduced.matches && time - last < 1000 / 12) { frame = requestAnimationFrame(animate); return; }
+    if (motionReduced() && time - last < 1000 / 12) { frame = requestAnimationFrame(animate); return; }
     last = time;
     const dt = Math.min(0.05, (time - (animate.prev || time)) / 1000); animate.prev = time;
-    planet.rotation.y += reduced.matches ? 0 : dt * 0.08;
-    satellites.children.forEach((satellite, i) => { satellite.rotation.y += reduced.matches ? 0 : dt * (0.12 + i * 0.025); });
-    comets.children.forEach((comet) => { comet.position.x += (comet.userData.incoming ? 1 : -1) * dt * 0.48; if (Math.abs(comet.position.x) > 4.8) comet.position.x *= -1; });
+    const still = motionReduced();
+    planet.rotation.y += still ? 0 : dt * 0.08;
+    satellites.children.forEach((satellite, i) => { satellite.rotation.y += still ? 0 : dt * (0.12 + i * 0.025); });
+    comets.children.forEach((comet) => { if (!still) { comet.position.x += (comet.userData.incoming ? 1 : -1) * dt * 0.48; if (Math.abs(comet.position.x) > 4.8) comet.position.x *= -1; } });
+    balanceCounters = balanceCounters.filter((counter) => {
+      if (still) {
+        counter.label.userData.setLabel?.(`${counter.asset}  ${counter.amount.toLocaleString(data.lang, { maximumFractionDigits: 7 })}`);
+        return false;
+      }
+      if (counter.start === null) counter.start = time;
+      const progress = Math.min(1, (time - counter.start) / 900);
+      if (counter.updatedAt === null || time - counter.updatedAt >= 45 || progress === 1) {
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const display = `${counter.asset}  ${(counter.amount * eased).toLocaleString(data.lang, { maximumFractionDigits: 7 })}`;
+        if (display !== counter.display) {
+          counter.display = display;
+          counter.label.userData.setLabel?.(display);
+        }
+        counter.updatedAt = time;
+      }
+      return progress < 1;
+    });
     controls.update(); composer.render();
     frame = requestAnimationFrame(animate); // sin esto se dibujaba un solo cuadro
   }
@@ -207,7 +253,7 @@ export function mount(container, initial = {}) {
   return {
     update(next = {}) { data = normalizeWalletData({ ...data, ...next }); rebuild(); },
     destroy() {
-      destroyed = true; cancelAnimationFrame(frame); observer.disconnect(); document.removeEventListener("visibilitychange", visibility); reduced.removeEventListener?.("change", motion);
+      destroyed = true; cancelAnimationFrame(frame); observer.disconnect(); document.removeEventListener("visibilitychange", visibility); reduced.removeEventListener?.("change", motion); settingsMotion.disconnect();
       controls.dispose(); composer.dispose(); disposeTree(scene); renderer.dispose(); renderer.domElement.remove(); container.replaceChildren();
     },
   };

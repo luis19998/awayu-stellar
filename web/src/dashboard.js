@@ -89,6 +89,14 @@ function show(id, force = false) {
     if (a.dataset.route === id) a.setAttribute("aria-current", "page");
     else a.removeAttribute("aria-current");
   });
+  const activeLink = document.querySelector("#nav a.on");
+  if (activeLink) {
+    const nav = activeLink.closest("#nav");
+    nav.style.setProperty("--route-indicator-x", `${activeLink.offsetLeft - 8}px`);
+    nav.style.setProperty("--route-indicator-y", `${activeLink.offsetTop - 8}px`);
+    nav.style.setProperty("--route-indicator-width", `${activeLink.offsetWidth}px`);
+    nav.style.setProperty("--route-indicator-height", `${activeLink.offsetHeight}px`);
+  }
   mounted?.destroy?.();
   mounted = null;
   const isCircle = id === "circulo";
@@ -96,7 +104,10 @@ function show(id, force = false) {
   hooks.onCircleActive?.(isCircle);
   const view = $("#view");
   view.hidden = isCircle;
-  if (isCircle) return;
+  if (isCircle) {
+    import("./motion/reveal.js").then(({ revealView }) => revealView(null));
+    return;
+  }
   const tk = token;
   const swap = () => {
     view.innerHTML = "";
@@ -107,7 +118,9 @@ function show(id, force = false) {
     return VIEWS[id]?.(view, tk);
   };
   // Transición entre secciones con la API View Transitions cuando existe
-  const calm = matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  let savedCalm = false;
+  try { savedCalm = Boolean(JSON.parse(localStorage.getItem("awayu.studio") || "{}").calm); } catch {}
+  const calm = savedCalm || document.documentElement.classList.contains("aw-calm") || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
   let rendered;
   if (document.startViewTransition && !calm && !document.hidden) {
     rendered = new Promise((done) => {
@@ -128,8 +141,13 @@ function show(id, force = false) {
       }
     });
   } else rendered = Promise.resolve(swap());
-  rendered.then(() => {
-    if (alive(tk)) addHowto(view, id);
+  rendered.then(async () => {
+    if (!alive(tk)) return;
+    await addHowto(view, id);
+    if (!alive(tk)) return;
+    const { revealView } = await import("./motion/reveal.js");
+    if (!alive(tk)) return;
+    revealView(view);
     // Lectores de pantalla: el foco va al título de la sección nueva
     const h = alive(tk) && view.querySelector("h1");
     if (h && document.activeElement?.closest?.("#nav")) {
@@ -357,10 +375,9 @@ async function renderHome(v, tk = token) {
   </section>
   <footer class="credits" id="credits"><a href="#/legal">§ ${t("Legal y privacidad")}</a></footer>`;
   $("#home-wallet").onclick = () => hooks.connectWallet?.();
-  const { mountLoom, tilt } = await import("./motion/loom.js");
-  const loom = mountLoom(v.querySelector(".loom"));
-  const untilt = tilt(v);
-  adopt(tk, { destroy: () => { loom.destroy(); untilt(); } });
+  const { mountHeroThreads } = await import("./motion/reveal.js");
+  const threads = mountHeroThreads(v.querySelector(".loom"));
+  adopt(tk, { destroy: () => threads.destroy() });
   fetch("/img/creditos.json").then((r) => r.json()).then((credits) => {
     const el = alive(tk) && $("#credits");
     if (el) el.innerHTML = `${t("Fotos")}: ${Object.values(credits).map((c) => `<a href="${esc(c.source)}" target="_blank" rel="noopener">${esc(c.title.replace(/^File:/, ""))}</a> (${esc(c.author)}, ${esc(c.license)})`).join(" · ")}`;
@@ -393,14 +410,9 @@ async function fillKpis() {
 }
 
 function countUp(el, to) {
-  const t0 = performance.now();
-  const from = 0;
-  const step = (now) => {
-    const k = Math.min(1, (now - t0) / 1100);
-    el.textContent = fmtN(from + (to - from) * (1 - Math.pow(1 - k, 3)));
-    if (k < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
+  if (typeof to !== "number" || !Number.isFinite(to)) return;
+  // reveal.js espera a que el KPI entre en pantalla y anima el valor durante 900 ms.
+  el.textContent = fmtN(to);
 }
 
 async function renderMap(v, tk) {

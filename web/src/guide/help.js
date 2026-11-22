@@ -6,6 +6,17 @@ const topic = (esTitle, enTitle, esSteps, enSteps, localized = {}) => ({
 });
 
 export const HELP_TOPICS = Object.freeze({
+  bolivia: topic("Juegos y costumbres de Bolivia", "Bolivian games and customs", [
+    "En Cacho, escribe un nombre por línea y fija la lista antes de lanzar los dados. Si falla la conexión, puedes practicar sin verificación.",
+    "Comparte el código y pégalo en la misma pestaña para repetir el resultado con el mismo ledger de Stellar.",
+    "En Rifa, indica el premio, el precio y la cuenta de prueba. Muestra el QR de cada número, comprueba el pago y registra el nombre antes de cerrar el sorteo.",
+    "En Anticrético, ajusta el depósito, el plazo, el alquiler y el tipo de cambio para comparar los resultados en bolivianos."
+  ], [
+    "In Cacho, enter one name per line and lock the list before rolling. If the connection fails, you can practice without verification.",
+    "Share the code and paste it into the same tab to reproduce the result with the same Stellar ledger.",
+    "In Raffle, enter the prize, price and test account. Show each ticket’s QR, check the payment and register the name before closing the draw.",
+    "In Anticrético, adjust the deposit, term, rent and exchange rate to compare the results in bolivianos."
+  ]),
   wallet: topic("Conectar billetera", "Connect a wallet", ["Elige Freighter, Google o correo.", "Revisa la red y la cuenta que aparece.", "Confirma cada acción en tu billetera."], ["Choose Freighter, Google, or email.", "Check the network and account shown.", "Confirm each action in your wallet."]),
   contribute: topic("Aportar", "Contribute", ["Revisa la cuota y la ronda actual.", "Elige Aportar y confirma la firma.", "Espera el resultado de la red."], ["Review the contribution and current round.", "Choose Contribute and confirm the signature.", "Wait for the network result."]),
   payout: topic("Pagar el pozo", "Pay the pot", ["Comprueba quién está de turno.", "El pozo se puede pagar cuando todos aportaron o venció el plazo.", "La red registra el pago y el avance de ronda."], ["Check whose turn it is.", "The pot can be paid once everyone contributed or the deadline passed.", "The network records the payment and next round."]),
@@ -43,6 +54,12 @@ export const HELP_TOPICS = Object.freeze({
 // Traducciones de los temas de ayuda. Portugués completo; en quechua, aymara y
 // guaraní los títulos (los pasos caen al español hasta la revisión de hablantes).
 const LOCAL = {
+  bolivia: { pt: ["Jogos e costumes da Bolívia", [
+    "Em Cacho, digite um nome por linha e fixe a lista antes de lançar os dados. Se a conexão falhar, você pode praticar sem verificação.",
+    "Compartilhe o código e cole-o na mesma aba para reproduzir o resultado com o mesmo ledger da Stellar.",
+    "Em Rifa, informe o prêmio, o preço e a conta de teste. Mostre o QR de cada número, confira o pagamento e registre o nome antes de encerrar o sorteio.",
+    "Em Anticrético, ajuste o depósito, o prazo, o aluguel e a taxa de câmbio para comparar os resultados em bolivianos."
+  ]] },
   wallet: { pt: ["Conectar carteira", ["Escolha Freighter, Google ou e-mail.", "Confira a rede e a conta exibida.", "Confirme cada ação na sua carteira."]], qu: "Qullqi wayaqata tinkiy", ay: "Qullqi wayaqa chikt'aña", gn: "Embojoaju viru ryru" },
   contribute: { pt: ["Contribuir", ["Confira a contribuição e a rodada atual.", "Escolha Contribuir e confirme a assinatura.", "Aguarde o resultado da rede."]], qu: "Qullqita churay", ay: "Qullqi churaña", gn: "Emoĩ nde viru" },
   payout: { pt: ["Pagar o fundo", ["Veja de quem é a vez.", "O fundo pode ser pago quando todos contribuíram ou o prazo venceu.", "A rede registra o pagamento e o avanço da rodada."]], qu: "Huñusqa qullqita payllay", ay: "Tantachat qullqi payllaña", gn: "Ehepyme'ẽ pe viru aty" },
@@ -94,6 +111,7 @@ export const ROUTE_TOPICS = Object.freeze({
   billetera: ["wallet", "test-usdc", "qr-receive", "qr-scan", "qr-bank", "passport"],
   riesgo: ["risk", "simulator"],
   latam: ["latam"],
+  bolivia: ["bolivia"],
   amawta: ["amawta"],
   verificar: ["verify-draw", "verify-check", "verify-report"],
 });

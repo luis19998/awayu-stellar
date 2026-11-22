@@ -11,8 +11,8 @@ describe("guía Awayu", () => {
     expect(validateSteps(null)).toBe(false);
   });
 
-  it("incluye los 32 temas de ayuda en castellano e inglés", () => {
-    expect(Object.keys(HELP_TOPICS)).toHaveLength(32);
+  it("incluye los 33 temas de ayuda en castellano e inglés", () => {
+    expect(Object.keys(HELP_TOPICS)).toHaveLength(33);
     for (const data of Object.values(HELP_TOPICS)) {
       for (const lang of ["es", "en"]) {
         expect(data.title[lang].trim()).not.toBe("");
@@ -48,7 +48,7 @@ import { ROUTE_TOPICS } from "../src/guide/help.js";
 describe("tutoriales por sección", () => {
   it("cada sección ofrece temas existentes y cada tema tiene su video y póster", () => {
     for (const ids of Object.values(ROUTE_TOPICS)) for (const id of ids) expect(HELP_TOPICS[id]).toBeTruthy();
-    const tutorialAssetsPending = new Set(); // todos los temas tienen su video
+    const tutorialAssetsPending = new Set(["bolivia"]); // lo graba Claude Code
     for (const id of Object.keys(HELP_TOPICS)) {
       if (tutorialAssetsPending.has(id)) continue;
       expect(existsSync(new URL(`../public/tutoriales/${id}.webm`, import.meta.url))).toBe(true);

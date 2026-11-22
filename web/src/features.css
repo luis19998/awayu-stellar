@@ -310,3 +310,60 @@ html.aw-calm #view h1::after { transform: scaleX(1); }
 .flag-br { position: relative; overflow: hidden; background: #009c3b; }
 .flag-br::before { content: ""; position: absolute; left: 50%; top: 50%; width: 52%; height: 52%; background: #ffdf00; transform: translate(-50%, -50%) scaleX(1.45) rotate(45deg); }
 .flag-br::after { content: ""; position: absolute; left: 50%; top: 50%; width: 36%; height: 54%; border-radius: 50%; background: #002776; transform: translate(-50%, -50%); }
+
+/* ===== Juegos y costumbres de Bolivia ===== */
+.bo-pane { --bo-accent: #f2ba83; --bo-edge: rgba(237,192,149,.26); }
+.bo-pane [hidden] { display: none !important; }
+.bo-pane [role="tabpanel"] { display: grid; gap: 1rem; }
+.bo-pane [role="tabpanel"] > p { max-width: 78ch; line-height: 1.55; margin: 0; }
+.bo-tabs { display: flex; flex-wrap: wrap; gap: .38rem; margin: 1rem 0 1.15rem; }
+.bo-tabs button { background: transparent; border: 1px solid var(--bo-edge); border-radius: 2rem; color: var(--ink); padding: .65rem 1.1rem; font-weight: 650; }
+.bo-tabs [aria-selected="true"], .bo-pane .primary { background: var(--bo-accent); color: #2d1922; border: 1px solid transparent; font-weight: 750; }
+.bo-pane :is(button, a, input, select, textarea, summary):focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.bo-pane button:disabled { opacity: .52; cursor: default; }
+.bo-columns { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: start; gap: 1rem; }
+.bo-card, .bo-table { min-width: 0; border: 1px solid var(--bo-edge); border-radius: 1rem; padding: clamp(.95rem, 2vw, 1.4rem); background: var(--glass); }
+.bo-card :is(h2,h3), .bo-card p, .bo-table { margin: 0; }
+.bo-card p:not(:empty), .bo-card form, .bo-card h3, .bo-card dl { margin-block: .75rem; }
+.bo-card [role="status"]:empty, .bo-pane [data-storage]:empty, .bo-actions:empty { display: none; }
+.bo-card summary { cursor: pointer; color: var(--bo-accent); font-weight: 650; }
+.bo-pane form, .bo-pane label { display: grid; gap: .5rem; min-width: 0; }
+.bo-pane form { gap: .85rem; align-items: start; }
+.bo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.bo-wide { grid-column: 1/-1; }
+.bo-pane label { font-size: .92rem; }
+.bo-pane :is(input,select,textarea) { width: 100%; max-width: 100%; font: inherit; color: var(--ink); background: var(--night); border: 1px solid var(--bo-edge); border-radius: .5rem; padding: .64rem .75rem; }
+.bo-pane textarea { resize: vertical; }
+.bo-pane .primary { width: fit-content; padding: .68rem 1rem; border-radius: .65rem; }
+.bo-table { display: grid; overflow: hidden; padding: 0; background: #173a3a; border-color: #55756c; }
+.bo-stage { position: relative; height: clamp(190px, 22vw, 280px); background: radial-gradient(ellipse at 52% 42%, #327069 0%, #204f4b 57%, #173a3a); }
+.bo-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.bo-faces { display: grid; place-items: center; height: 100%; font: clamp(2rem, 5.5vw, 4rem)/1 system-ui; color: #ffedce; white-space: nowrap; }
+.bo-stage.has-dice .bo-faces { visibility: hidden; }
+.bo-table figcaption { display: grid; gap: .5rem; color: #fff2d9; border-top: 1px solid #53786b; padding: .85rem 1.1rem; }
+.bo-table label { color: #fff2d9; }
+.bo-note { border-inline-start: 3px solid var(--bo-accent); padding-inline-start: .9rem; font-size: .92rem; }
+.bo-note strong { color: var(--bo-accent); }
+.bo-meta dt, .bo-totals dt, .bo-muted { color: var(--muted); font-size: .9rem; }
+.bo-meta dd, .bo-totals dd { margin: .22rem 0 .7rem; }
+.bo-meta code, .bo-pane .bo-code { font: .82rem/1.45 var(--mono); }
+.bo-pane :is(code,.bo-winner,.bo-scores,.bo-entries,[data-raffle-title],[data-raffle-meta]) { overflow-wrap: anywhere; }
+.bo-status:not(:empty), .bo-winner { color: var(--bo-accent); }
+.bo-winner strong { display: block; font-size: 1.5rem; color: var(--ink); }
+.bo-scores, .bo-entries { padding-inline-start: 1.75rem; max-height: 19rem; overflow-y: auto; }
+.bo-scores li { padding: .4rem .25rem; border-bottom: 1px solid var(--line); }
+.bo-scores li > span { display: block; color: var(--muted); font-size: .87rem; }
+.bo-scores li .bo-roll { font: 650 1.05rem/1.6 var(--mono); color: var(--ink); }
+.bo-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .65rem; }
+.bo-tickets { margin-block: 1rem; }
+.bo-tickets [data-payment] { min-width: 0; font-size: .9rem; }
+.bo-qr svg { display: block; width: min(100%, 230px); height: auto; margin-bottom: .4rem; }
+.bo-tickets a { color: var(--bo-accent); }
+.bo-totals dl { margin: 0; }
+.bo-totals dd { font: 650 1.12rem/1.35 var(--mono); }
+.bo-totals dd:first-of-type { color: var(--bo-accent); font-size: 1.7rem; }
+@media (max-width: 700px) {
+  .bo-columns { grid-template-columns: 1fr; }
+  .bo-tabs button { flex: 1 1 auto; }
+}
+@media (max-width: 420px) { .bo-grid { grid-template-columns: 1fr; } }

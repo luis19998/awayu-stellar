@@ -23,6 +23,7 @@ export const ROUTES = [
   { id: "riesgo", icon: "◐", label: "Probabilidades" },
   { id: "verificar", icon: "✓", label: "Verificar" },
   { id: "latam", icon: "🌎", label: "Círculos de Latinoamérica" },
+  { id: "bolivia", icon: "🎲", label: "Juegos y costumbres de Bolivia" },
   { id: "amawta", icon: "✺", label: "Amawta (IA)" },
   { id: "legal", icon: "§", label: "Legal y privacidad" },
   { id: "ecosistema", icon: "⬡", label: "Ecosistema" },
@@ -74,7 +75,7 @@ export function relabel() {
     a.title = routeLabel(r);
     a.querySelector(".lb").textContent = routeLabel(r);
   });
-  if (["ayni", "minka", "alasitas"].includes(current)) return;
+  if (["ayni", "minka", "alasitas", "bolivia"].includes(current)) return;
   if (current && current !== "circulo") show(current, true);
 }
 
@@ -275,6 +276,11 @@ const VIEWS = {
     const { mount } = await import("./views/latam.js");
     if (!alive(tk)) return;
     adopt(tk, mount(v, { lang: getLang(), openCreate: (preset) => hooks.openCreate?.(preset) }));
+  },
+  bolivia: async (v, tk) => {
+    const { mount } = await import("./views/bolivia.js");
+    if (!alive(tk)) return;
+    adopt(tk, mount(v, { lang: getLang(), getAddress: () => hooks.getAddress?.() || state.address }));
   },
   ayni: (v, tk) => renderMode(v, tk, "ayni"),
   minka: (v, tk) => renderMode(v, tk, "minka"),

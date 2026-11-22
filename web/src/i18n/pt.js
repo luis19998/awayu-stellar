@@ -18,6 +18,7 @@ const PT = {
   "Finanzas comunitarias andinas en Stellar": "Finanças comunitárias andinas na Stellar",
   "Dinero": "Dinheiro", "dinero": "dinheiro", "Nombre del círculo": "Nome do círculo", "Departamento": "Departamento",
   // Panel (textos que faltaban)
+  "Juegos y costumbres de Bolivia": "Jogos e costumes da Bolívia",
   "Armas tu círculo": "Você monta seu círculo",
   "Eliges cuota, duración de la ronda y miembros. Se despliega un contrato Soroban y se registra en la memoria colectiva on-chain.": "Você escolhe a contribuição, a duração da rodada e os participantes. Um contrato Soroban é implantado e registrado na memória coletiva on-chain.",
   "La red sortea el turno": "A rede sorteia a vez",

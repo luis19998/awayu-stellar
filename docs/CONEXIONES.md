@@ -11,7 +11,7 @@ Orden sugerido por impacto en el hackatón (cierre virtual: **22 de noviembre**)
 | `VITE_POLLAR_KEY` | ✅ Production y Preview (2026-11-21); Google y correo activos en la web publicada | En el panel de Pollar, *Domains* debe incluir `https://awayu-two.vercel.app`. Borrar en Vercel la variable de prueba `VITE_POLLAR_KEY_TEST_DUMMY` |
 | `POLLAR_KEY` | Cargada, pero la web no la usa | Puedes borrarla: la web solo lee `VITE_POLLAR_KEY` (la clave publicable `pub_testnet_…`). Nunca pongas la secreta `sec_…` en una variable `VITE_` |
 | `TRUSTLESS_API_KEY` | Solo en **Preview** | Opcional: la integración figura como planificada y la web publicada no la usa |
-| `N8N_WEBHOOK_URL`, `N8N_SECRET` | ❌ Faltan | Ver sección B |
+| `N8N_WEBHOOK_URL`, `N8N_SECRET` | ❌ Faltan (opcional) | Importar los 3 flujos de `automations/n8n/flujos/` y cargar la Production URL del webhook `awayu-eventos`. Ver `automations/n8n/README.md` |
 | GitHub → Vercel (despliegue automático) | ❌ No conectado | Vercel → proyecto awayu → Settings → Git → Connect |
 | MCP de Stellar (**Raven**) | ❌ No agregado | Ver sección C |
 | MCP de Pollar | ❌ No agregado | Ver sección C |
@@ -39,8 +39,7 @@ Todas se cargan en Vercel → proyecto **awayu** → **Settings → Environment 
 | **Gemini** (Google AI Studio) | Amawta responde con IA (sin clave usa respuestas locales) | https://aistudio.google.com/apikey → *Create API key* | `GEMINI_API_KEY` (opcional `GEMINI_MODEL=gemini-2.5-flash`) |
 | **Pollar** (testnet) | Ingreso con Google o correo, billetera embebida, swaps, Earn y rampas de dinero | https://dashboard.pollar.xyz → tu app → *Developers → API keys* → *Create key* → clave **publicable** `pub_testnet_…` | `VITE_POLLAR_KEY` |
 | **Trustless Work** (testnet) | Escrow regulado para garantías y Minka | https://dapp.trustlesswork.com → solicitar clave de testnet | `TRUSTLESS_API_KEY` (solo servidor) |
-| **Bot de Telegram** (vía n8n) | Recordatorios de cuotas | En Telegram habla con @BotFather → `/newbot` | credencial dentro de n8n |
-| **n8n** | Automatizaciones (recordatorios, resumen semanal) | https://n8n.io (prueba gratis) → importa los flujos de `automations/n8n/` | `N8N_WEBHOOK_URL` y `N8N_SECRET` |
+| **n8n** | Avisos por ntfy.sh (sin cuentas personales), registro de eventos, resumen semanal y monitor de la web | https://n8n.io (prueba gratis) → importa los 3 archivos de `automations/n8n/flujos/` | `N8N_WEBHOOK_URL` y, opcional, `N8N_SECRET` |
 
 Pasos extra en Pollar (además de la clave):
 1. En *Domains* agrega `https://awayu-two.vercel.app` y `http://localhost:5180`.

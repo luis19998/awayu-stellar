@@ -1,0 +1,219 @@
+{
+  "name": "Awayu · 02 Resumen semanal",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "72edaec8-77e0-5b7c-978c-ddd08fbb02f4",
+      "name": "Cada lunes 09:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "479ab685-3573-5ff8-be3c-928cb9e4c064",
+      "name": "Probar ahora",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://awayu-two.vercel.app/testnet.json",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "65671b68-8e38-536d-9ead-38d4541c0838",
+      "name": "Leer testnet.json",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lista los contratos de Awayu publicados en testnet.json\nconst t = $input.first().json;\nconst ids = new Map();\n(t.circulos || []).forEach((c) => ids.set(c, 'pasanaku'));\nif (t.contractId) ids.set(t.contractId, 'pasanaku');\nif (t.registro) ids.set(t.registro, 'registro');\nfor (const k of ['ayni', 'minka', 'alasitas']) if (t[k] && t[k].contractId) ids.set(t[k].contractId, k);\nreturn [...ids].map(([id, tipo]) => ({ json: { id, tipo } }));\n"
+      },
+      "id": "dde4621b-5500-544e-a101-b21234dd244d",
+      "name": "Contratos de Awayu",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.stellar.expert/explorer/testnet/contract/{{ $json.id }}",
+        "options": {
+          "timeout": 15000,
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 500
+            }
+          }
+        }
+      },
+      "id": "5c3f6963-ba78-5bc0-971a-8eb551df192d",
+      "name": "Actividad en Stellar Expert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        0
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const AVISOS = 'awayu-avisos-j614insb'; // el mismo tema del flujo 01\nconst WEB = 'https://awayu-two.vercel.app';\nconst filas = $input.all().map((i) => i.json);\nconst contratos = $('Contratos de Awayu').all().map((i) => i.json);\nlet invocaciones = 0, eventos = 0, errores = 0, respondieron = 0;\nfor (const f of filas) {\n  if (typeof f.invocations === 'number') { respondieron++; invocaciones += f.invocations; eventos += f.events || 0; errores += f.errors || 0; }\n}\nconst porTipo = contratos.reduce((a, c) => ((a[c.tipo] = (a[c.tipo] || 0) + 1), a), {});\nconst detalle = Object.entries(porTipo).map(([k, n]) => n + ' ' + k).join(', ');\nconst message = contratos.length + ' contratos (' + detalle + '). Invocaciones: ' + invocaciones + ', eventos: ' + eventos + ', errores: ' + errores + '. Datos de Stellar Expert (' + respondieron + ' de ' + contratos.length + ' contratos respondieron).';\nreturn [{ json: { topic: AVISOS, title: 'Resumen semanal de Awayu en Stellar', message, tags: ['bar_chart'], click: WEB } }];\n"
+      },
+      "id": "3c34d61d-16f0-5423-be7e-853ed8341af5",
+      "name": "Armar resumen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ntfy.sh",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "447bd987-63fd-5156-915b-86a57251bd86",
+      "name": "Enviar resumen (ntfy)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        0
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Awayu · Resumen semanal\n\nCada lunes a las 09:00 (hora de Bolivia) lee los contratos de Awayu, consulta su actividad en Stellar Expert (API pública) y manda el resumen por **ntfy.sh**.\n\nSin claves ni cuentas. Si cambiaste el tema en el flujo 01, cámbialo también en **Armar resumen**.",
+        "height": 420,
+        "width": 380
+      },
+      "id": "411fae9c-cd3e-5ce4-9ac2-9d99dd1a0a5f",
+      "name": "Léeme",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        -260
+      ]
+    }
+  ],
+  "connections": {
+    "Cada lunes 09:00": {
+      "main": [
+        [
+          {
+            "node": "Leer testnet.json",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Probar ahora": {
+      "main": [
+        [
+          {
+            "node": "Leer testnet.json",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer testnet.json": {
+      "main": [
+        [
+          {
+            "node": "Contratos de Awayu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contratos de Awayu": {
+      "main": [
+        [
+          {
+            "node": "Actividad en Stellar Expert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actividad en Stellar Expert": {
+      "main": [
+        [
+          {
+            "node": "Armar resumen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Armar resumen": {
+      "main": [
+        [
+          {
+            "node": "Enviar resumen (ntfy)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/La_Paz",
+    "saveManualExecutions": true
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "tags": []
+}

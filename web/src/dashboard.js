@@ -642,7 +642,7 @@ async function renderEcosystem(v) {
     ["vaquita", "Vaquita · Blend · DeFindex", "Rendimiento del pozo mientras espera (vía Pollar Earn). En la demo, proyección.", null],
     ["trustless", "Trustless Work", "Escrow como servicio sobre Soroban para garantías por hitos (siguiente paso).", null],
     ["amawta", "Amawta · Gemini", "Asistente con contexto del círculo y respaldo local sin conexión.", "/api/amawta"],
-    ["n8n", "n8n", "Recordatorios de plazo, resumen semanal y bienvenida (flujos importables).", "/api/eventos"],
+    ["n8n", "n8n", "Avisos por ntfy sin cuentas personales, registro de eventos, resumen semanal y monitor de la web (flujos importables).", "/api/eventos"],
   ];
   v.innerHTML = `<section class="pane"><header class="pane-h"><h1>${t("Ecosistema integrado")}</h1>
     <p>${t("Estado en vivo de cada pieza que usa Awayu.")}</p></header>

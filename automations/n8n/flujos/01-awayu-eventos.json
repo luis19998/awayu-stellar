@@ -1,0 +1,406 @@
+{
+  "name": "Awayu · 01 Eventos y avisos",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "awayu-eventos",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "f1f7386f-de1c-53bb-8efe-7b608e7b952f",
+      "name": "Evento de Awayu",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "3a1f500d-75d6-5ce8-84f1-cde224c89ff3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===== Configuración: cambia solo estas tres líneas =====\nconst AVISOS = 'awayu-avisos-j614insb';  // tema de ntfy para avisos generales (cualquiera puede suscribirse; elige uno difícil de adivinar)\nconst SECRETO = '';                          // el mismo valor de N8N_SECRET en Vercel; vacío = no se comprueba la firma\nconst WEB = 'https://awayu-two.vercel.app';\n// ========================================================\n\nconst item = $input.first().json;\nconst body = item.body || {};\nconst headers = item.headers || {};\n\nif (SECRETO) {\n  // n8n autoalojado necesita NODE_FUNCTION_ALLOW_BUILTIN=crypto para esta parte\n  const crypto = require('crypto');\n  const firma = 'sha256=' + crypto.createHmac('sha256', SECRETO).update(JSON.stringify(body)).digest('hex');\n  if (headers['x-awayu-signature'] !== firma) throw new Error('Firma inválida: el evento no viene de Awayu');\n}\n\nconst TIPOS = ['circulo_creado', 'aporte', 'garantia', 'pozo', 'plazo_cerca'];\nif (!TIPOS.includes(body.type)) return [];\nconst d = body.data || {};\nconst circulo = String(body.circle || '');\n\n// Fila para la tabla interna de n8n (Data table), sin Google Sheets\nconst fila = { tipo: body.type, circulo, datos: JSON.stringify(d), recibido: new Date().toISOString() };\n\n// Cada círculo tiene su propio tema: AVISOS + '-' + primeros 10 caracteres del contrato, en minúsculas\nconst temaCirculo = (AVISOS + '-' + circulo.slice(0, 10)).toLowerCase().replace(/[^a-z0-9_-]/g, '');\nconst corto = (s) => (s ? String(s).slice(0, 4) + '…' + String(s).slice(-4) : '');\nconst enlace = d.link || (circulo ? WEB + '/?c=' + circulo : WEB);\nconst avisos = [];\nif (body.type === 'circulo_creado') {\n  avisos.push({ topic: AVISOS, title: 'Nuevo pasanaku en Awayu', message: (d.name || 'Pasanaku') + ' (' + (d.region || '—') + '): ' + (d.members ?? '?') + ' miembros, cuota ' + (d.amount ?? '?') + ' ' + (d.token || '') + '. Avisos del círculo: ntfy.sh/' + temaCirculo, tags: ['tada'], click: enlace });\n}\nif (body.type === 'pozo') {\n  avisos.push({ topic: temaCirculo, title: 'Ronda ' + (d.round ?? '?') + ': pozo pagado', message: corto(d.to) + ' recibió ' + (d.amount ?? '?') + ' ' + (d.token || '') + '.', tags: ['moneybag'], click: enlace });\n}\nif (body.type === 'plazo_cerca') {\n  avisos.push({ topic: temaCirculo, title: 'Se acerca el plazo de tu ronda', message: 'Quedan unas ' + (d.hoursLeft ?? '?') + ' horas para aportar ' + (d.amount ?? '') + ' ' + (d.token || '') + ' en la ronda ' + (d.round ?? '?') + '.', tags: ['alarm_clock'], priority: 4, click: enlace });\n}\nreturn [{ json: { fila, avisos } }];\n"
+      },
+      "id": "56ec87fe-6591-5466-abdd-7edf2e06a8f9",
+      "name": "Validar y armar aviso",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "operation": "create",
+        "tableName": "awayu_eventos",
+        "columns": {
+          "column": [
+            {
+              "name": "tipo",
+              "type": "string"
+            },
+            {
+              "name": "circulo",
+              "type": "string"
+            },
+            {
+              "name": "datos",
+              "type": "string"
+            },
+            {
+              "name": "recibido",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "createIfNotExists": true
+        }
+      },
+      "id": "646f558e-7acb-5c96-be2c-2ef8872b65f0",
+      "name": "Tabla awayu_eventos",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "awayu_eventos"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "tipo": "={{ $('Validar y armar aviso').first().json.fila.tipo }}",
+            "circulo": "={{ $('Validar y armar aviso').first().json.fila.circulo }}",
+            "datos": "={{ $('Validar y armar aviso').first().json.fila.datos }}",
+            "recibido": "={{ $('Validar y armar aviso').first().json.fila.recibido }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tipo",
+              "displayName": "tipo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "circulo",
+              "displayName": "circulo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "datos",
+              "displayName": "datos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recibido",
+              "displayName": "recibido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aa8b929b-39c4-59c7-bd1b-1ad3510e124b",
+      "name": "Guardar evento",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Saca los avisos que armó el primer nodo (pozo, plazo cerca o círculo nuevo); los demás eventos solo se guardan\nconst avisos = $('Validar y armar aviso').first().json.avisos || [];\nreturn avisos.map((json) => ({ json }));\n"
+      },
+      "id": "6dd22183-a53d-5af6-8e64-3279862713e9",
+      "name": "Avisos por enviar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ntfy.sh",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "e3414374-50de-5b81-a399-94561d228dd4",
+      "name": "Enviar aviso (ntfy)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        0
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "awayu-registro",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "236e9e5d-f63d-5b06-82a3-6018ca2477d8",
+      "name": "Consultar registro",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        260
+      ],
+      "webhookId": "f8b4f3dc-11fc-5d82-b8ee-df46a64b0e22"
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "operation": "create",
+        "tableName": "awayu_eventos",
+        "columns": {
+          "column": [
+            {
+              "name": "tipo",
+              "type": "string"
+            },
+            {
+              "name": "circulo",
+              "type": "string"
+            },
+            {
+              "name": "datos",
+              "type": "string"
+            },
+            {
+              "name": "recibido",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "createIfNotExists": true
+        }
+      },
+      "id": "b632487a-c949-5da5-b8e6-f9fc99546f99",
+      "name": "Tabla awayu_eventos (consulta)",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        220,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "awayu_eventos"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "id": "026373af-e3b2-5de8-b9c7-f6b13facbbfe",
+      "name": "Leer eventos",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        260
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Resume las filas de la tabla awayu_eventos: total, conteo por tipo y los últimos 50\nconst filas = $input.all().map((i) => i.json).filter((r) => r && r.tipo);\nfilas.sort((a, b) => String(b.recibido).localeCompare(String(a.recibido)));\nconst porTipo = {};\nfor (const r of filas) porTipo[r.tipo] = (porTipo[r.tipo] || 0) + 1;\nconst ultimos = filas.slice(0, 50).map((r) => { let datos = {}; try { datos = JSON.parse(r.datos || '{}'); } catch (e) {} return { tipo: r.tipo, circulo: r.circulo, datos, recibido: r.recibido }; });\nreturn [{ json: { total: filas.length, porTipo, ultimos, consultado: new Date().toISOString() } }];\n"
+      },
+      "id": "9355f158-8348-58d8-902c-0b6be695f4a7",
+      "name": "Resumir registro",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {}
+      },
+      "id": "b1348de5-7c5b-56fe-a727-e970d8436eee",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Awayu · Eventos y avisos\n\nSin cuentas personales: los avisos salen por **ntfy.sh** (gratis, sin registro) y cada evento se guarda en la tabla interna **awayu_eventos** (Data tables de n8n; se crea sola).\n\n1. Cambia el tema `AVISOS` en el nodo **Validar y armar aviso**.\n2. Pulsa **Publish** (en versiones antiguas: interruptor **Active**).\n3. Copia la **Production URL** del nodo **Evento de Awayu** y pégala en Vercel como `N8N_WEBHOOK_URL`.\n4. Suscríbete en https://ntfy.sh/ + tu tema (app o navegador).\n\n**Consultar registro** (GET) devuelve los últimos eventos en JSON.",
+        "height": 420,
+        "width": 380
+      },
+      "id": "411fae9c-cd3e-5ce4-9ac2-9d99dd1a0a5f",
+      "name": "Léeme",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        -260
+      ]
+    }
+  ],
+  "connections": {
+    "Evento de Awayu": {
+      "main": [
+        [
+          {
+            "node": "Validar y armar aviso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar y armar aviso": {
+      "main": [
+        [
+          {
+            "node": "Tabla awayu_eventos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tabla awayu_eventos": {
+      "main": [
+        [
+          {
+            "node": "Guardar evento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar evento": {
+      "main": [
+        [
+          {
+            "node": "Avisos por enviar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisos por enviar": {
+      "main": [
+        [
+          {
+            "node": "Enviar aviso (ntfy)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar registro": {
+      "main": [
+        [
+          {
+            "node": "Tabla awayu_eventos (consulta)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tabla awayu_eventos (consulta)": {
+      "main": [
+        [
+          {
+            "node": "Leer eventos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer eventos": {
+      "main": [
+        [
+          {
+            "node": "Resumir registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resumir registro": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/La_Paz",
+    "saveManualExecutions": true
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "tags": []
+}

@@ -1,0 +1,243 @@
+{
+  "name": "Awayu · 03 Monitor de la web",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "id": "81f5b938-ee89-5fd2-84b5-708598db6340",
+      "name": "Cada 30 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "479ab685-3573-5ff8-be3c-928cb9e4c064",
+      "name": "Probar ahora",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://awayu-two.vercel.app/",
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "2a464de5-d955-543f-bc53-5fe4b7da509e",
+      "name": "Página principal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "https://awayu-two.vercel.app/testnet.json",
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "18643762-4c87-5d58-b5f1-07a849d8ca18",
+      "name": "Datos de testnet",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ],
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://awayu-two.vercel.app/api/eventos",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"type\":\"ping\",\"circle\":\"monitor\",\"data\":{}}",
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "dba154c2-d0a1-53bd-9754-5e22a34d7fbc",
+      "name": "Servidor de eventos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        0
+      ],
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const AVISOS = 'awayu-avisos-j614insb'; // el mismo tema del flujo 01\nconst WEB = 'https://awayu-two.vercel.app';\nconst estadoDe = (nombre, esperado) => {\n  try { return $(nombre).first().json.statusCode === esperado; } catch (e) { return false; }\n};\nconst revisiones = {\n  'Página principal': estadoDe('Página principal', 200),\n  'Datos de testnet': estadoDe('Datos de testnet', 200),\n  'Servidor de eventos': estadoDe('Servidor de eventos', 202),\n};\nconst caidos = Object.entries(revisiones).filter(([, ok]) => !ok).map(([k]) => k);\n// Solo avisa cuando el estado cambia (para no repetir el mismo aviso cada 30 minutos)\nconst memoria = $getWorkflowStaticData('global');\nconst antes = (memoria.caidos || []).join('|');\nmemoria.caidos = caidos;\nmemoria.revisado = new Date().toISOString();\nif (caidos.join('|') === antes) return [];\nif (caidos.length) return [{ json: { topic: AVISOS, title: 'Awayu tiene un problema', message: 'No responde: ' + caidos.join(', ') + '.', tags: ['rotating_light'], priority: 5, click: WEB } }];\nreturn [{ json: { topic: AVISOS, title: 'Awayu funciona de nuevo', message: 'La página, los datos de testnet y el servidor de eventos responden.', tags: ['white_check_mark'], click: WEB } }];\n"
+      },
+      "id": "0696f3b1-1f46-52ce-8d93-e346844a2c7b",
+      "name": "Comparar con la revisión anterior",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ntfy.sh",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "26cc8ebf-0cf5-5986-9e8b-23a4a763f806",
+      "name": "Enviar alerta (ntfy)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        0
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Awayu · Monitor de la web\n\nCada 30 minutos revisa la página, los datos de testnet y el servidor de eventos. Si algo deja de responder (o vuelve a funcionar), avisa por **ntfy.sh**.\n\nSolo avisa cuando el estado cambia. Sin claves ni cuentas.",
+        "height": 420,
+        "width": 380
+      },
+      "id": "411fae9c-cd3e-5ce4-9ac2-9d99dd1a0a5f",
+      "name": "Léeme",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        -260
+      ]
+    }
+  ],
+  "connections": {
+    "Cada 30 minutos": {
+      "main": [
+        [
+          {
+            "node": "Página principal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Probar ahora": {
+      "main": [
+        [
+          {
+            "node": "Página principal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Página principal": {
+      "main": [
+        [
+          {
+            "node": "Datos de testnet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Datos de testnet": {
+      "main": [
+        [
+          {
+            "node": "Servidor de eventos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Servidor de eventos": {
+      "main": [
+        [
+          {
+            "node": "Comparar con la revisión anterior",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comparar con la revisión anterior": {
+      "main": [
+        [
+          {
+            "node": "Enviar alerta (ntfy)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/La_Paz",
+    "saveManualExecutions": true
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "tags": []
+}

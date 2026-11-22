@@ -11,6 +11,20 @@ const OUT = "C:/Users/luisc/Documents/stellar-hackathon/web/public/tutoriales";
 mkdirSync(OUT, { recursive: true });
 
 const TOPICS = {
+  latam: async (r) => {
+    await r.page.evaluate(() => { location.hash = "#/latam"; });
+    await r.sleep(3000);
+    await r.click('[data-circle="mx-tanda"]');
+    await r.sleep(2200);
+    await r.page.evaluate(() => document.querySelector(".latam-scene-card")?.scrollIntoView({ behavior: "smooth", block: "center" }));
+    await r.sleep(3500);
+    await r.page.evaluate(() => document.querySelector(".sim-run")?.scrollIntoView({ behavior: "smooth", block: "center" }));
+    await r.sleep(1500);
+    await r.click(".sim-run");
+    await r.sleep(1200);
+    await r.page.evaluate(() => document.querySelector(".latam-sim-output")?.scrollIntoView({ behavior: "smooth", block: "center" }));
+    await r.sleep(3500);
+  },
   "test-account": async (r) => {
     await r.sleep(1200);
     await r.click("#btn-wallet");
@@ -243,16 +257,6 @@ Object.assign(TOPICS, {
     await r.move("#risk .rel >> nth=0", 800);
     await r.sleep(1600);
   },
-  games: async (r) => {
-    await r.click("button[data-g=ruleta]");
-    await r.sleep(1000);
-    await r.click(".aw-game-draw");
-    await r.sleep(1600);
-    await r.click(".aw-game-draw");
-    await r.sleep(1600);
-    await r.click("button[data-g=quiz]");
-    await r.sleep(1400);
-  },
 });
 
 
@@ -395,7 +399,6 @@ const PRE = {
   "alasitas-save": ["alasitas", 3500],
   "live-mode": ["ayni", 2500],
   "risk": ["circulo", 4500],
-  "games": ["juegos", 2000],
 };
 const pick = process.argv.slice(2);
 for (const [id, fn] of Object.entries(TOPICS)) {

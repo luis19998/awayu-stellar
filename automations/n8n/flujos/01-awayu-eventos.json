@@ -67,7 +67,10 @@
       "position": [
         440,
         0
-      ]
+      ],
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true,
+      "retryOnFail": false
     },
     {
       "parameters": {
@@ -135,7 +138,10 @@
       "position": [
         660,
         0
-      ]
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {
@@ -224,7 +230,10 @@
       "position": [
         220,
         260
-      ]
+      ],
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true,
+      "retryOnFail": false
     },
     {
       "parameters": {

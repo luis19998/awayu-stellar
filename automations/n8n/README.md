@@ -42,6 +42,7 @@ curl -X POST https://awayu-two.vercel.app/api/eventos -H "content-type: applicat
 - `"testUrl":true`: pegaste la URL de prueba (`/webhook-test/`). Cámbiala por la de producción.
 - `"statuses":[0]`: n8n no responde. Revisa que la instancia esté encendida y que la dirección sea correcta.
 - Cada vez que cambies `N8N_WEBHOOK_URL` en Vercel, vuelve a publicar la web.
+- Si en **Executions** ves `SQLITE_CONSTRAINT: UNIQUE constraint failed: data_table...` en el nodo **Tabla awayu_eventos**, dos eventos llegaron a la vez mientras se creaba la tabla. La versión actual del flujo ya lo ignora (nodo con *On Error: Continue*). En una copia anterior, abre ese nodo → **Settings → On Error → Continue (regular output)** y vuelve a publicar.
 
 ## Cómo llegan los eventos
 1. La web publica cada evento en `POST https://awayu-two.vercel.app/api/eventos` (código en `web/server/notify.js` y `web/api/eventos.js`).

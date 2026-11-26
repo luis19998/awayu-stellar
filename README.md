@@ -107,8 +107,8 @@ Antes de mainnet usaremos **compromiso y revelación**: cada miembro aporta un s
 | `contracts/ayni` | Fondo de ayuda mutua con votos y quórum (7 pruebas) |
 | `contracts/minka` | Proyectos con fondos liberados por hitos (5 pruebas) |
 | `contracts/alasitas` | Metas de ahorro con racha y bloqueo por fecha (7 pruebas) |
-| `contracts/sorteo` | Sorteo con compromiso y revelación: la mitigación de los límites de `env.prng()` (9 pruebas; aún sin desplegar). Ver `docs/SORTEO-COMPROMISO.md` |
-| `contracts/remate` | Junta con remate y consórcio: rotativo donde se puja un descuento para cobrar antes (9 pruebas; aún sin desplegar). Ver `docs/REMATE.md` |
+| `contracts/sorteo` | Sorteo con compromiso y revelación: la mitigación de los límites de `env.prng()` (9 pruebas). En testnet: [`CA2WAH…IJKD`](https://stellar.expert/explorer/testnet/contract/CA2WAHFJIYHI5ORTOYEE5OUMBUV3RY2NOOJ37BBYB7QYPSTXWSTBIJKD). Ver `docs/SORTEO-COMPROMISO.md` |
+| `contracts/remate` | Junta con remate y consórcio: rotativo donde se puja un descuento para cobrar antes (9 pruebas). En testnet: [`CAMJ3Y…MURE`](https://stellar.expert/explorer/testnet/contract/CAMJ3YUZWTO2ZKZBF5AG5FCUZAHWS6HCVBCLPNFRELRFLD4VI5UZMURE). Ver `docs/REMATE.md` |
 | `web` | Vite + three.js + stellar-sdk + Pollar; pruebas con Vitest |
 | `web/evidencia-testnet.mjs`, `web/metricas-testnet.mjs` | Evidencia de transacciones por acción y métricas on-chain |
 | `scripts/` | Despliegue de la demo y de las tradiciones en testnet |

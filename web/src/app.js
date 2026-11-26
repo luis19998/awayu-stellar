@@ -50,7 +50,7 @@ try {
 // ---------- Ayuda: botón flotante con recorridos y mini tutoriales ----------
 const fab = document.querySelector("#help-fab");
 const helpMenu = document.querySelector("#help-menu");
-const TOPIC_ORDER = ["test-account", "wallet", "test-usdc", "contribute", "payout", "guarantee", "create", "studio", "qr-invite", "qr-receive", "qr-scan", "qr-bank", "customize", "simulator", "ayni-join", "ayni-contribute", "ayni-request", "ayni-vote", "minka-fund", "minka-milestone", "alasitas-create", "alasitas-save", "live-mode", "map", "passport", "risk", "latam", "bolivia", "verify-draw", "verify-check", "verify-report", "settings", "amawta"];
+const TOPIC_ORDER = ["test-account", "wallet", "test-usdc", "contribute", "payout", "guarantee", "create", "studio", "qr-invite", "qr-receive", "qr-scan", "qr-bank", "customize", "simulator", "ayni-join", "ayni-contribute", "ayni-request", "ayni-vote", "minka-fund", "minka-milestone", "alasitas-create", "alasitas-save", "live-mode", "map", "passport", "risk", "latam", "bolivia", "verify-draw", "verify-onchain", "verify-check", "verify-report", "settings", "amawta"];
 async function fillHelpMenu() {
   const { HELP_TOPICS, ROUTE_TOPICS } = await import("./guide/help.js");
   const lang = getLang();

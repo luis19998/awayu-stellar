@@ -12,6 +12,10 @@ Cada fila dice qué código ejecuta el contrato: el **hash del wasm** es el SHA-
 | pasanaku | evidencia (USDC) | [`CDOM3IISV3IUFYSRNUJ7H62L3QEGCU6SNZABQTCEMPSQEHAAQA4VA3NG`](https://stellar.expert/explorer/testnet/contract/CDOM3IISV3IUFYSRNUJ7H62L3QEGCU6SNZABQTCEMPSQEHAAQA4VA3NG) | `abedad387b50b055c698d7cd46284afdaaff47cada4f91dc1a65f1a4c7020f55` |
 | ayni | evidencia (USDC) | [`CB2RZDE7USQBJVS4DBXIA6UCTD2VEBTV6DX7FBHXYWVJQJB2IS5RY63Z`](https://stellar.expert/explorer/testnet/contract/CB2RZDE7USQBJVS4DBXIA6UCTD2VEBTV6DX7FBHXYWVJQJB2IS5RY63Z) | `eaf2a3a90a4935ca83f4dfd5fbb180169d50fb64db53f8941d3c2b609f79df05` |
 | minka | evidencia (USDC) | [`CDENQ4EMC2L3YZPIUB7V25Z3PJ4G45GXCABBVVQ6YUPTBBXSJE7YQXWQ`](https://stellar.expert/explorer/testnet/contract/CDENQ4EMC2L3YZPIUB7V25Z3PJ4G45GXCABBVVQ6YUPTBBXSJE7YQXWQ) | `9b5fbfb4d72665c17a9067c8255e73c20f61cb083baf4019be741a31f1779e4e` |
+| sorteo | referencia | [`CA2WAHFJIYHI5ORTOYEE5OUMBUV3RY2NOOJ37BBYB7QYPSTXWSTBIJKD`](https://stellar.expert/explorer/testnet/contract/CA2WAHFJIYHI5ORTOYEE5OUMBUV3RY2NOOJ37BBYB7QYPSTXWSTBIJKD) | `74eeefceac8bee195f600d856207bee60565cc4bde7a270ad922da974e5fb2e4` |
+| remate | referencia | [`CAMJ3YUZWTO2ZKZBF5AG5FCUZAHWS6HCVBCLPNFRELRFLD4VI5UZMURE`](https://stellar.expert/explorer/testnet/contract/CAMJ3YUZWTO2ZKZBF5AG5FCUZAHWS6HCVBCLPNFRELRFLD4VI5UZMURE) | `640df105737941fca0e8311ed9038d22a86918a353fc7cbd56250f1a8fa876f6` |
+
+`sorteo` y `remate` se compilaron en la integración continua (artefacto `contratos-wasm`) y se desplegaron con `web/contratos-nuevos.mjs`.
 
 ## Cómo comprobarlo
 ```bash

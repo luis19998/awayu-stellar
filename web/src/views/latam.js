@@ -1,4 +1,5 @@
 import { CIRCLES, FAMILIES, L } from "../latam/circulos.js";
+const REMATE_ID = "CAMJ3YUZWTO2ZKZBF5AG5FCUZAHWS6HCVBCLPNFRELRFLD4VI5UZMURE"; // contrato remate en testnet (web/public/testnet.json)
 
 const TXT = {
   title: L("Círculos de Latinoamérica", "Savings circles across Latin America", "Círculos da América Latina"),
@@ -61,6 +62,8 @@ const TXT = {
   implicitCost: L("Costo implícito de cobrar antes", "Implied cost of collecting early", "Custo implícito de receber antes"),
   auctionCheck: L("Cobros netos + descuentos repartidos = aportes totales", "Net payouts + shared discounts = total contributions", "Pagamentos líquidos + descontos divididos = contribuições totais"),
   noContract: L("Próximamente en contrato", "Coming to the contract", "Em breve no contrato"),
+  onTestnet: L("Ver el contrato remate en testnet", "See the remate contract on testnet", "Ver o contrato remate na testnet"),
+  evidence: L("Transacciones reales del remate", "Real remate transactions", "Transações reais do leilão"),
   textile: L("Tejido inspirado en", "Textile-inspired pattern", "Tecido inspirado em"),
   textileAguayo: L("aguayo", "aguayo", "aguayo"),
   textileSarape: L("sarape", "sarape", "sarape"),
@@ -273,7 +276,7 @@ export function mount(root, { lang = "es", openCreate = () => {} } = {}) {
       '<div class="latam-actions">' +
       (rotative ? '<button type="button" class="btn primary latam-create">' + esc(loc("create")) + '</button>' : "") +
       (accumulative ? '<a class="btn" href="#/ayni">' + esc(loc("ayni")) + '</a><a class="btn" href="#/alasitas">' + esc(loc("alasitas")) + '</a>' : "") +
-      (!rotative && !accumulative ? '<span class="latam-coming">' + esc(loc("noContract")) + '</span>' : "") +
+      (!rotative && !accumulative ? '<a class="btn" href="https://stellar.expert/explorer/testnet/contract/' + REMATE_ID + '" target="_blank" rel="noopener">' + esc(loc("onTestnet")) + ' ↗</a><a class="btn ghost" href="https://github.com/luis19998/awayu-stellar/blob/main/docs/EVIDENCIA-CONTRATOS-NUEVOS.md" target="_blank" rel="noopener">' + esc(loc("evidence")) + ' ↗</a>' : "") +
       '<a class="btn" href="#/verificar">' + esc(loc("verify")) + '</a></div>' +
       simulatorMarkup(selected) + '</article>';
     const create = detail.querySelector(".latam-create");

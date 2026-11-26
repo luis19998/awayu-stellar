@@ -17,6 +17,7 @@ import {
 } from "@stellar/stellar-sdk";
 import { Buffer } from "buffer";
 import { t } from "./i18n.js";
+import { scoreOf } from "./reporte/puntaje.js";
 
 // Cuenta nula: la simulación no verifica la secuencia de la cuenta de origen.
 const NULL_ACCOUNT = "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF";
@@ -435,8 +436,7 @@ export async function readPassport(dep, address) {
     })
   );
   const history = circles.flatMap((c) => c.history);
-  const pts = { 1: 100, 2: 50, 4: 25 };
-  const score = history.length ? Math.round(history.reduce((a, m) => a + (pts[m] || 0), 0) / history.length) : 0;
+  const score = scoreOf(history);
   return { circles, history, score };
 }
 

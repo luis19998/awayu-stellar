@@ -102,7 +102,7 @@ describe("circle actions", () => {
 
 describe("guarantees", () => {
   it("scores a covered round at 25 points", () => {
-    expect(score([ON_TIME, COVERED])).toBe(63);
+    expect(score([ON_TIME, COVERED])).toBe(62); // el contrato hace división entera: 125 / 2 = 62
   });
 
   it("accepts one guarantee per member and none after the circle ends", () => {

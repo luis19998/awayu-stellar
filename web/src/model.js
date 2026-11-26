@@ -11,7 +11,8 @@ const POINTS = { [ON_TIME]: 100, [LATE]: 50, [COVERED]: 25 };
 export function score(history) {
   if (!history.length) return 0;
   const pts = history.reduce((a, m) => a + (POINTS[m] || 0), 0);
-  return Math.round(pts / history.length);
+  // División entera, igual que score_of en el contrato pasanaku
+  return Math.floor(pts / history.length);
 }
 
 /** Lo que una reputación desbloquea (ilustrativo, para el pitch). */

@@ -2,6 +2,7 @@
 import "./reporte.css";
 import { loadDeployment, readCircle, readPassport, readRegistry, explorerUrl, short } from "./chain.js";
 import { getLang, initLang, setLang } from "./i18n.js";
+import { summarize } from "./reporte/puntaje.js";
 
 const COPY = {
   es: {
@@ -77,13 +78,7 @@ const tr = (key) => COPY[lang]?.[key] ?? COPY.es[key];
 const esc = (value) => String(value ?? "").replace(/[&<>\"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const labUrl = (id) => "https://lab.stellar.org/smart-contracts/contract-explorer?$=network$id=testnet&label=Testnet&horizonUrl=https:////horizon-testnet.stellar.org&rpcUrl=https:////soroban-testnet.stellar.org&passphrase=Test%20SDF%20Network%20/;%20September%202015;&smartContracts$explorer$contractId=" + id + ";;";
 
-export function summarize(history) {
-  const counts = { 1: 0, 2: 0, 3: 0, 4: 0 };
-  for (const mark of history) if (counts[mark] !== undefined) counts[mark] += 1;
-  const points = { 1: 100, 2: 50, 4: 25 };
-  const score = history.length ? Math.round(history.reduce((sum, mark) => sum + (points[mark] || 0), 0) / history.length) : 0;
-  return { counts, total: history.length, score };
-}
+export { summarize };
 
 function refreshHeader() {
   $("#r-account-label").textContent = tr("account");

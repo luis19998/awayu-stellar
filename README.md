@@ -65,7 +65,7 @@ Las 52 pruebas de contratos (siete contratos) corren en CI (`contrato.yml`); las
 ### Límites del sorteo
 El orden de cobro se sortea al crear el círculo con `env.prng()`, el generador de la red. Sirve para la demo y para montos chicos, pero no para un sorteo de alto valor: la semilla depende de datos del ledger, y quien envía la transacción puede reintentarla hasta obtener un orden que le convenga.
 
-La solución ya está en testnet como contrato aparte, **`sorteo`**: **compromiso y revelación**: cada miembro aporta un secreto cifrado al unirse, y el orden sale de todos los secretos más un ledger futuro. Mientras tanto, **Verificar → Sorteo** publica el compromiso de la lista antes de sortear, para que cualquiera compruebe que no se cambió. Detalle en [`docs/PAGOS-REALES.md`](docs/PAGOS-REALES.md) §4.
+La solución ya está en testnet como contrato aparte, **`sorteo`**, con **compromiso y revelación**: cada persona publica primero la huella de un secreto y después lo revela, y el orden sale de todos los secretos juntos; quien no revela queda al final. Falta que el `pasanaku` v4 lo use para el orden de cobro. Mientras tanto, **Verificar → Sorteo** publica el compromiso de la lista antes de sortear, para que cualquiera compruebe que no se cambió. Detalle en [`docs/SORTEO-COMPROMISO.md`](docs/SORTEO-COMPROMISO.md) y [`docs/PAGOS-REALES.md`](docs/PAGOS-REALES.md) §4.
 
 ## Integraciones
 | Integración | Estado |

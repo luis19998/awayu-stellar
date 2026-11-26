@@ -11,8 +11,9 @@
 
 ## Evidencia
 - [Transacciones por acción en USDC de prueba](https://github.com/luis19998/awayu-stellar/blob/main/docs/EVIDENCIA.md): crear un círculo, aportar, pagar el pozo, garantía que cubre a quien no pagó, votar y resolver en Ayni, liberar un hito de Minka y depositar en Alasitas.
+- [Contratos sorteo y remate en testnet](https://github.com/luis19998/awayu-stellar/blob/main/docs/EVIDENCIA-CONTRATOS-NUEVOS.md): sorteo con compromiso y revelación (la mitigación de los límites de `env.prng()`) y junta con remate o consórcio con puja de descuento, con 22 transacciones de evidencia.
 - [Métricas on-chain](https://github.com/luis19998/awayu-stellar/blob/main/docs/METRICAS.md)
-- [Repositorio](https://github.com/luis19998/awayu-stellar): cinco contratos (pasanaku, registro, ayni, minka, alasitas) con 34 pruebas, compilación verificable SEP-55 y CI.
+- [Repositorio](https://github.com/luis19998/awayu-stellar): siete contratos (pasanaku, registro, ayni, minka, alasitas, sorteo, remate) con 52 pruebas, compilación verificable SEP-55 y CI.
 
 ## Negocio y próximos pasos
 - [Modelo de negocio](https://github.com/luis19998/awayu-stellar/blob/main/docs/MODELO-NEGOCIO.md): el comerciante usa Awayu gratis; la cooperativa o IFD paga por cada reporte verificado (hipótesis: Bs 15).

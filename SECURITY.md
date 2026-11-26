@@ -9,6 +9,6 @@ Awayu funciona en **Stellar testnet** con dinero de prueba. Los contratos no est
 - Respondemos en un plazo de 7 días.
 
 ## Límites conocidos
-- El orden de cobro del `pasanaku` usa `env.prng()`, que no sirve para montos altos (ver README, "Límites del sorteo"). La mitigación con compromiso y revelación está en desarrollo.
+- El orden de cobro del `pasanaku` usa `env.prng()`, que no sirve para montos altos (ver README, "Límites del sorteo"). La mitigación ya existe como contrato aparte, `sorteo` (compromiso y revelación), desplegado en testnet; el `pasanaku` todavía no lo usa.
 - La cuenta de prueba instantánea guarda una clave efímera de testnet en `sessionStorage`. No es una billetera para fondos reales.
 - Las claves de servicios (Gemini, Pollar) viven en variables de entorno de Vercel. La única clave expuesta en el navegador es la **publicable** de Pollar (`pub_testnet_…`), que está pensada para eso.

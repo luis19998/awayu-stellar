@@ -5,6 +5,7 @@ import { state, subscribe } from "./state.js";
 import { t, getLang, pickLang } from "./i18n.js";
 import { score } from "./model.js";
 import { mountTabIndicator } from "./motion/tabs.js";
+import { labUrl } from "./verify/horizon.js";
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (x) => String(x ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -40,6 +41,7 @@ addEventListener("awayu:tx", (e) => {
 
 let current = null;
 let mounted = null; // { destroy }
+let onchainQuery; // Conserva la consulta durante el repintado de Verificar al cambiar de idioma.
 let stopTabIndicator;
 let token = 0; // cambia con cada navegación: lo que llega tarde de otra sección se descarta
 const alive = (tk) => tk === token;
@@ -95,6 +97,8 @@ function route() {
 function show(id, force = false) {
   if (!ROUTES.some((r) => r.id === id)) id = "inicio";
   if (id === current && !force) return;
+  if (id !== "verificar" || id !== current) onchainQuery = undefined;
+  else if (mounted) onchainQuery = mounted.getOnchainQuery();
   current = id;
   token += 1;
   document.querySelectorAll("#nav a").forEach((a) => {
@@ -268,7 +272,7 @@ async function addHowto(view, id) {
 
 /** Enlace al explorador de contratos de Stellar Lab: muestra la interfaz, el
  *  almacenamiento, la verificación del build y permite invocar funciones. */
-export const labUrl = (id) => `https://lab.stellar.org/smart-contracts/contract-explorer?$=network$id=testnet&label=Testnet&horizonUrl=https:////horizon-testnet.stellar.org&rpcUrl=https:////soroban-testnet.stellar.org&passphrase=Test%20SDF%20Network%20/;%20September%202015;&smartContracts$explorer$contractId=${encodeURIComponent(id)};;`;
+export { labUrl };
 
 const VIEWS = {
   verificar: async (v, tk) => {
@@ -279,7 +283,7 @@ const VIEWS = {
       const { sign: walletSign } = await import("./wallet.js");
       return chain.submit(dep, await walletSign(xdr));
     } : null;
-    adopt(tk, mount(v, { lang: getLang(), deployment: dep, address: state.address, sign }));
+    adopt(tk, mount(v, { lang: getLang(), deployment: dep, address: state.address, sign, onchain: onchainQuery }));
   },
   latam: async (v, tk) => {
     const { mount } = await import("./views/latam.js");

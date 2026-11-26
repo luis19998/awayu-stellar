@@ -3,7 +3,8 @@ import { Account, Asset, BASE_FEE, Memo, Networks, Operation, TransactionBuilder
 import { Buffer } from "buffer";
 import { decodeCode, drawResult, encodeCode, listHash, normalizeParticipants } from "../verify/draw.js";
 import { sha256, sha256File } from "../verify/fingerprint.js";
-import { createHorizonClient, horizonUrl } from "../verify/horizon.js";
+import { createHorizonClient, horizonUrl, labUrl } from "../verify/horizon.js";
+import { readDraw } from "../chain.js";
 import { assessTrust } from "../verify/trust.js";
 import { qrSvg } from "../qr/qr.js";
 import "../verify/verify.css";
@@ -14,6 +15,31 @@ const COPY = {
   title: L("Verificar", "Verify", "Verificar"),
   intro: L("Comprueba sorteos, movimientos y círculos. También puedes ordenar la evidencia de una irregularidad.", "Check draws, transactions, and circles. You can also organize evidence of an irregularity.", "Verifique sorteios, transações e círculos. Você também pode organizar evidências de uma irregularidade."),
   tabDraw: L("Sorteo verificable", "Verifiable draw", "Sorteio verificável", "Ch'iqiyta chiqapchay", "Suerte chiqapchay", "Sorteo añetegua"),
+  tabOnchain: L("Sorteo en la cadena", "On-chain draw", "Sorteio na rede"),
+  drawId: L("ID del sorteo", "Draw ID", "ID do sorteio"),
+  lookup: L("Consultar", "Look up", "Consultar"),
+  readingDraw: L("Consultando el sorteo…", "Looking up the draw…", "Consultando o sorteio…"),
+  lookupFailed: L("No se pudo leer el sorteo. Comprueba el ID y tu conexión y vuelve a consultar.", "Could not read the draw. Check the ID and your connection and try again.", "Não foi possível ler o sorteio. Confira o ID e sua conexão e tente novamente."),
+  missingContract: L("El contrato de sorteo de la red de prueba no está disponible.", "The testnet draw contract is unavailable.", "O contrato de sorteio da rede de teste está indisponível."),
+  Commit: L("Compromisos", "Commitments", "Compromissos"),
+  CommitInfo: L("Cada participante puede registrar la huella de su secreto y guardarlo hasta la siguiente etapa.", "Each participant can register a fingerprint of their secret and keep the secret until the next stage.", "Cada participante pode registrar a impressão digital do seu segredo e guardá-lo até a próxima etapa."),
+  Reveal: L("Revelación", "Reveal", "Revelação"),
+  RevealInfo: L("Quienes registraron una huella pueden revelar su secreto. El contrato comprueba que coincida con la huella.", "People who registered a fingerprint can reveal their secret. The contract checks that it matches the fingerprint.", "Quem registrou uma impressão digital pode revelar seu segredo. O contrato verifica se ele corresponde à impressão digital."),
+  Ready: L("Listo para cerrar", "Ready to close", "Pronto para encerrar"),
+  ReadyInfo: L("Todas las personas revelaron su secreto o venció el plazo. Cualquiera puede cerrar el sorteo para fijar el orden.", "Everyone has revealed their secret or the deadline has passed. Anyone can close the draw to set the order.", "Todos revelaram seu segredo ou o prazo terminou. Qualquer pessoa pode encerrar o sorteio para definir a ordem."),
+  Finalized: L("Cerrado", "Closed", "Encerrado"),
+  FinalizedInfo: L("El orden de los turnos ya quedó registrado en Stellar y es definitivo.", "The final order of turns is recorded on Stellar.", "A ordem dos turnos foi registrada na Stellar e é definitiva."),
+  commitDeadline: L("Límite para comprometerse", "Commitment deadline", "Prazo para se comprometer"),
+  revealDeadline: L("Límite para revelar", "Reveal deadline", "Prazo para revelar"),
+  committed: L("Personas que se comprometieron", "People who committed", "Pessoas que se comprometeram"),
+  revealed: L("Personas que revelaron su secreto", "People who revealed their secret", "Pessoas que revelaram seu segredo"),
+  finalOrder: L("Orden final de los turnos", "Final order of turns", "Ordem final dos turnos"),
+  fallback: L("Nadie reveló su secreto. El contrato usó el generador de azar de respaldo de Stellar (PRNG) para ordenar los turnos.", "Nobody revealed their secret. The contract used Stellar’s fallback random number generator (PRNG) to order the turns.", "Ninguém revelou seu segredo. O contrato usou o gerador de números aleatórios de reserva da Stellar (PRNG) para ordenar os turnos."),
+  contractExpert: L("Ver contrato en Stellar Expert", "View contract on Stellar Expert", "Ver contrato no Stellar Expert"),
+  contractLab: L("Abrir contrato en Stellar Lab", "Open contract in Stellar Lab", "Abrir contrato no Stellar Lab"),
+  onchainWhy: L("Por qué este sorteo no se puede arreglar", "Why this draw resists rigging", "Por que é difícil manipular este sorteio"),
+  onchainHow: L("La lista se fija al inicio. Cuando alguien revela su secreto, el contrato lo comprueba y lo combina con los demás secretos revelados y el número del bloque de cierre. El momento del cierre puede influir en el orden.", "The list is fixed at the start. The contract checks each revealed secret and combines the secrets with the closing ledger number. The timing of the close can affect the order.", "A lista é fixada no início. O contrato verifica cada segredo revelado e combina os segredos com o número do bloco de encerramento. O momento do encerramento pode influenciar a ordem."),
+  drawRules: L("Leer las reglas del sorteo", "Read the draw rules", "Ler as regras do sorteio"),
   tabTx: L("Comprobante", "Receipt", "Comprovante", "Chiqapchay", "Yatiya", "Mombe'u"),
   tabCircle: L("Círculo u organizador", "Circle or organizer", "Círculo ou organizador", "Muyu uta uta kamachiq", "Muyu uta kamachiña", "Aty ha ñangarekoha"),
   tabReport: L("Reportar", "Report", "Relatar", "Willay", "Yatiyaña", "Marandu"),
@@ -210,9 +236,26 @@ function sealHash(result) {
   return result?.hash || result?.transaction?.hash || result?.id || "";
 }
 
-export function mount(container, { lang = "es", deployment = {}, address = "", sign } = {}) {
+async function lookupDraw(deployment, id) {
+  const draw = await readDraw(deployment, deployment.sorteo.contractId, id);
+  const names = new Map();
+  if (draw.order.length) {
+    try {
+      const response = await fetch("/contratos-nuevos.json");
+      if (response.ok) {
+        const { accounts } = await response.json();
+        for (const [name, account] of Object.entries(accounts)) names.set(account, name);
+      }
+    } catch { /* La dirección corta identifica el turno si faltan los nombres. */ }
+  }
+  return { draw, names };
+}
+
+export function mount(container, { lang = "es", deployment = {}, address = "", sign, onchain } = {}) {
   const t = (key) => pickLang(COPY[key] || L(key, key, key), lang);
-  const client = createHorizonClient({ baseUrl: horizonUrl(deployment) });
+  const client = createHorizonClient({ baseUrl: horizonUrl(deployment || {}) });
+  const sorteo = deployment?.sorteo;
+  let lookup = onchain?.lookup;
   let destroyed = false;
   let activeTab = "draw";
   let currentDraw = null;
@@ -221,7 +264,7 @@ export function mount(container, { lang = "es", deployment = {}, address = "", s
   let evidence = [];
 
   const tabData = [
-    ["draw", "tabDraw"], ["tx", "tabTx"], ["circle", "tabCircle"], ["report", "tabReport"],
+    ["draw", "tabDraw"], ["onchain", "tabOnchain"], ["tx", "tabTx"], ["circle", "tabCircle"], ["report", "tabReport"],
   ];
   container.innerHTML = [
     '<section class="verify-root">',
@@ -242,6 +285,20 @@ export function mount(container, { lang = "es", deployment = {}, address = "", s
     '</form><aside class="verify-commit" id="verify-commit" hidden></aside></div>',
     '<section class="verify-why"><h2>' + esc(t("why")) + '</h2><ol><li>' + esc(t("whyOne")) + '</li><li>' + esc(t("whyTwo")) + '</li><li>' + esc(t("whyThree")) + '</li></ol></section>',
     '</section>',
+    `<section class="verify-panel" role="tabpanel" id="verify-panel-onchain" aria-labelledby="verify-tab-onchain" data-panel="onchain" hidden>
+      <form id="verify-onchain-form" class="verify-inline">
+        <label>${t("drawId")}<input name="id" type="number" required min="0" max="4294967295" step="1" value="${esc(onchain?.input ?? sorteo?.drawId)}"></label>
+        <button class="verify-button primary" type="submit" ${sorteo?.contractId ? "" : "disabled"}>${t("lookup")}</button>
+      </form>
+      <div id="verify-onchain-result" aria-live="polite">${sorteo?.contractId ? "" : t("missingContract")}</div>
+      ${sorteo?.contractId ? `<div class="verify-contract-links">
+        <a href="https://stellar.expert/explorer/testnet/contract/${encodeURIComponent(sorteo.contractId)}" target="_blank" rel="noopener">${t("contractExpert")}</a>
+        <a href="${esc(labUrl(sorteo.contractId))}" target="_blank" rel="noopener">${t("contractLab")}</a>
+      </div>` : ""}
+      <section class="verify-why"><h2>${t("onchainWhy")}</h2>
+        <p>${t("onchainHow")} <a href="https://github.com/luis19998/awayu-stellar/blob/main/docs/SORTEO-COMPROMISO.md" target="_blank" rel="noopener">${t("drawRules")}</a></p>
+      </section>
+    </section>`,
     '<section class="verify-panel" role="tabpanel" id="verify-panel-tx" aria-labelledby="verify-tab-tx" data-panel="tx" hidden>',
     '<p class="verify-lead">' + esc(t("txLead")) + '</p><form id="verify-tx-form" class="verify-inline"><label>' + esc(t("codeLabel")) + '<input name="value" autocomplete="off"></label><button class="verify-button primary" type="submit">' + esc(t("verify")) + '</button></form><div id="verify-tx-result" aria-live="polite"></div>',
     '</section>',
@@ -476,6 +533,39 @@ export function mount(container, { lang = "es", deployment = {}, address = "", s
     }
   });
 
+  const onchainForm = el(root, "#verify-onchain-form");
+  async function renderLookup(query) {
+    const box = el(root, "#verify-onchain-result");
+    box.textContent = t("readingDraw");
+    try {
+      const { draw, names } = await query.result;
+      if (destroyed || lookup !== query) return;
+      const localTime = (seconds) => new Date(seconds * 1000).toLocaleString(numberLocale(lang), { dateStyle: "medium", timeStyle: "long" });
+      const rows = [
+        ["commitDeadline", localTime(draw.commitDeadline)], ["committed", draw.committed],
+        ["revealDeadline", localTime(draw.revealDeadline)], ["revealed", draw.revealed],
+      ];
+      box.innerHTML = `<article class="verify-result">
+        <h2>${t("drawId")} ${esc(query.id)} · ${esc(t(draw.state))}</h2>
+        <p>${esc(t(draw.state + "Info"))}</p>
+        <dl>${rows.map(([key, value]) => `<div><dt>${t(key)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl>
+        ${draw.fallback ? `<p class="verify-prng">${t("fallback")}</p>` : ""}
+        ${draw.state === "Finalized" ? `<h3>${t("finalOrder")}</h3>
+          <ol class="verify-winners">${draw.order.map((account) => `<li title="${esc(account)}">${esc(names.get(account) || shortAddress(account))}</li>`).join("")}</ol>` : ""}
+      </article>`;
+    } catch {
+      if (!destroyed && lookup === query) box.innerHTML = `<p class="verify-error">${t("lookupFailed")}</p>`;
+    }
+  }
+
+  onchainForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (!sorteo?.contractId || !onchainForm.reportValidity()) return;
+    const id = onchainForm.elements.id.valueAsNumber;
+    lookup = { id, result: lookupDraw(deployment, id) };
+    renderLookup(lookup);
+  });
+
   el(root, "#verify-tx-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     const value = String(new FormData(event.currentTarget).get("value") || "").trim();
@@ -664,13 +754,19 @@ export function mount(container, { lang = "es", deployment = {}, address = "", s
   renderReports();
   const params = new URLSearchParams(String(location.hash).split("?")[1] || "");
   const sharedCode = params.get("s");
-  if (sharedCode) {
+  if (onchain) {
+    selectTab("onchain");
+    if (lookup) renderLookup(lookup);
+  } else if (sharedCode) {
     el(root, '[name="value"]').value = sharedCode;
     verifyDrawCode(sharedCode);
   }
 
   return {
     destroy() { destroyed = true; container.replaceChildren(); },
+    getOnchainQuery() {
+      if (activeTab === "onchain") return { input: onchainForm.elements.id.value, lookup };
+    },
     selectTab,
   };
 }

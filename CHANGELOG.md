@@ -6,7 +6,7 @@ Formato: fecha, qué se agregó y qué se corrigió. El detalle está en el hist
 - Tabla de contratos con el hash del wasm de cada uno (`docs/CONTRATOS.md`): las instancias de evidencia y las de referencia comparten el mismo código.
 - Guía de contribución, política de seguridad, plantillas de issues y de pull requests.
 - Modelo de negocio: quién paga el plan por círculo y economía por reporte.
-- Contrato **`sorteo`** (compromiso y revelación, 9 pruebas) y contrato **`remate`** (junta con remate y consórcio, 9 pruebas), compilados y probados en CI; falta desplegarlos en testnet.
+- Contrato **`sorteo`** (compromiso y revelación, 9 pruebas) y contrato **`remate`** (junta con remate y consórcio, 9 pruebas), compilados en CI y **desplegados en testnet** con un sorteo real de compromiso y revelación y dos rondas de remate (22 transacciones, `docs/EVIDENCIA-CONTRATOS-NUEVOS.md`). Ecosistema y Círculos de Latinoamérica los enlazan; métricas: 20 contratos, 167 invocaciones, 36 cuentas.
 - Corrección: el puntaje del reporte, el pasaporte y la demo ahora coincide con la división entera del contrato (62, no 63, para "a tiempo + cubierto").
 
 ## 2026-11-22

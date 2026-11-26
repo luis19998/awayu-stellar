@@ -27,3 +27,8 @@ jobs:
         with:
           name: pasanaku-wasm
           path: target/wasm32v1-none/release/pasanaku.wasm
+      # Todos los contratos (pasanaku, registro, ayni, minka, alasitas, sorteo, remate)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: contratos-wasm
+          path: target/wasm32v1-none/release/*.wasm

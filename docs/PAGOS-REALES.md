@@ -35,6 +35,7 @@ Fuentes: [CriptoNoticias](https://www.criptonoticias.com/comunidad/bolivia-cript
 ## 4. Cambios técnicos antes de mainnet
 1. **Sorteo del turno.** Hoy el orden se sortea con `env.prng()` al crear el círculo. La documentación de Soroban advierte que ese generador no sirve cuando hay mucho valor en juego: el resultado depende de datos del ledger y quien envía la transacción puede reintentarla hasta que le convenga. Mitigación para mainnet, en este orden:
    - **Compromiso y revelación:** cada miembro aporta un secreto cifrado al unirse; el orden sale del hash de todos los secretos revelados más un ledger futuro. Nadie, ni el organizador, controla el resultado.
+     **Estado (2026-11-26):** ya existe como contrato aparte, `sorteo`, desplegado en testnet ([`CA2WAH…IJKD`](https://stellar.expert/explorer/testnet/contract/CA2WAHFJIYHI5ORTOYEE5OUMBUV3RY2NOOJ37BBYB7QYPSTXWSTBIJKD)), con 9 pruebas y un sorteo real de ejemplo (`docs/EVIDENCIA-CONTRATOS-NUEVOS.md`). Falta que el `pasanaku` v4 lo use para fijar el orden de cobro.
    - Mientras tanto, el centro **Verificar → Sorteo** ya publica el compromiso de la lista antes de sortear, para que cualquiera compruebe que no se cambió.
    - Para montos chicos, una alternativa aceptable es que la asociación fije el orden por acuerdo y el contrato solo lo registre.
 2. **Auditoría externa** de los cinco contratos. El SCF tiene un programa de auditorías para proyectos del ecosistema.

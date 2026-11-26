@@ -88,6 +88,11 @@ async function view(server, contractId, method, ...args) {
   return scValToNative(sim.result.retval);
 }
 
+/** Versión de cualquier contrato de Awayu (simulación, sin firmar). */
+export async function readContractVersion(dep, contractId) {
+  return Number(await view(serverFor(dep), contractId, "version"));
+}
+
 /** Lee un círculo y lo devuelve con la misma forma que el modo demo. */
 export async function readCircle(dep, contractId = dep.contractId, names = {}) {
   const server = serverFor(dep);

@@ -235,6 +235,10 @@ export default {
   "Ese aguayo es tu historial crediticio: portable, verificable, tuyo.":
     "That aguayo is your payment record: portable, verifiable, yours.",
   // Panel (textos que faltaban)
+  "Contrato sorteo": "Sorteo contract",
+  "Sorteo con compromiso y revelación: nadie, ni quien envía la transacción, puede arreglar el orden.": "Commit-reveal draw: nobody, not even whoever sends the transaction, can rig the order.",
+  "Contrato remate": "Remate contract",
+  "Junta con remate y consórcio: se puja un descuento para cobrar antes y el descuento se reparte.": "Bidding circle (junta con remate, consórcio): members bid a discount to collect earlier and the discount is shared.",
   "Juegos y costumbres de Bolivia": "Bolivian games and customs",
   "Armas tu círculo": "You set up your circle",
   "Eliges cuota, duración de la ronda y miembros. Se despliega un contrato Soroban y se registra en la memoria colectiva on-chain.": "You choose the contribution, round length and members. A Soroban contract is deployed and recorded in the on-chain collective memory.",

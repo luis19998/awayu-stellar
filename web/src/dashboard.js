@@ -634,6 +634,8 @@ async function renderEcosystem(v) {
     ["ayni", "Contrato ayni v2", "Fondo de ayuda mutua abierto: unirse, aportar, pedir, votar y devolver.", dep?.ayni?.contractId],
     ["minka", "Contrato minka", "Proyectos con dinero liberado por hitos aprobados.", dep?.minka?.contractId],
     ["alasitas", "Contrato alasitas", "Metas de ahorro con racha y fecha de desbloqueo.", dep?.alasitas?.contractId],
+    ["sorteo", "Contrato sorteo", "Sorteo con compromiso y revelación: nadie, ni quien envía la transacción, puede arreglar el orden.", dep?.sorteo?.contractId],
+    ["remate", "Contrato remate", "Junta con remate y consórcio: se puja un descuento para cobrar antes y el descuento se reparte.", dep?.remate?.contractId],
     ["freighter", "Freighter", "Billetera de extensión para firmar en testnet.", null],
     ["swk", "Stellar Wallets Kit", "xBull, Albedo (sin instalar nada), LOBSTR, Rabet y Hana, el mismo kit que usa Stellar Lab.", null],
     ["pollar", "Pollar", "Login con Google o correo y billetera sin frase semilla; Earn (Blend/DeFindex) y rampas.", null],
@@ -673,6 +675,11 @@ async function renderEcosystem(v) {
         : name === "alasitas" ? m.readVersion({ ...dep, alasitasContractId: id })
           : m.readMinka(dep, id).then(() => null))
       .then((ver) => mark(name, true, ver ? `${t("en línea")} · v${ver}` : t("en línea"))).catch(() => mark(name, false, t("sin respuesta")));
+  }
+  for (const name of ["sorteo", "remate"]) {
+    const id = dep?.[name]?.contractId;
+    if (!id) { mark(name, null, t("sin desplegar")); continue; }
+    chain.readContractVersion(dep, id).then((ver) => mark(name, true, `${t("en línea")} · v${ver}`)).catch(() => mark(name, false, t("sin respuesta")));
   }
   mark("swk", true, t("configurado"));
   import("@stellar/freighter-api").then((f) => f.isConnected()).then((r) => mark("freighter", r?.isConnected ? true : null, r?.isConnected ? t("instalada") : t("no instalada en este navegador"))).catch(() => mark("freighter", null, t("no instalada en este navegador")));

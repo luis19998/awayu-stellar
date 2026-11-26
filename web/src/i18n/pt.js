@@ -18,6 +18,10 @@ const PT = {
   "Finanzas comunitarias andinas en Stellar": "Finanças comunitárias andinas na Stellar",
   "Dinero": "Dinheiro", "dinero": "dinheiro", "Nombre del círculo": "Nome do círculo", "Departamento": "Departamento",
   // Panel (textos que faltaban)
+  "Contrato sorteo": "Contrato sorteo",
+  "Sorteo con compromiso y revelación: nadie, ni quien envía la transacción, puede arreglar el orden.": "Sorteio com compromisso e revelação: ninguém, nem quem envia a transação, pode manipular a ordem.",
+  "Contrato remate": "Contrato remate",
+  "Junta con remate y consórcio: se puja un descuento para cobrar antes y el descuento se reparte.": "Junta com leilão e consórcio: dá-se um lance de desconto para receber antes e o desconto é dividido.",
   "Juegos y costumbres de Bolivia": "Jogos e costumes da Bolívia",
   "Armas tu círculo": "Você monta seu círculo",
   "Eliges cuota, duración de la ronda y miembros. Se despliega un contrato Soroban y se registra en la memoria colectiva on-chain.": "Você escolhe a contribuição, a duração da rodada e os participantes. Um contrato Soroban é implantado e registrado na memória coletiva on-chain.",

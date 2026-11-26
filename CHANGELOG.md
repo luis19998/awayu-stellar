@@ -6,7 +6,8 @@ Formato: fecha, qué se agregó y qué se corrigió. El detalle está en el hist
 - Tabla de contratos con el hash del wasm de cada uno (`docs/CONTRATOS.md`): las instancias de evidencia y las de referencia comparten el mismo código.
 - Guía de contribución, política de seguridad, plantillas de issues y de pull requests.
 - Modelo de negocio: quién paga el plan por círculo y economía por reporte.
-- En desarrollo: contrato `sorteo` (compromiso y revelación) y contrato `remate` (junta con remate y consórcio).
+- Contrato **`sorteo`** (compromiso y revelación, 9 pruebas) y contrato **`remate`** (junta con remate y consórcio, 9 pruebas), compilados y probados en CI; falta desplegarlos en testnet.
+- Corrección: el puntaje del reporte, el pasaporte y la demo ahora coincide con la división entera del contrato (62, no 63, para "a tiempo + cubierto").
 
 ## 2026-11-22
 - **Juegos y costumbres de Bolivia**: cacho verificable con dados 3D (sin dinero), rifa solidaria con números pagados por QR SEP-7 y simulador de anticrético con el plan de escrow.

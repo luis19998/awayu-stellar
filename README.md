@@ -58,7 +58,7 @@ Al 2026-11-21 hay 13 contratos de Awayu desplegados y 7 círculos en el registro
 
 **Qué contratos son cuáles:** la tabla de arriba lista los contratos de referencia de la demo. Los de la tabla de evidencia (pasanaku `CDOM3I…`, ayni `CB2RZD…`, minka `CDENQ4…`) son **instancias nuevas creadas desde el mismo wasm** por `web/evidencia-testnet.mjs`, porque en Soroban cada círculo o fondo es su propio contrato. Todas comparten el código de los releases verificados (SEP-55): `stellar contract info build --id <contrato> --network testnet` muestra el mismo repositorio y commit. La tabla completa con el hash del wasm de cada contrato está en [`docs/CONTRATOS.md`](docs/CONTRATOS.md): las instancias de evidencia y las de referencia comparten exactamente el mismo código. Licencia: MIT (`LICENSE`).
 
-Las 34 pruebas de contratos corren en CI (`contrato.yml`); las de la web, en `web.yml` (Vitest).
+Las 52 pruebas de contratos (siete contratos) corren en CI (`contrato.yml`); las de la web, en `web.yml` (Vitest).
 
 **Compilación verificable (SEP-55):** cada wasm lleva `source_repo` en sus metadatos, GitHub firma su procedencia y se publica como release. `stellar contract info build --id <contrato> --network testnet` muestra el workflow y el commit que lo compilaron.
 
@@ -107,6 +107,8 @@ Antes de mainnet usaremos **compromiso y revelación**: cada miembro aporta un s
 | `contracts/ayni` | Fondo de ayuda mutua con votos y quórum (7 pruebas) |
 | `contracts/minka` | Proyectos con fondos liberados por hitos (5 pruebas) |
 | `contracts/alasitas` | Metas de ahorro con racha y bloqueo por fecha (7 pruebas) |
+| `contracts/sorteo` | Sorteo con compromiso y revelación: la mitigación de los límites de `env.prng()` (9 pruebas; aún sin desplegar). Ver `docs/SORTEO-COMPROMISO.md` |
+| `contracts/remate` | Junta con remate y consórcio: rotativo donde se puja un descuento para cobrar antes (9 pruebas; aún sin desplegar). Ver `docs/REMATE.md` |
 | `web` | Vite + three.js + stellar-sdk + Pollar; pruebas con Vitest |
 | `web/evidencia-testnet.mjs`, `web/metricas-testnet.mjs` | Evidencia de transacciones por acción y métricas on-chain |
 | `scripts/` | Despliegue de la demo y de las tradiciones en testnet |

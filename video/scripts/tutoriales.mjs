@@ -11,6 +11,17 @@ const OUT = "C:/Users/luisc/Documents/stellar-hackathon/web/public/tutoriales";
 mkdirSync(OUT, { recursive: true });
 
 const TOPICS = {
+  "verify-onchain": async (r) => {
+    await r.page.evaluate(() => { location.hash = "#/verificar"; });
+    await r.sleep(3000);
+    await r.click("#verify-tab-onchain");
+    await r.sleep(1500);
+    await r.click('#verify-onchain-form button[type="submit"], #verify-onchain-form button');
+    await r.page.waitForFunction(() => (document.querySelector("#verify-onchain-result")?.textContent || "").length > 40, null, { timeout: 30000 }).catch(() => {});
+    await r.sleep(1500);
+    await r.page.evaluate(() => document.querySelector("#verify-onchain-result")?.scrollIntoView({ behavior: "smooth", block: "center" }));
+    await r.sleep(4000);
+  },
   bolivia: async (r) => {
     await r.page.evaluate(() => { location.hash = "#/bolivia"; });
     await r.sleep(3500);

@@ -39,6 +39,15 @@ export const HELP_TOPICS = Object.freeze({
   latam: topic("Círculos de Latinoamérica", "Savings circles across Latin America", ["Elige un país y una forma local de ahorro rotativo.", "Revisa sus reglas, riesgos y la simulación de ejemplo.", "Si es rotativo, puedes abrir la creación en Stellar testnet."], ["Choose a country and a local rotating savings circle.", "Review its rules, risks and example simulation.", "For rotating circles, you can open creation on Stellar testnet."], { pt: { title: "Círculos de poupança da América Latina", steps: ["Escolha um país e uma forma local de poupança rotativa.", "Confira as regras, os riscos e a simulação de exemplo.", "Nos círculos rotativos, você pode abrir a criação na Stellar testnet."] } }),
   "ayni-join": topic("Unirse al fondo Ayni", "Join the Ayni fund", ["En Ayni, elige Testnet en vivo.", "Conecta tu billetera.", "Toca Unirme al fondo y firma: aportas tu primera cuota y ya puedes pedir ayuda y votar los pedidos nuevos."], ["In Ayni, pick Live testnet.", "Connect your wallet.", "Press Join the fund and sign: you pay your first share and can ask for help and vote on new requests."]),
   "verify-draw": topic("Sorteo verificable", "Verifiable draw", ["En Verificar, escribe el título y la lista de participantes.", "Toca Fijar lista: la huella queda fijada y se elige un ledger futuro de Stellar.", "Cuando ese ledger cierra sale el resultado; comparte el enlace o el QR para que cualquiera lo compruebe."], ["In Verify, enter the title and the participant list.", "Press Fix list: the fingerprint is locked and a future Stellar ledger is chosen.", "When that ledger closes the result appears; share the link or QR so anyone can check it."]),
+  "verify-onchain": topic("Sorteo en la cadena", "On-chain draw", [
+    "En Verificar, abre Sorteo en la cadena.",
+    "Usa el ID del ejemplo o escribe el de otro sorteo y toca Consultar.",
+    "Revisa la etapa, los plazos y cuántas personas revelaron su secreto. Cuando el sorteo esté cerrado, verás el orden final.",
+  ], [
+    "In Verify, open On-chain draw.",
+    "Use the example ID or enter another draw ID and select Look up.",
+    "Check the stage, the deadlines and how many people revealed their secret. Once the draw is closed, you can see the final order.",
+  ]),
   "verify-check": topic("Comprobar un pago o un círculo", "Check a payment or a circle", ["En Verificar, abre Comprobante o Círculo u organizador.", "Pega el código de la transacción o la dirección del círculo.", "Revisa qué pasó, cuándo y el semáforo de confianza con sus razones."], ["In Verify, open Receipt or Circle or organizer.", "Paste the transaction code or the circle address.", "Check what happened, when, and the trust light with its reasons."]),
   "verify-report": topic("Reportar una irregularidad", "Report an irregularity", ["En Verificar, abre Reportar y describe lo que pasó.", "Agrega tus evidencias: no se suben, solo se calcula su huella.", "Guarda tu código de seguimiento y la constancia; si quieres, séllala en Stellar."], ["In Verify, open Report and describe what happened.", "Add your evidence: nothing is uploaded, only its fingerprint is computed.", "Keep your tracking code and certificate; optionally seal it on Stellar."]),
   settings: topic("Tu configuración", "Your settings", ["Toca ⚙ arriba a la derecha.", "Pon tu nombre, idioma, tamaño de letra o crea otro usuario en el mismo celular.", "Desde ahí también exportas o borras tus datos y repites el recorrido."], ["Press ⚙ at the top right.", "Set your name, language, text size or create another user on the same phone.", "From there you can also export or delete your data and replay the tour."]),
@@ -54,6 +63,11 @@ export const HELP_TOPICS = Object.freeze({
 // Traducciones de los temas de ayuda. Portugués completo; en quechua, aymara y
 // guaraní los títulos (los pasos caen al español hasta la revisión de hablantes).
 const LOCAL = {
+  "verify-onchain": { pt: ["Sorteio na rede", [
+    "Em Verificar, abra Sorteio na rede.",
+    "Use o ID do exemplo ou digite o ID de outro sorteio e toque em Consultar.",
+    "Confira a etapa, os prazos e quantas pessoas revelaram seu segredo. Quando o sorteio terminar, você verá a ordem final.",
+  ]] },
   bolivia: { pt: ["Jogos e costumes da Bolívia", [
     "Em Cacho, digite um nome por linha e fixe a lista antes de lançar os dados. Se a conexão falhar, você pode praticar sem verificação.",
     "Compartilhe o código e cole-o na mesma aba para reproduzir o resultado com o mesmo ledger da Stellar.",
@@ -113,7 +127,7 @@ export const ROUTE_TOPICS = Object.freeze({
   latam: ["latam"],
   bolivia: ["bolivia"],
   amawta: ["amawta"],
-  verificar: ["verify-draw", "verify-check", "verify-report"],
+  verificar: ["verify-draw", "verify-onchain", "verify-check", "verify-report"],
 });
 
 function ensureStyles() {

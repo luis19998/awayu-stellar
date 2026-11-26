@@ -27,7 +27,7 @@ Por qué la cooperativa es la primera: es quien recibe el valor medible (evaluar
 | Costo de red por reporte | menos de Bs 0,01 | El reporte solo **lee** contratos (simulación en la RPC, sin transacción) |
 | Costo de servidor | cerca de Bs 0 | Página estática en Vercel; la lectura la hace el navegador de la cooperativa |
 | Margen bruto por reporte | casi Bs 15 | El costo real está en vender y en dar soporte, no en la red |
-| Reportes para cubrir un sueldo mínimo (Bs 2.750) | ~184 al mes | Por ejemplo, 4 cooperativas con 46 reportes cada una |
+| Reportes para cubrir un sueldo de Bs 2.750 (salario mínimo nacional de 2025; confirmar el vigente) | ~184 al mes | Por ejemplo, 4 cooperativas con 46 reportes cada una |
 
 El nicho inicial es chico a propósito: sirve para demostrar que una cooperativa paga por la evidencia. El crecimiento viene después, de sumar entidades fuera de Cochabamba y de las asociaciones que pagan por administrar sus círculos.
 

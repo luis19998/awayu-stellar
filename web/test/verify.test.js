@@ -120,13 +120,15 @@ function fakeMountTarget() {
 describe("verification view", () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it.each(["es", "en", "pt", "qu", "ay", "gn"])("mounts all four accessible tabs in %s", (lang) => {
+  it.each(["es", "en", "pt", "qu", "ay", "gn"])("mounts all five accessible tabs in %s", (lang) => {
     vi.stubGlobal("fetch", vi.fn());
     vi.stubGlobal("location", { hash: "", href: "https://awayu.example/" });
     vi.stubGlobal("localStorage", { getItem: () => "[]", setItem: vi.fn() });
     const target = fakeMountTarget();
     const view = mount(target, { lang, deployment: {}, address: "" });
-    expect(target.innerHTML.match(/role="tab"/g)).toHaveLength(4);
+    expect(target.innerHTML.match(/role="tab"/g)).toHaveLength(5);
+    const label = { en: "On-chain draw", pt: "Sorteio na rede" }[lang] || "Sorteo en la cadena";
+    expect(target.innerHTML).toContain(`data-tab="onchain">${label}</button>`);
     expect(target.innerHTML).toContain("role=\"tablist\"");
     expect(target.innerHTML).toContain("aria-selected=\"true\"");
     view.destroy();

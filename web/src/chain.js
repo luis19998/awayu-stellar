@@ -93,6 +93,20 @@ export async function readContractVersion(dep, contractId) {
   return Number(await view(serverFor(dep), contractId, "version"));
 }
 
+/** Consulta el sorteo por compromiso y revelación sin pedir una firma. */
+export async function readDraw(dep, contractId, id) {
+  const draw = await view(serverFor(dep), contractId, "get", nativeToScVal(id, { type: "u32" }));
+  return {
+    state: Array.isArray(draw.state) ? draw.state[0] : draw.state,
+    commitDeadline: Number(draw.commit_deadline),
+    revealDeadline: Number(draw.reveal_deadline),
+    committed: Number(draw.committed),
+    revealed: Number(draw.revealed),
+    order: draw.order.map(String),
+    fallback: draw.fallback,
+  };
+}
+
 /** Lee un círculo y lo devuelve con la misma forma que el modo demo. */
 export async function readCircle(dep, contractId = dep.contractId, names = {}) {
   const server = serverFor(dep);

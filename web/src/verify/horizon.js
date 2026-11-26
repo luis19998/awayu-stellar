@@ -1,4 +1,5 @@
 export const DEFAULT_HORIZON = "https://horizon-testnet.stellar.org";
+export const labUrl = (id) => `https://lab.stellar.org/smart-contracts/contract-explorer?$=network$id=testnet&label=Testnet&horizonUrl=https:////horizon-testnet.stellar.org&rpcUrl=https:////soroban-testnet.stellar.org&passphrase=Test%20SDF%20Network%20/;%20September%202015;&smartContracts$explorer$contractId=${encodeURIComponent(id)};;`;
 export const STELLAR_EXPERT = "https://api.stellar.expert/explorer/testnet";
 
 export function createHorizonClient({ baseUrl = DEFAULT_HORIZON, fetchImpl = globalThis.fetch } = {}) {

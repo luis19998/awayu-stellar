@@ -1,24 +1,26 @@
 {
-  "measuredAt": "2026-11-21T13:08:23.801Z",
-  "contracts": 13,
+  "measuredAt": "2026-11-26T10:27:53.262Z",
+  "contracts": 20,
   "byKind": {
-    "pasanaku": 7,
+    "pasanaku": 12,
     "registro": 1,
     "ayni": 2,
     "minka": 2,
-    "alasitas": 1
+    "alasitas": 1,
+    "sorteo": 1,
+    "remate": 1
   },
-  "registeredCircles": 7,
-  "invocations": 112,
-  "events": 99,
+  "registeredCircles": 12,
+  "invocations": 167,
+  "events": 148,
   "errors": 0,
-  "distinctAccounts": 23,
+  "distinctAccounts": 36,
   "rows": [
     {
       "id": "CAF7V32UXWDPFOOLMUW7BZLIMAJHMOUEA3WOCMHC76DQM7DHMGOSKGBS",
       "kind": "pasanaku",
-      "invocations": 22,
-      "events": 18,
+      "invocations": 23,
+      "events": 20,
       "errors": 0
     },
     {
@@ -59,15 +61,50 @@
     {
       "id": "CDOM3IISV3IUFYSRNUJ7H62L3QEGCU6SNZABQTCEMPSQEHAAQA4VA3NG",
       "kind": "pasanaku",
-      "invocations": 9,
-      "events": 9,
+      "invocations": 10,
+      "events": 10,
+      "errors": 0
+    },
+    {
+      "id": "CBE5NPJLI3K44WYLUW6LDOL7HDGDJ3INKWHT2ROHBPIJX5IKTO2IKSPV",
+      "kind": "pasanaku",
+      "invocations": 4,
+      "events": 3,
+      "errors": 0
+    },
+    {
+      "id": "CD4KDSRB6YKG6C7TALMTAGIGVRPDF6P5GGB4LLHQAEQNNUKVYHKOCMLL",
+      "kind": "pasanaku",
+      "invocations": 5,
+      "events": 4,
+      "errors": 0
+    },
+    {
+      "id": "CCQF6J6MWY3EYHPMIDNVVFWQANCBQC3P2I335CAHTNM2RYPLE4WYS27R",
+      "kind": "pasanaku",
+      "invocations": 5,
+      "events": 4,
+      "errors": 0
+    },
+    {
+      "id": "CDFVVZNEMNQSB2KNXTOMNGQH2KKDTZKZ5SOVLDENLEAB4LGTTCL6XYZB",
+      "kind": "pasanaku",
+      "invocations": 5,
+      "events": 4,
+      "errors": 0
+    },
+    {
+      "id": "CDUPLSO7B4IBLADEEI6YZCOOZTXD4V6NDOFMEWM24PNJHQGDFCHZ2BJX",
+      "kind": "pasanaku",
+      "invocations": 3,
+      "events": 2,
       "errors": 0
     },
     {
       "id": "CAIOIV7WCXJC37TMIHFSZCMWSWCDMHXMS4V34ZALTD5RH7ZP44LQNVKD",
       "kind": "registro",
-      "invocations": 29,
-      "events": 28,
+      "invocations": 39,
+      "events": 38,
       "errors": 0
     },
     {
@@ -87,8 +124,22 @@
     {
       "id": "CDUKQ46OGKK2WQQJ2YRVWVHOW5RATTEZEAGDMU4URANCC5OLY2OE572N",
       "kind": "alasitas",
-      "invocations": 8,
+      "invocations": 9,
+      "events": 8,
+      "errors": 0
+    },
+    {
+      "id": "CA2WAHFJIYHI5ORTOYEE5OUMBUV3RY2NOOJ37BBYB7QYPSTXWSTBIJKD",
+      "kind": "sorteo",
+      "invocations": 9,
       "events": 7,
+      "errors": 0
+    },
+    {
+      "id": "CAMJ3YUZWTO2ZKZBF5AG5FCUZAHWS6HCVBCLPNFRELRFLD4VI5UZMURE",
+      "kind": "remate",
+      "invocations": 11,
+      "events": 11,
       "errors": 0
     },
     {

@@ -31,7 +31,7 @@ Generadas el 2026-11-21 con `node web/evidencia-testnet.mjs`, con cuentas efíme
 | Depositar en una meta de Alasitas | alasitas [`CDUKQ4…572N`](https://stellar.expert/explorer/testnet/contract/CDUKQ46OGKK2WQQJ2YRVWVHOW5RATTEZEAGDMU4URANCC5OLY2OE572N) | [`592b9a87…`](https://stellar.expert/explorer/testnet/tx/592b9a87512d67372759060961e5501ac2c4e2189553c1e1c61f7a211ed76890) |
 
 ### Actividad on-chain
-Al 2026-11-21 hay 13 contratos de Awayu desplegados y 7 círculos en el registro. Suman **112 invocaciones**, 99 eventos, 0 errores y **23 cuentas distintas**; el detalle está en [`docs/METRICAS.md`](docs/METRICAS.md). Para ser claros: casi toda esta actividad viene de nuestros scripts y pruebas, y todavía no hay usuarios externos.
+Al 2026-11-26 hay 20 contratos de Awayu desplegados y 12 círculos en el registro. Suman **167 invocaciones**, 148 eventos, 0 errores y **36 cuentas distintas**; el detalle está en [`docs/METRICAS.md`](docs/METRICAS.md). Para ser claros: casi toda esta actividad viene de nuestros scripts y pruebas, y todavía no hay usuarios externos.
 
 ## El problema y lo que falta validar
 - En Bolivia millones de personas ahorran en pasanakus, sobre todo comerciantes y productores de la economía informal. Funcionan por confianza, se rompen cuando alguien no paga y no dejan un historial que sirva ante una cooperativa. Además, con la escasez de dólares, el ahorro en bolivianos pierde valor.

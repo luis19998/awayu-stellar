@@ -18,6 +18,8 @@ add(dep.registro, "registro");
 add(dep.ayni?.contractId, "ayni");
 add(dep.minka?.contractId, "minka");
 add(dep.alasitas?.contractId, "alasitas");
+add(dep.sorteo?.contractId, "sorteo");
+add(dep.remate?.contractId, "remate");
 if (ev) for (const [k, id] of Object.entries(ev.contracts)) add(id, k);
 
 const rows = [];
@@ -40,6 +42,9 @@ for (const a of Object.keys(dep.ayni?.memberNames || {})) accounts.add(a);
 for (const a of dep.minka?.validators || []) accounts.add(a);
 for (const a of dep.alasitas?.owners || []) accounts.add(a);
 if (ev) for (const a of Object.values(ev.accounts)) accounts.add(a);
+let nuevos = null;
+try { nuevos = read("./public/contratos-nuevos.json"); } catch { /* sin contratos nuevos */ }
+if (nuevos) for (const a of Object.values(nuevos.accounts)) accounts.add(a);
 
 const sum = (k) => rows.reduce((a, r) => a + (r[k] || 0), 0);
 const byKind = Object.fromEntries([...new Set(rows.map((r) => r.kind))].map((k) => [k, rows.filter((r) => r.kind === k).length]));
@@ -66,7 +71,7 @@ const md = [
   `| Invocaciones con error | ${out.errors} |`,
   `| Cuentas distintas que participaron | ${out.distinctAccounts} |`,
   "",
-  "Origen honesto de la actividad: casi toda viene de cuentas efímeras de nuestros scripts (`scripts/demo-testnet.sh`, `scripts/modos-testnet.sh`, `web/evidencia-testnet.mjs`) y de pruebas del equipo. Todavía no hay usuarios externos: eso es lo que busca el piloto (ver `docs/VALIDACION.md`).",
+  "Origen honesto de la actividad: casi toda viene de cuentas efímeras de nuestros scripts (`scripts/demo-testnet.sh`, `scripts/modos-testnet.sh`, `web/evidencia-testnet.mjs`, `web/contratos-nuevos.mjs`) y de pruebas del equipo. Todavía no hay usuarios externos: eso es lo que busca el piloto (ver `docs/VALIDACION.md`).",
   "",
   "| Contrato | Tipo | Invocaciones | Eventos |",
   "|---|---|---|---|",

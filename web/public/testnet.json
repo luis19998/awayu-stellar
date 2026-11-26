@@ -61,5 +61,15 @@
       "GBD32MKNQF325QL5WNKKWJJZQLOATIN53GOID5S5HEF3RY4DRUYHEJGX"
     ]
   },
-  "modosCreatedAt": "2026-11-20T21:35:31Z"
+  "modosCreatedAt": "2026-11-20T21:35:31Z",
+  "sorteo": {
+    "contractId": "CA2WAHFJIYHI5ORTOYEE5OUMBUV3RY2NOOJ37BBYB7QYPSTXWSTBIJKD",
+    "drawId": 1,
+    "version": 1
+  },
+  "remate": {
+    "contractId": "CAMJ3YUZWTO2ZKZBF5AG5FCUZAHWS6HCVBCLPNFRELRFLD4VI5UZMURE",
+    "token": "XLM",
+    "version": 1
+  }
 }

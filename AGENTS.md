@@ -3,13 +3,33 @@
 Este archivo lo leen Codex y Claude Code (`CLAUDE.md` lo importa). Mantenerlo corto y al día.
 
 ## Proyecto
-Awayu es un pasanaku (círculo de ahorro rotativo) en Stellar para el hackatón Stellar Bolivia (etapa virtual hasta el 2026-11-22, final en Santa Cruz el 2026-11-27). Las cuotas van en un token (USDC en producción, XLM en la demo de testnet); el turno se sortea en la cadena; cada aporte deja una marca (1 a tiempo, 2 tarde, 3 faltó) que la web teje como un aguayo 3D y que funciona como reputación crediticia portable.
+Awayu lleva a Stellar/Soroban cuatro formas bolivianas de ahorrar y ayudarse (pasanaku, ayni, minka, alasitas) y otras de Latinoamérica. Cada pago deja una marca (1 a tiempo, 2 tarde, 3 faltó, 4 cubierto por garantía) que forma un historial verificable para cooperativas. Todo funciona en **testnet** con dinero de prueba (USDC de prueba de Circle y XLM). Equipo Stark Neo. Se entregó al National Startups Hackathon by Stellar (2026-11-22, IA de Atlas: 65/100) y a Commit del Mes (hasta el 2026-11-27).
+
+## Estado al 2026-11-28 (lee esto antes de trabajar)
+- Web publicada: https://awayu-two.vercel.app (Vercel, despliegue manual con `npx vercel deploy --prod` desde la raíz). Reporte para cooperativas en `/reporte.html`.
+- Siete contratos en testnet: IDs en `web/public/testnet.json`, con su hash de wasm en `docs/CONTRATOS.md`. Evidencia en `docs/EVIDENCIA.md` y `docs/EVIDENCIA-CONTRATOS-NUEVOS.md`; métricas en `docs/METRICAS.md`.
+- Pendiente, por prioridad:
+  1. Validación real con comerciantes y cooperativas (`docs/VALIDACION.md`, `docs/COOPERATIVAS.md`). **Nunca inventar datos.**
+  2. Que el `pasanaku` v4 use el contrato `sorteo` para el orden de cobro.
+  3. Conectar `remate` a la creación de círculos en la web.
+  4. Revisión de quechua, aymara y guaraní por hablantes.
+  5. El camino a dinero real de `docs/PAGOS-REALES.md`.
+- Historial por fecha: `CHANGELOG.md`. Cómo contribuir: `CONTRIBUTING.md`.
 
 ## Estructura
-- `contracts/pasanaku/`: contrato Soroban en Rust (soroban-sdk 28), versión 3 (garantías, alias, TTL renovado). Pruebas en `src/test.rs`.
-- `web/`: Vite + three.js + `@stellar/stellar-sdk` + `@pollar/core`. Modo demo (simulado) y modo testnet (lee el contrato por RPC).
-- `scripts/demo-testnet.sh`: despliega un círculo de 4 cuentas efímeras y juega 3 rondas en testnet.
-- `.github/workflows/`: `contrato.yml` (pruebas y wasm) y `demo-testnet.yml` (despliegue manual).
+- `contracts/`: siete contratos Soroban en Rust (soroban-sdk 28), cada uno con `src/test.rs` (52 pruebas en total).
+  - `pasanaku` (v3: turno sorteado, garantías, alias, marcas);
+  - `registro`, `ayni` (v2), `minka`, `alasitas`;
+  - `sorteo` (compromiso y revelación);
+  - `remate` (junta con remate y consórcio).
+- `web/`: Vite + three.js + `@stellar/stellar-sdk` + `@pollar/core`. Vistas en `web/src/views/`, textos en `web/src/i18n/`, ayuda y tutoriales en `web/src/guide/help.js` y `web/public/tutoriales/`. Pruebas con Vitest (`web/test/`, 205 pruebas).
+- Scripts de testnet con cuentas efímeras: `web/evidencia-testnet.mjs`, `web/contratos-nuevos.mjs`, `web/metricas-testnet.mjs`, `web/scripts-e2e.mjs`, `scripts/*.sh`.
+- `.github/workflows/`:
+  - `contrato.yml`: pruebas y wasm de los 7 contratos, en cualquier rama;
+  - `web.yml`;
+  - `demo-testnet.yml`, `modos-testnet.yml` y `verificar-contratos.yml` (SEP-55).
+- `automations/n8n/flujos/`: automatizaciones sin cuentas personales (avisos por ntfy.sh).
+- `video/scripts/`: grabación de tutoriales (`tutoriales.mjs`) y QA de todas las rutas (`qa_rutas.mjs`).
 - `referencias/`: repos clonados de referencia (ignorados por git; no ejecutar código de ahí).
 - Skills: `.claude/skills/` (Claude Code) y `.agents/skills/` (Codex), copias de `stellar/stellar-dev-skill` y la skill de Pollar.
 
@@ -19,7 +39,10 @@ Awayu es un pasanaku (círculo de ahorro rotativo) en Stellar para el hackatón 
 - Nunca subir claves: identidades de `stellar keys` viven fuera del repo; la clave publicable de Pollar va en `web/.env.local` como `VITE_POLLAR_KEY`.
 - Textos de la interfaz en español neutro (tuteo, sin voseo ni modismos de un país: "dinero", no "plata"), claros para gente sin experiencia cripto. Se conservan los nombres culturales andinos (pasanaku, ayni, minka, alasitas, aguayo, pollera).
 - Idiomas de la web: español (base), inglés, portugués, quechua, aymara y guaraní. Todo texto nuevo debe tener las seis versiones o caer al español de forma explícita.
-- Cada acción nueva de la interfaz lleva su tutorial en video (tema en `HELP_TOPICS` y `ROUTE_TOPICS` de `web/src/guide/help.js`).
+- Cada acción nueva de la interfaz lleva su tutorial en video (tema en `HELP_TOPICS` y `ROUTE_TOPICS` de `web/src/guide/help.js`, y en `TOPIC_ORDER` de `web/src/app.js`). Una prueba exige que cada tema tenga su video.
+- El puntaje de historial debe coincidir con `score_of` del contrato: división entera. Usa `web/src/reporte/puntaje.js`.
+- Honestidad: lo simulado se marca como simulado, y nunca se escribe en presente algo que todavía no pasó.
+- Commits con contenido real, cada persona con su propia cuenta.
 
 ## Comandos
 - Web: `npm --prefix web install`, `npm --prefix web run dev` (puerto 5180 en `.claude/launch.json`), `npm --prefix web run build`.
